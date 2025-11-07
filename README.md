@@ -1,33 +1,32 @@
-# 💰 Proyecto Finanzas Frontend
+# Proyecto Finanzas Frontend
 
 Aplicación web para la gestión de finanzas personales, con módulos de autenticación, presupuestos, movimientos y reportes.  
-Este repositorio corresponde al **Frontend** del proyecto *Finance Tracker* del curso **Desarrollo de Software I (Proyecto #3)**.
+Este repositorio corresponde al **Frontend** del proyecto *Finance Tracker* del curso **Desarrollo de Software II (Proyecto #3)**.
 
 ---
 
-## 🧱 Stack Tecnológico
+## Stack Tecnológico
 
 **Frontend:** React, Vite, TypeScript, TailwindCSS, React Router  
-**Backend:** Django REST Framework (repositorio separado)  
+**Backend:** Django REST Framework
 **Base de Datos:** PostgreSQL  
 **Despliegue:** Vercel (frontend) y Render (backend)
 
 ---
 
-## ⚙️ Configuración del Entorno Local
+## Configuración del Entorno Local
 
-### 🔧 Prerrequisitos
+### Prerrequisitos
 
 Antes de iniciar, asegúrate de tener instalado:
 
 - [Node.js](https://nodejs.org/) (versión **18 o superior**)  
 - [npm](https://www.npmjs.com/) (versión **9 o superior**)  
-- [Git](https://git-scm.com/)  
-- Acceso al repositorio del backend (para conectar la API)
+- [Git](https://git-scm.com/)
 
 ---
 
-## 🚀 Inicialización
+## Inicialización
 
 Ejecuta los siguientes comandos en tu terminal:
 
@@ -47,20 +46,7 @@ npm install
 
 ---
 
-## ⚙️ Configuración del Entorno (.env)
-
-Para conectar con la API del backend, crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
-
-```bash
-VITE_API_URL=http://localhost:8000/api
-```
-
-> ⚠️ **Importante:** No subas este archivo al repositorio.  
-> Está protegido en `.gitignore` por motivos de seguridad.
-
----
-
-## 🧩 Ejecución del Proyecto
+## Ejecución del Proyecto
 
 ### Modo desarrollo
 
@@ -94,7 +80,7 @@ src/
  ├─ context/           → Contextos globales (autenticación, usuario)
  ├─ layouts/           → Plantillas y estructura de vistas
  ├─ pages/             → Páginas principales (Login, Register, Home, etc.)
- ├─ services/          → Comunicación con la API (axios)
+ ├─ services/          → Comunicación con la API
  ├─ types/             → Interfaces y tipos TypeScript
  ├─ utils/             → Funciones auxiliares y helpers
  ├─ App.tsx            → Rutas principales y layout base
@@ -123,22 +109,6 @@ src/
 
 ---
 
-## 🔐 Conexión con el Backend
-
-Para pruebas locales, asegúrate de que el backend esté corriendo en  
-[http://localhost:8000](http://localhost:8000)
-
-Ejemplo de endpoint de autenticación:
-
-```
-POST /api/login/
-Body: { "email": "usuario@mail.com", "password": "123456" }
-```
-
-El token JWT se almacenará en `localStorage` y se usará para proteger rutas privadas.
-
----
-
 ## 👥 Equipo de Desarrollo
 
 | Rol | Nombre |
@@ -150,16 +120,7 @@ El token JWT se almacenará en `localStorage` y se usará para proteger rutas pr
 
 ---
 
-## 🧩 Próximos Sprints
-
-- **Sprint 1:** Registro, Login, Recuperar Contraseña, Navbar  
-- **Sprint 2:** Gestión de cuentas y presupuestos  
-- **Sprint 3:** Reportes financieros y alertas  
-- **Sprint 4:** Despliegue y documentación final
-
----
-
-## 🧰 Comandos Útiles
+## Comandos Útiles
 
 | Comando | Descripción |
 |----------|--------------|
@@ -169,7 +130,5 @@ El token JWT se almacenará en `localStorage` y se usará para proteger rutas pr
 | `npm run lint` | Ejecuta ESLint para verificar el código |
 
 ---
-
-## 🏁 Listo 🎉
 
 Una vez completes los pasos anteriores, podrás ver la aplicación ejecutándose en tu entorno local.
