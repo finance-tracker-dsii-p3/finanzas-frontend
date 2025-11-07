@@ -1,0 +1,58 @@
+# Dependencias
+node_modules/
+
+# Build y producción
+dist/
+build/
+*.log
+*.cache
+*.lock
+vite.config.timestamp-*
+vite.config.js.timestamp-*
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.tgz
+*.zip
+*.tar
+*.7z
+
+# VSCode
+.vscode/
+.history/
+*.code-workspace
+
+# Variables de entorno
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Pruebas y cobertura
+coverage/
+*.spec.ts
+*.test.ts
+jest.config.js
+vitest.config.js
+__tests__/
+__mocks__/
+
+# Datos o configuraciones personales que no deben versionarse
+*.local
+*.envrc
+*.editorconfig
+*.eslintcache
+
+# Cachés temporales o generadas
+.vite/
+.tailwind/
+postcss.config.cjs.timestamp-*
