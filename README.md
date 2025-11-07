@@ -72,7 +72,7 @@ npm run preview
 
 ---
 
-## 🧭 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 src/
@@ -90,7 +90,7 @@ src/
 
 ---
 
-## 🧠 Flujo de Trabajo del Equipo
+## Flujo de Trabajo del Equipo
 
 1. **Crear una nueva rama** a partir de `develop`:
    ```bash
@@ -109,7 +109,7 @@ src/
 
 ---
 
-## 👥 Equipo de Desarrollo
+## Equipo de Desarrollo
 
 | Rol | Nombre |
 |------|---------|
