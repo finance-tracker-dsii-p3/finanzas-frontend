@@ -1,0 +1,38 @@
+.login-container {
+  min-height: 100vh;
+}
+
+.login-form-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.login-social-button:hover {
+  transform: translateY(-1px);
+}
+
+.login-gradient-button {
+  background: linear-gradient(to right, #2563eb, #9333ea);
+  transition: all 0.3s ease;
+}
+
+.login-gradient-button:hover {
+  background: linear-gradient(to right, #1d4ed8, #7e22ce);
+  transform: translateY(-2px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-container > div {
+  animation: fadeIn 0.5s ease-out;
+}
+

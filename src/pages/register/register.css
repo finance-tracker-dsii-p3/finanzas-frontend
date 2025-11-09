@@ -1,0 +1,42 @@
+.register-container {
+  min-height: 100vh;
+}
+
+.register-form-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.register-password-strength {
+  transition: all 0.3s ease;
+}
+
+.register-gradient-button {
+  background: linear-gradient(to right, #2563eb, #9333ea);
+  transition: all 0.3s ease;
+}
+
+.register-gradient-button:hover {
+  background: linear-gradient(to right, #1d4ed8, #7e22ce);
+  transform: translateY(-2px);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.register-container > div {
+  animation: slideIn 0.5s ease-out;
+}
+
+.password-strength-bar {
+  transition: background-color 0.3s ease;
+}
+
