@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp, TrendingDown, DollarSign, Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, CreditCard, AlertCircle, User, LogOut } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import Movements from '../movements/Movements';
 import Budgets from '../budgets/Budgets';
 import Reports from '../reports/Reports';
@@ -28,12 +29,14 @@ interface CategoryData {
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { logout, user, isAuthenticated } = useAuth();
   const [currentView, setCurrentView] = useState<'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts'>('dashboard');
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [includePending, setIncludePending] = useState(false);
   const [showTaxes, setShowTaxes] = useState(true);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+
   const [monthData, setMonthData] = useState<MonthData>({
     income: 0,
     expenses: 0,
@@ -61,8 +64,8 @@ const Dashboard: React.FC = () => {
     };
   }, [showProfileMenu]);
 
-  const handleLogout = () => {
-    navigate('/login');
+  const handleLogout = async () => {
+    await logout();
   };
 
   const handleViewProfile = () => {
@@ -78,8 +81,8 @@ const Dashboard: React.FC = () => {
     }).format(Math.abs(amount));
   };
 
-  const DashboardView = () => {
-    const userName = 'Usuario';
+      const DashboardView = () => {
+        const userName = user?.username || user?.email?.split('@')[0] || 'Usuario';
     const incomeGoal = monthData.income > 0 ? monthData.income * 1.2 : 0;
     const expenseGoal = monthData.expenses > 0 ? monthData.expenses * 1.1 : 0;
     const savingsGoal = monthData.balance > 0 ? monthData.balance * 1.5 : 0;
@@ -499,14 +502,14 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="flex items-center gap-4">
               <div className="relative" ref={profileMenuRef}>
-                <button 
-                  onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium">
-                    U
-                  </div>
-                </button>
+                    <button 
+                      onClick={() => setShowProfileMenu(!showProfileMenu)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium">
+                        {user?.username?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
+                      </div>
+                    </button>
                 
                 {showProfileMenu && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">

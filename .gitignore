@@ -56,3 +56,9 @@ __mocks__/
 .vite/
 .tailwind/
 postcss.config.cjs.timestamp-*
+
+# Vercel
+.vercel
+
+# Test coverage
+.nyc_output/

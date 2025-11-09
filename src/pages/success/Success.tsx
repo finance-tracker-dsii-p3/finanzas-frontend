@@ -6,9 +6,10 @@ import './success.css';
 const Success: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const state = location.state as { email?: string; type?: string } | null;
+  const state = location.state as { email?: string; type?: string; resetUrl?: string } | null;
   const email = state?.email || '';
   const type = state?.type || 'forgot';
+  const resetUrl = state?.resetUrl;
 
   const isResetSuccess = type === 'reset';
 
@@ -36,7 +37,21 @@ const Success: React.FC = () => {
               <p className="text-sm text-blue-800 mb-2">
                 <strong>📧 Correo enviado a:</strong>
               </p>
-              <p className="text-sm text-blue-900 font-medium">{email}</p>
+              <p className="text-sm text-blue-900 font-medium mb-3">{email}</p>
+              {resetUrl && (
+                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                  <p className="text-xs text-yellow-900 mb-2 font-semibold">🔧 Enlace de desarrollo:</p>
+                  <a 
+                    href={resetUrl} 
+                    className="text-xs text-blue-600 hover:text-blue-700 break-all underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {resetUrl}
+                  </a>
+                  <p className="text-xs text-yellow-800 mt-2">Copia y pega este enlace en tu navegador</p>
+                </div>
+              )}
             </div>
           )}
 

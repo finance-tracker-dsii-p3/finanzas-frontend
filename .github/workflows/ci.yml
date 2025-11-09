@@ -1,0 +1,105 @@
+name: CI - Integración Continua
+
+on:
+  push:
+    branches: [ main, develop, master ]
+  pull_request:
+    branches: [ main, develop, master ]
+
+jobs:
+  lint-and-type-check:
+    name: Lint y Type Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Instalar dependencias
+        run: npm ci
+      
+      - name: Ejecutar ESLint
+        run: npm run lint || echo "⚠️ ESLint no configurado, saltando..."
+        continue-on-error: true
+      
+      - name: Verificar tipos TypeScript
+        run: npx tsc --noEmit
+
+  test:
+    name: Ejecutar Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Instalar dependencias
+        run: npm ci
+      
+      - name: Ejecutar tests
+        run: npm run test:run
+      
+      - name: Generar reporte de cobertura
+        run: npm run test:coverage || echo "Cobertura no disponible"
+        continue-on-error: true
+
+  build:
+    name: Build del proyecto
+    runs-on: ubuntu-latest
+    needs: [lint-and-type-check, test]
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Instalar dependencias
+        run: npm ci
+      
+      - name: Build del proyecto
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || 'http://localhost:8000' }}
+      
+      - name: Subir artefactos de build
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  security-audit:
+    name: Auditoría de seguridad
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Auditoría de seguridad npm
+        run: npm audit --audit-level=moderate || true
+        continue-on-error: true
+

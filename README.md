@@ -11,6 +11,7 @@ Este repositorio corresponde al **Frontend** del proyecto *Finance Tracker* del 
 **Backend:** Django REST Framework
 **Base de Datos:** PostgreSQL  
 **Despliegue:** Vercel (frontend) y Render (backend)
+**Testing:** Vitest, React Testing Library
 
 ---
 
@@ -44,6 +45,17 @@ git checkout develop
 npm install
 ```
 
+### Configuración de Variables de Entorno
+
+Crea un archivo `.env` en la raíz del proyecto:
+
+```bash
+# URL del backend API
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+**Nota:** Si no defines `VITE_API_BASE_URL`, por defecto usará `http://localhost:8000`.
+
 ---
 
 ## Ejecución del Proyecto
@@ -72,6 +84,41 @@ npm run preview
 
 ---
 
+## Testing
+
+### Ejecutar tests
+
+```bash
+# Ejecutar tests en modo watch
+npm run test
+
+# Ejecutar tests una vez
+npm run test:run
+
+# Ejecutar tests con UI
+npm run test:ui
+
+# Ejecutar tests con cobertura
+npm run test:coverage
+```
+
+### Estructura de tests
+
+Los tests están organizados junto a los componentes:
+
+```
+src/
+  pages/
+    login/
+      Login.tsx
+      Login.test.tsx
+    register/
+      Register.tsx
+      Register.test.tsx
+```
+
+---
+
 ## Estructura del Proyecto
 
 ```
@@ -81,6 +128,7 @@ src/
  ├─ layouts/           → Plantillas y estructura de vistas
  ├─ pages/             → Páginas principales (Login, Register, Home, etc.)
  ├─ services/          → Comunicación con la API
+ ├─ test/              → Utilidades y configuración de tests
  ├─ types/             → Interfaces y tipos TypeScript
  ├─ utils/             → Funciones auxiliares y helpers
  ├─ App.tsx            → Rutas principales y layout base
@@ -99,13 +147,17 @@ src/
 
 2. **Implementar la funcionalidad** (por ejemplo: página de registro o login).  
 3. **Probar localmente** ejecutando `npm run dev`.  
-4. **Hacer commit y push**:
+4. **Ejecutar tests** antes de hacer commit:
+   ```bash
+   npm run test:run
+   ```
+5. **Hacer commit y push**:
    ```bash
    git add .
    git commit -m "HU-01: Implementar pantalla de login"
    git push origin feature/HU-01-login-usuario
    ```
-5. **Crear un Pull Request** para fusionar con `develop`.
+6. **Crear un Pull Request** para fusionar con `develop`.
 
 ---
 
@@ -128,6 +180,46 @@ src/
 | `npm run build` | Genera build de producción |
 | `npm run preview` | Previsualiza la build |
 | `npm run lint` | Ejecuta ESLint para verificar el código |
+| `npm run lint:fix` | Corrige errores de ESLint automáticamente |
+| `npm run type-check` | Verifica tipos TypeScript |
+| `npm run format` | Formatea el código con Prettier |
+| `npm run format:check` | Verifica el formato del código |
+| `npm run test` | Ejecuta tests en modo watch |
+| `npm run test:run` | Ejecuta tests una vez |
+| `npm run test:coverage` | Ejecuta tests con reporte de cobertura |
+
+---
+
+## 🚀 CI/CD (Integración y Despliegue Continuo)
+
+Este proyecto está configurado con **CI/CD automatizado** usando GitHub Actions y Vercel.
+
+### ✅ Integración Continua (CI)
+
+Cada vez que haces push o creas un Pull Request, se ejecutan automáticamente:
+
+- ✅ **Linting** con ESLint
+- ✅ **Verificación de tipos** TypeScript
+- ✅ **Tests automatizados** (Login, Register, etc.)
+- ✅ **Build del proyecto**
+- ✅ **Auditoría de seguridad** npm
+
+### 🚢 Despliegue Continuo (CD)
+
+- **Producción**: Se despliega automáticamente en Vercel cuando haces merge a `main` o `master`
+- **Preview**: Cada Pull Request genera un preview automático en Vercel
+
+### 📚 Documentación Completa
+
+Para más detalles sobre la configuración de CI/CD, consulta el archivo **[DEPLOYMENT.md](./DEPLOYMENT.md)**
+
+### Configuración Rápida
+
+1. **Conecta tu repositorio en Vercel**: [vercel.com](https://vercel.com)
+2. **Configura los secrets en GitHub**:
+   - Ve a Settings → Secrets and variables → Actions
+   - Agrega: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+3. **¡Listo!** Cada push a `main` desplegará automáticamente
 
 ---
 

@@ -1,0 +1,72 @@
+name: CD - Despliegue Continuo (Simple)
+
+on:
+  push:
+    branches: [ main, develop, master ]
+  workflow_dispatch:
+
+jobs:
+  deploy-production:
+    name: Desplegar en Producción (main/master)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Instalar Vercel CLI
+        run: npm install --global vercel@latest
+      
+      - name: Instalar dependencias
+        run: npm ci
+      
+      - name: Build del proyecto
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+      
+      - name: Desplegar en Vercel (Producción)
+        run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  deploy-staging:
+    name: Desplegar en Staging (develop)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Instalar Vercel CLI
+        run: npm install --global vercel@latest
+      
+      - name: Instalar dependencias
+        run: npm ci
+      
+      - name: Build del proyecto
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL_STAGING || secrets.VITE_API_BASE_URL }}
+      
+      - name: Desplegar en Vercel (Preview/Staging)
+        run: vercel --token=${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+

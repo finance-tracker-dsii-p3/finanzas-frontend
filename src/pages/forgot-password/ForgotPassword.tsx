@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Mail, Lock, ArrowLeft } from 'lucide-react';
+import { Mail, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '../../services/authService';
 import './forgot-password.css';
 
 const ForgotPassword: React.FC = () => {
@@ -8,13 +9,34 @@ const ForgotPassword: React.FC = () => {
   const [formData, setFormData] = useState({
     email: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<string>('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Lógica de recuperación aquí
-    console.log('Forgot Password:', formData);
-    // Redirigir a la página de éxito
-    navigate('/success', { state: { email: formData.email, type: 'forgot' } });
+    setError('');
+    setSuccess('');
+    setIsLoading(true);
+
+    try {
+      const response = await authService.requestPasswordReset({ email: formData.email });
+      
+      if (response.exists) {
+        if (response.reset_url) {
+          setSuccess(`Enlace de desarrollo: ${response.reset_url}`);
+        } else {
+          setSuccess('Si el email existe, recibirás un enlace de restablecimiento en tu correo.');
+        }
+        navigate('/success', { state: { email: formData.email, type: 'forgot', resetUrl: response.reset_url } });
+      } else {
+        setError('El email no existe en la base de datos');
+      }
+    } catch (error: any) {
+      setError(error.message || 'Error al solicitar restablecimiento. Por favor intenta nuevamente.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -39,6 +61,18 @@ const ForgotPassword: React.FC = () => {
             </p>
           </div>
 
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm text-green-800">{success}</p>
+            </div>
+          )}
+
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -59,9 +93,10 @@ const ForgotPassword: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Enviar instrucciones
+              {isLoading ? 'Enviando...' : 'Enviar instrucciones'}
             </button>
           </form>
 

@@ -1,0 +1,40 @@
+name: Deploy Preview
+
+on:
+  pull_request:
+    branches: [ main, develop, master ]
+
+jobs:
+  preview:
+    name: Preview del PR
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Instalar dependencias
+        run: npm ci
+      
+      - name: Build del proyecto
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || 'http://localhost:8000' }}
+      
+      - name: Comentar en el PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ Build exitoso. El preview estará disponible cuando se despliegue en Vercel.'
+            })
+
