@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Download, FileText, Target, Activity, PieChart, TrendingUp, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Download, FileText, Target, Activity, PieChart } from 'lucide-react';
 import './reports.css';
 
 interface ReportsProps {
@@ -23,15 +23,15 @@ interface MonthComparison {
 const Reports: React.FC<ReportsProps> = ({ showTaxes, setShowTaxes, onBack }) => {
   const [reportPeriod, setReportPeriod] = useState<'month' | 'quarter' | 'year' | 'custom'>('month');
   const [compareMode, setCompareMode] = useState(false);
-  const [topCategories, setTopCategories] = useState<TopCategory[]>([]);
-  const [monthComparison, setMonthComparison] = useState<MonthComparison[]>([]);
-  const [summary, setSummary] = useState({
+  const [topCategories] = useState<TopCategory[]>([]);
+  const [monthComparison] = useState<MonthComparison[]>([]);
+  const [summary] = useState({
     income: 0,
     expenses: 0,
     balance: 0,
     savingsRate: 0
   });
-  const [cashFlow, setCashFlow] = useState<number[]>([]);
+  const [cashFlow] = useState<number[]>([]);
 
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('es-CO', {

@@ -7,7 +7,7 @@ interface User {
   username: string;
   email: string;
   role: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface AuthContextType {
@@ -55,13 +55,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const login = async (username: string, password: string) => {
-    try {
-      const response: LoginResponse = await authService.login({ username, password });
-      setUser(response.user);
-      navigate('/dashboard');
-    } catch (error: any) {
-      throw error;
-    }
+    const response: LoginResponse = await authService.login({ username, password });
+    setUser(response.user);
+    navigate('/dashboard');
   };
 
   const logout = async () => {
@@ -93,6 +89,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

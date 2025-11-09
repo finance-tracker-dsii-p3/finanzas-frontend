@@ -22,8 +22,8 @@ interface BudgetsProps {
 }
 
 const Budgets: React.FC<BudgetsProps> = ({ showTaxes, setShowTaxes, selectedMonth, setSelectedMonth, onBack }) => {
-  const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([]);
-  const [summary, setSummary] = useState({
+  const [budgetCategories] = useState<BudgetCategory[]>([]);
+  const [summary] = useState({
     totalBudgeted: 0,
     totalSpent: 0,
     available: 0

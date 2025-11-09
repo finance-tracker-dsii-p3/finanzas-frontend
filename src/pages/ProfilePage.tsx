@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Mail, Phone, MapPin, Lock, Eye, EyeOff, Save, X, Camera, CheckCircle, Trash2, AlertTriangle, Loader2, LogOut } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Lock, Eye, EyeOff, Save, X, Camera, CheckCircle, Trash2, Loader2, LogOut } from 'lucide-react';
 import { authService } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import './profile.css';
@@ -69,8 +69,9 @@ export const ProfilePage: React.FC = () => {
         phone: profileData.phone || '',
         identification: profileData.identification || ''
       });
-    } catch (error: any) {
-      setProfileError(error.message || 'Error al cargar el perfil');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al cargar el perfil';
+      setProfileError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -80,7 +81,7 @@ export const ProfilePage: React.FC = () => {
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
-    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
     const hasMinLength = password.length >= 8;
     
     return {
@@ -110,8 +111,9 @@ export const ProfilePage: React.FC = () => {
       });
       setProfileSuccess('Perfil actualizado exitosamente');
       setTimeout(() => setProfileSuccess(''), 3000);
-    } catch (error: any) {
-      setProfileError(error.message || 'Error al actualizar el perfil');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al actualizar el perfil';
+      setProfileError(errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -146,8 +148,9 @@ export const ProfilePage: React.FC = () => {
         confirmPassword: ''
       });
       setTimeout(() => setPasswordSuccess(''), 3000);
-    } catch (error: any) {
-      setPasswordError(error.message || 'Error al cambiar la contraseña');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al cambiar la contraseña';
+      setPasswordError(errorMessage);
     } finally {
       setIsChangingPassword(false);
     }

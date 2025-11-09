@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, CreditCard, TrendingUp, TrendingDown, Calendar, AlertCircle, DollarSign, Percent, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, CreditCard, TrendingUp, TrendingDown, Calendar, DollarSign, Percent, Clock } from 'lucide-react';
 import InstallmentCalendar from '../../components/InstallmentCalendar';
 import './card-detail.css';
 
@@ -36,9 +36,9 @@ interface CardDetailProps {
 }
 
 const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
-  const [installmentPlans, setInstallmentPlans] = useState<InstallmentPlan[]>([]);
-  const [currentMonthInterest, setCurrentMonthInterest] = useState(0);
-  const [pendingPayments, setPendingPayments] = useState(0);
+  const [installmentPlans] = useState<InstallmentPlan[]>([]);
+  const [currentMonthInterest] = useState(0);
+  const [pendingPayments] = useState(0);
   const [selectedPlan, setSelectedPlan] = useState<InstallmentPlan | null>(null);
 
   const formatCurrency = (amount: number, currency: string = 'COP'): string => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { XCircle, Calendar, DollarSign, Percent, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { XCircle, DollarSign, Percent, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import './InstallmentCalendar.css';
 
 interface Installment {

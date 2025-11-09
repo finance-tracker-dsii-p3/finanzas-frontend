@@ -38,7 +38,7 @@ const ResetPassword: React.FC = () => {
         } else {
           setError('Token inválido o expirado');
         }
-      } catch (error: any) {
+      } catch {
         setError('Error al validar el token. Por favor solicita un nuevo enlace.');
       } finally {
         setIsValidating(false);
@@ -52,7 +52,7 @@ const ResetPassword: React.FC = () => {
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
-    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
     const hasMinLength = password.length >= 8;
     
     return {
@@ -96,8 +96,9 @@ const ResetPassword: React.FC = () => {
       });
 
       navigate('/success', { state: { type: 'reset' } });
-    } catch (error: any) {
-      setError(error.message || 'Error al restablecer contraseña. Por favor intenta nuevamente.');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al restablecer contraseña. Por favor intenta nuevamente.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

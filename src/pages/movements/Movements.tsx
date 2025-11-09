@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, Download, Plus, Edit2, Trash2, MoreVertical, AlertCircle, PieChart, FileText, CreditCard, Percent, ArrowLeft, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { Search, Filter, Download, Plus, Edit2, Trash2, MoreVertical, AlertCircle, FileText, CreditCard, Percent, ArrowLeft, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import MovementDetailModal from '../../components/MovementDetailModal';
 import NewMovementModal from '../../components/NewMovementModal';
 import './movements.css';
@@ -32,8 +32,8 @@ interface MovementsProps {
 const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }) => {
   const [selectedMovement, setSelectedMovement] = useState<Movement | null>(null);
   const [showNewMovementModal, setShowNewMovementModal] = useState(false);
-  const [movements, setMovements] = useState<Movement[]>([]);
-  const [summary, setSummary] = useState({
+  const [movements] = useState<Movement[]>([]);
+  const [summary] = useState({
     income: 0,
     expenses: 0,
     balance: 0,

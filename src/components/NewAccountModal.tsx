@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { XCircle, Building2, Wallet, CreditCard, Banknote, DollarSign, Eye, EyeOff } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { XCircle, Building2, Wallet, CreditCard, Banknote, DollarSign } from 'lucide-react';
 
 interface Account {
   id?: number;
@@ -22,22 +22,9 @@ interface NewAccountModalProps {
 }
 
 const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onSave }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    type: 'bank' as Account['type'],
-    bankName: '',
-    accountNumber: '',
-    balance: '',
-    creditLimit: '',
-    currency: 'COP',
-    isActive: true,
-    showBalance: true,
-    color: '#3b82f6'
-  });
-
-  useEffect(() => {
+  const [formData, setFormData] = useState(() => {
     if (account) {
-      setFormData({
+      return {
         name: account.name,
         type: account.type,
         bankName: account.bankName || '',
@@ -48,7 +35,43 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
         isActive: account.isActive,
         showBalance: account.showBalance,
         color: account.color
-      });
+      };
+    }
+    return {
+      name: '',
+      type: 'bank' as Account['type'],
+      bankName: '',
+      accountNumber: '',
+      balance: '',
+      creditLimit: '',
+      currency: 'COP',
+      isActive: true,
+      showBalance: true,
+      color: '#3b82f6'
+    };
+  });
+
+  const prevAccountIdRef = useRef<number | undefined>(account?.id);
+  
+  // Actualizar formData cuando account cambia
+  useEffect(() => {
+    if (account && account.id !== prevAccountIdRef.current) {
+      prevAccountIdRef.current = account.id;
+      // Usar setTimeout para evitar setState síncrono en efecto
+      setTimeout(() => {
+        setFormData({
+          name: account.name,
+          type: account.type,
+          bankName: account.bankName || '',
+          accountNumber: account.accountNumber || '',
+          balance: account.balance.toString(),
+          creditLimit: account.creditLimit?.toString() || '',
+          currency: account.currency,
+          isActive: account.isActive,
+          showBalance: account.showBalance,
+          color: account.color
+        });
+      }, 0);
     }
   }, [account]);
 

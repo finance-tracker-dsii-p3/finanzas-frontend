@@ -24,7 +24,7 @@ export interface LoginResponse {
     username: string;
     email: string;
     role: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -228,7 +228,7 @@ export const authService = {
     return localStorage.getItem('token');
   },
 
-  getUser(): any | null {
+  getUser(): LoginResponse['user'] | null {
     const userStr = localStorage.getItem('user');
     return userStr ? JSON.parse(userStr) : null;
   },

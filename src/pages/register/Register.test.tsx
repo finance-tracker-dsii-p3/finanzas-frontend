@@ -15,8 +15,6 @@ vi.mock('../../services/authService', () => ({
 }));
 
 describe('Register', () => {
-  const mockRegister = vi.mocked(authService.register);
-
   beforeEach(() => {
     vi.clearAllMocks();
   });

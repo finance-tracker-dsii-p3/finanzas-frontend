@@ -25,7 +25,7 @@ const Register: React.FC = () => {
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
-    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
     const hasMinLength = password.length >= 8;
     
     return {
@@ -78,8 +78,9 @@ const Register: React.FC = () => {
           message: 'Usuario registrado exitosamente. Ya puedes iniciar sesión.' 
         } 
       });
-    } catch (error: any) {
-      setError(error.message || 'Error al registrar usuario. Por favor intenta nuevamente.');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al registrar usuario. Por favor intenta nuevamente.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

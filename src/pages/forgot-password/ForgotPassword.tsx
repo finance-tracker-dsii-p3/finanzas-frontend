@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, ArrowLeft } from 'lucide-react';
+import { Mail, ArrowLeft, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import './forgot-password.css';
@@ -32,8 +32,9 @@ const ForgotPassword: React.FC = () => {
       } else {
         setError('El email no existe en la base de datos');
       }
-    } catch (error: any) {
-      setError(error.message || 'Error al solicitar restablecimiento. Por favor intenta nuevamente.');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al solicitar restablecimiento. Por favor intenta nuevamente.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
