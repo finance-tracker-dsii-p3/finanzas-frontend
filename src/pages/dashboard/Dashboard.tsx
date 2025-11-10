@@ -37,7 +37,6 @@ const Dashboard: React.FC = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
-  // Estos datos se pasan como props a DashboardView
   const [monthData] = useState<MonthData>({
     income: 0,
     expenses: 0,
@@ -138,25 +137,25 @@ const Dashboard: React.FC = () => {
               <div className="relative" ref={profileMenuRef}>
                     <button 
                       onClick={() => setShowProfileMenu(!showProfileMenu)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="profile-button p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     >
-                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium">
+                      <div className="profile-button-avatar w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium">
                         {user?.username?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
                       </div>
                     </button>
                 
                 {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <div className="profile-menu absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
                     <button
                       onClick={handleViewProfile}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      className="profile-menu-item w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                     >
                       <User className="w-4 h-4" />
                       Ver perfil
                     </button>
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      className="profile-menu-item w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
                       Cerrar sesión
@@ -380,36 +379,6 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                 )}
               </div>
             )}
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Activity className="w-5 h-5" />
-            Resumen Analítico
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <div>
-                <p className="text-sm text-gray-600">Total Ingresos</p>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(monthData.income)}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-              <div>
-                <p className="text-sm text-gray-600">Total Gastos</p>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(monthData.expenses)}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-              <div>
-                <p className="text-sm text-gray-600">Total Ahorros</p>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(monthData.balance)}</p>
-              </div>
-            </div>
           </div>
         </div>
 

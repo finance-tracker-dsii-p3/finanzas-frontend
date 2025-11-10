@@ -4,7 +4,6 @@ import userEvent from '@testing-library/user-event';
 import Login from './Login';
 import * as authContext from '../../context/AuthContext';
 
-// Mock del contexto de autenticación
 const mockLogin = vi.fn();
 const mockLogout = vi.fn();
 const mockCheckAuth = vi.fn();
@@ -17,7 +16,6 @@ vi.mock('../../context/AuthContext', async (importOriginal) => {
   };
 });
 
-// Mock del componente FinanceAnimation
 vi.mock('../../components/FinanceAnimation', () => ({
   FinanceAnimation: () => <div data-testid="finance-animation">Animation</div>,
 }));
@@ -26,7 +24,6 @@ describe('Login', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
-    // Mock de useAuth
     vi.mocked(authContext.useAuth).mockReturnValue({
       user: null,
       isAuthenticated: false,

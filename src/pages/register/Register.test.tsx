@@ -4,7 +4,6 @@ import userEvent from '@testing-library/user-event';
 import Register from './Register';
 import { authService } from '../../services/authService';
 
-// Mock del servicio de autenticación
 vi.mock('../../services/authService', () => ({
   authService: {
     register: vi.fn(),
@@ -55,11 +54,9 @@ describe('Register', () => {
     
     const passwordInput = screen.getByLabelText(/^contraseña$/i);
     
-    // Contraseña débil
     await user.type(passwordInput, 'weak');
     expect(screen.getByText(/mínimo 8 caracteres/i)).toBeInTheDocument();
     
-    // Contraseña más fuerte
     await user.clear(passwordInput);
     await user.type(passwordInput, 'Password123!');
     
@@ -115,7 +112,6 @@ describe('Register', () => {
     
     render(<Register />);
     
-    // Llenar el formulario
     await user.type(screen.getByLabelText(/^nombre$/i), 'Juan');
     await user.type(screen.getByLabelText(/apellido/i), 'Pérez');
     await user.type(screen.getByLabelText(/número de identificación/i), '1234567890');
@@ -150,7 +146,6 @@ describe('Register', () => {
     
     render(<Register />);
     
-    // Llenar el formulario
     await user.type(screen.getByLabelText(/^nombre$/i), 'Juan');
     await user.type(screen.getByLabelText(/apellido/i), 'Pérez');
     await user.type(screen.getByLabelText(/número de identificación/i), '1234567890');
@@ -173,7 +168,6 @@ describe('Register', () => {
     
     render(<Register />);
     
-    // Llenar el formulario
     await user.type(screen.getByLabelText(/^nombre$/i), 'Juan');
     await user.type(screen.getByLabelText(/apellido/i), 'Pérez');
     await user.type(screen.getByLabelText(/número de identificación/i), '1234567890');

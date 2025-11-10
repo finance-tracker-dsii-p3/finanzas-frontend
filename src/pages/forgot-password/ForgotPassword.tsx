@@ -11,26 +11,19 @@ const ForgotPassword: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
     setIsLoading(true);
 
     try {
       const response = await authService.requestPasswordReset({ email: formData.email });
       
-      if (response.exists) {
-        if (response.reset_url) {
-          setSuccess(`Enlace de desarrollo: ${response.reset_url}`);
-        } else {
-          setSuccess('Si el email existe, recibirás un enlace de restablecimiento en tu correo.');
-        }
+      if (response.reset_url) {
         navigate('/success', { state: { email: formData.email, type: 'forgot', resetUrl: response.reset_url } });
       } else {
-        setError('El email no existe en la base de datos');
+        navigate('/success', { state: { email: formData.email, type: 'forgot' } });
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error al solicitar restablecimiento. Por favor intenta nuevamente.';
@@ -47,8 +40,9 @@ const ForgotPassword: React.FC = () => {
           <button
             onClick={() => navigate('/login')}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-6"
+            aria-label="Volver a la página de inicio de sesión"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5" aria-hidden="true" />
             <span className="font-medium">Volver</span>
           </button>
 
@@ -62,40 +56,39 @@ const ForgotPassword: React.FC = () => {
             </p>
           </div>
 
-          {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
-
-          {success && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm text-green-800">{success}</p>
-            </div>
-          )}
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="forgot-email" className="block text-sm font-medium text-gray-700 mb-2">
                 Correo electrónico
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden="true" />
                 <input
+                  id="forgot-email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="tu@email.com"
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   required
+                  aria-required="true"
+                  aria-describedby={error ? "forgot-email-error" : undefined}
                 />
               </div>
+              {error && (
+                <p id="forgot-email-error" className="mt-1 text-sm text-red-600" role="alert">
+                  {error}
+                </p>
+              )}
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              aria-busy={isLoading}
+              aria-disabled={isLoading}
             >
               {isLoading ? 'Enviando...' : 'Enviar instrucciones'}
             </button>

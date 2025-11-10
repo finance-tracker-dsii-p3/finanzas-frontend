@@ -168,8 +168,8 @@ export const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <div className="profile-container min-h-screen bg-gray-50">
+      <header className="profile-header bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-8">
@@ -196,19 +196,19 @@ export const ProfilePage: React.FC = () => {
               <div className="relative" ref={profileMenuRef}>
                 <button 
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="profile-button p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium">
+                  <div className="profile-button-avatar w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium">
                     {personalInfo.first_name?.charAt(0)?.toUpperCase() || personalInfo.username?.charAt(0)?.toUpperCase() || authUser?.username?.charAt(0)?.toUpperCase() || authUser?.email?.charAt(0)?.toUpperCase() || 'U'}
                   </div>
                 </button>
                 
                 {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <div className="profile-menu absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
                     <Link
                       to="/profile"
                       onClick={() => setShowProfileMenu(false)}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      className="profile-menu-item w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                     >
                       <User className="w-4 h-4" />
                       Ver perfil
@@ -216,14 +216,14 @@ export const ProfilePage: React.FC = () => {
                     <Link
                       to="/dashboard"
                       onClick={() => setShowProfileMenu(false)}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      className="profile-menu-item w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                     >
                       <ArrowLeft className="w-4 h-4" />
                       Ir al Dashboard
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      className="profile-menu-item w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
                       Cerrar sesión
@@ -237,26 +237,26 @@ export const ProfilePage: React.FC = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link to="/dashboard" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-6">
+        <Link to="/dashboard" className="profile-back-link flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-6">
           <ArrowLeft className="w-5 h-5" />
           <span>Volver al inicio</span>
         </Link>
 
-        <div className="mb-6">
+        <div className="profile-title mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Mi Perfil</h1>
           <p className="text-gray-600">Gestiona tu información personal y preferencias</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="profile-card bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex flex-col items-center">
-                <div className="relative mb-4">
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                <div className="profile-avatar-container relative mb-4">
+                  <div className="profile-avatar w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                     {personalInfo.first_name?.charAt(0)?.toUpperCase() || personalInfo.username?.charAt(0)?.toUpperCase() || 'U'}
                     {personalInfo.last_name?.charAt(0)?.toUpperCase() || ''}
                   </div>
-                  <button className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors">
+                  <button className="profile-avatar-button absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors">
                     <Camera className="w-4 h-4" />
                   </button>
                 </div>
@@ -290,29 +290,29 @@ export const ProfilePage: React.FC = () => {
 
           <div className="lg:col-span-2 space-y-6">
             {isLoading ? (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-                <p className="text-gray-600">Cargando perfil...</p>
+              <div className="profile-loading-container bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+                <Loader2 className="profile-loading-icon w-8 h-8 text-blue-600 mx-auto mb-4" />
+                <p className="profile-loading-text text-gray-600">Cargando perfil...</p>
               </div>
             ) : (
               <>
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="profile-section profile-card bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Información Personal</h3>
                   
                   {profileError && (
-                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="profile-error-message mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                       <p className="text-sm text-red-800">{profileError}</p>
                     </div>
                   )}
 
                   {profileSuccess && (
-                    <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="profile-success-message mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
                       <p className="text-sm text-green-800">{profileSuccess}</p>
                     </div>
                   )}
 
                   <form onSubmit={handlePersonalInfoSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="profile-form-group grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
                         <div className="relative">
@@ -321,7 +321,7 @@ export const ProfilePage: React.FC = () => {
                             type="text"
                             value={personalInfo.first_name}
                             onChange={(e) => setPersonalInfo({ ...personalInfo, first_name: e.target.value })}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className={`profile-form-input w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${profileError ? 'profile-form-input-error' : ''}`}
                             required
                           />
                         </div>
@@ -335,14 +335,14 @@ export const ProfilePage: React.FC = () => {
                             type="text"
                             value={personalInfo.last_name}
                             onChange={(e) => setPersonalInfo({ ...personalInfo, last_name: e.target.value })}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className={`profile-form-input w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${profileError ? 'profile-form-input-error' : ''}`}
                             required
                           />
                         </div>
                       </div>
                     </div>
 
-                    <div>
+                    <div className="profile-form-group">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Nombre de usuario</label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -356,7 +356,7 @@ export const ProfilePage: React.FC = () => {
                       <p className="text-xs text-gray-500 mt-1">El nombre de usuario no se puede cambiar</p>
                     </div>
 
-                    <div>
+                    <div className="profile-form-group">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Número de identificación</label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -370,7 +370,7 @@ export const ProfilePage: React.FC = () => {
                       <p className="text-xs text-gray-500 mt-1">El número de identificación no se puede cambiar</p>
                     </div>
 
-                    <div>
+                    <div className="profile-form-group">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Correo electrónico</label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -378,13 +378,13 @@ export const ProfilePage: React.FC = () => {
                           type="email"
                           value={personalInfo.email}
                           onChange={(e) => setPersonalInfo({ ...personalInfo, email: e.target.value })}
-                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className={`profile-form-input w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${profileError ? 'profile-form-input-error' : ''}`}
                           required
                         />
                       </div>
                     </div>
 
-                    <div>
+                    <div className="profile-form-group">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -393,7 +393,7 @@ export const ProfilePage: React.FC = () => {
                           value={personalInfo.phone}
                           onChange={(e) => setPersonalInfo({ ...personalInfo, phone: e.target.value })}
                           placeholder="+57 300 123 4567"
-                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="profile-form-input w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
                     </div>
@@ -402,7 +402,7 @@ export const ProfilePage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={isSaving}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={`profile-button-submit flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed ${isSaving ? 'profile-button-submit-loading' : ''}`}
                       >
                         {isSaving ? (
                           <>
@@ -428,17 +428,17 @@ export const ProfilePage: React.FC = () => {
                   </form>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="profile-section profile-card bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Cambiar Contraseña</h3>
                   
                   {passwordError && (
-                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="profile-error-message mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                       <p className="text-sm text-red-800">{passwordError}</p>
                     </div>
                   )}
 
                   {passwordSuccess && (
-                    <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="profile-success-message mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
                       <p className="text-sm text-green-800">{passwordSuccess}</p>
                     </div>
                   )}
@@ -539,7 +539,7 @@ export const ProfilePage: React.FC = () => {
                     <button
                       type="submit"
                       disabled={isChangingPassword || !passwordValidation.isValid || passwordData.newPassword !== passwordData.confirmPassword}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className={`profile-button-submit flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed ${isChangingPassword ? 'profile-button-submit-loading' : ''}`}
                     >
                       {isChangingPassword ? (
                         <>
@@ -558,14 +558,14 @@ export const ProfilePage: React.FC = () => {
               </>
             )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-red-200 p-6">
+            <div className="profile-danger-zone bg-white rounded-xl shadow-sm border border-red-200 p-6">
               <h3 className="text-lg font-semibold text-red-900 mb-2">Zona de Peligro</h3>
               <p className="text-sm text-gray-600 mb-4">
                 Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, ten cuidado.
               </p>
               <button
                 onClick={handleDeleteAccount}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                className="profile-danger-button flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
               >
                 <Trash2 className="w-4 h-4" />
                 Eliminar mi cuenta

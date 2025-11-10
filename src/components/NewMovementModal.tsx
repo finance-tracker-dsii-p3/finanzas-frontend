@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { XCircle, TrendingDown, TrendingUp, ArrowRight, CreditCard } from 'lucide-react';
+import './NewMovementModal.css';
 
 interface NewMovementModalProps {
   onClose: () => void;

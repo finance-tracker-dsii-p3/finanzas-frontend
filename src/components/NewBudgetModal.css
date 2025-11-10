@@ -1,0 +1,165 @@
+@keyframes newbudgetmodalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes newbudgetmodalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes newbudgetmodalButtonPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes newbudgetmodalInputFocus {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  }
+}
+
+@keyframes newbudgetmodalShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+.newbudgetmodal-backdrop {
+  animation: newbudgetmodalFadeIn 0.3s ease-out;
+}
+
+.newbudgetmodal-container {
+  animation: newbudgetmodalSlideUp 0.4s ease-out;
+}
+
+.newbudgetmodal-close-button {
+  transition: all 0.3s ease;
+}
+
+.newbudgetmodal-close-button:hover {
+  transform: rotate(90deg) scale(1.1);
+  color: #ef4444;
+}
+
+.newbudgetmodal-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.newbudgetmodal-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.newbudgetmodal-button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.newbudgetmodal-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+}
+
+.newbudgetmodal-button:active {
+  transform: translateY(0);
+}
+
+.newbudgetmodal-button-loading {
+  animation: newbudgetmodalButtonPulse 1.5s ease-in-out infinite;
+}
+
+.newbudgetmodal-input {
+  transition: all 0.3s ease;
+}
+
+.newbudgetmodal-input:focus {
+  animation: newbudgetmodalInputFocus 0.3s ease-out;
+  transform: translateY(-1px);
+}
+
+.newbudgetmodal-input-error {
+  animation: newbudgetmodalShake 0.5s ease-out;
+  border-color: #ef4444;
+}
+
+.newbudgetmodal-category-button {
+  transition: all 0.3s ease;
+}
+
+.newbudgetmodal-category-button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.newbudgetmodal-category-button.active {
+  animation: newbudgetmodalButtonPulse 0.6s ease-out;
+}
+
+.newbudgetmodal-color-option {
+  transition: all 0.3s ease;
+}
+
+.newbudgetmodal-color-option:hover {
+  transform: scale(1.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.newbudgetmodal-color-option.selected {
+  animation: newbudgetmodalButtonPulse 0.4s ease-out;
+  transform: scale(1.15);
+}
+
+.newbudgetmodal-form-group {
+  animation: newbudgetmodalFadeIn 0.5s ease-out both;
+}
+
+.newbudgetmodal-form-group:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.newbudgetmodal-form-group:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.newbudgetmodal-form-group:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.newbudgetmodal-form-group:nth-child(4) {
+  animation-delay: 0.4s;
+}
+

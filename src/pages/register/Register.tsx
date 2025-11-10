@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Eye, EyeOff, CreditCard } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, CreditCard, Phone } from 'lucide-react';
 import { authService } from '../../services/authService';
 import './register.css';
 
@@ -16,11 +16,11 @@ const Register: React.FC = () => {
     identification: '',
     username: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: ''
   });
 
-  // Validación de contraseña
   const validatePassword = (password: string) => {
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
@@ -54,8 +54,8 @@ const Register: React.FC = () => {
       return;
     }
 
-    if (!formData.firstName || !formData.lastName || !formData.identification || !formData.username) {
-      setError('Por favor completa todos los campos');
+    if (!formData.firstName || !formData.lastName || !formData.identification || !formData.username || !formData.email) {
+      setError('Por favor completa todos los campos requeridos');
       return;
     }
 
@@ -70,6 +70,7 @@ const Register: React.FC = () => {
         first_name: formData.firstName,
         last_name: formData.lastName,
         identification: formData.identification,
+        phone: formData.phone || undefined,
         role: 'user'
       });
 
@@ -87,9 +88,9 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="register-container min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="register-form-container bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
               <img src="/logo.png" alt="eBalance" className="h-16 w-auto" />
@@ -99,27 +100,28 @@ const Register: React.FC = () => {
           </div>
 
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="register-error-message mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-800">{error}</p>
             </div>
           )}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="register-form-group grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
                   Nombre
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden="true" />
                   <input
                     id="firstName"
                     type="text"
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                     placeholder="Juan"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className={`register-form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${error ? 'register-form-input-error' : ''}`}
                     required
+                    aria-required="true"
                   />
                 </div>
               </div>
@@ -128,21 +130,22 @@ const Register: React.FC = () => {
                   Apellido
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden="true" />
                   <input
                     id="lastName"
                     type="text"
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                     placeholder="Pérez"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className={`register-form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${error ? 'register-form-input-error' : ''}`}
                     required
+                    aria-required="true"
                   />
                 </div>
               </div>
             </div>
 
-            <div>
+            <div className="register-form-group">
               <label htmlFor="identification" className="block text-sm font-medium text-gray-700 mb-2">
                 Número de identificación
               </label>
@@ -152,15 +155,18 @@ const Register: React.FC = () => {
                   id="identification"
                   type="text"
                   value={formData.identification}
-                  onChange={(e) => setFormData({ ...formData, identification: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    setFormData({ ...formData, identification: value });
+                  }}
                   placeholder="1234567890"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className={`register-form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${error ? 'register-form-input-error' : ''}`}
                   required
                 />
               </div>
             </div>
 
-            <div>
+            <div className="register-form-group">
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
                 Nombre de usuario
               </label>
@@ -172,13 +178,13 @@ const Register: React.FC = () => {
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                   placeholder="usuario123"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className={`register-form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${error ? 'register-form-input-error' : ''}`}
                   required
                 />
               </div>
             </div>
 
-            <div>
+            <div className="register-form-group">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Correo electrónico
               </label>
@@ -190,13 +196,33 @@ const Register: React.FC = () => {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="tu@email.com"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className={`register-form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${error ? 'register-form-input-error' : ''}`}
                   required
                 />
               </div>
             </div>
 
-            <div>
+            <div className="register-form-group">
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                Teléfono <span className="text-gray-400 text-xs">(opcional)</span>
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  id="phone"
+                  type="text"
+                  value={formData.phone}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    setFormData({ ...formData, phone: value });
+                  }}
+                  placeholder="3001234567"
+                  className="register-form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="register-form-group">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Contraseña
               </label>
@@ -208,7 +234,7 @@ const Register: React.FC = () => {
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="Mínimo 8 caracteres"
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className={`register-form-input w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${error ? 'register-form-input-error' : ''}`}
                   required
                 />
                 <button
@@ -221,25 +247,25 @@ const Register: React.FC = () => {
                 </button>
               </div>
               {formData.password && (
-                <div className="mt-2 space-y-1">
+                <div className="register-password-strength mt-2 space-y-1">
                   <div className="text-xs space-y-1">
-                    <div className={`flex items-center gap-2 ${passwordValidation.hasMinLength ? 'text-green-600' : 'text-gray-500'}`}>
+                    <div className={`register-password-check flex items-center gap-2 ${passwordValidation.hasMinLength ? 'register-password-check-valid text-green-600' : 'text-gray-500'}`}>
                       <span>{passwordValidation.hasMinLength ? '✓' : '○'}</span>
                       <span>Mínimo 8 caracteres</span>
                     </div>
-                    <div className={`flex items-center gap-2 ${passwordValidation.hasUpperCase ? 'text-green-600' : 'text-gray-500'}`}>
+                    <div className={`register-password-check flex items-center gap-2 ${passwordValidation.hasUpperCase ? 'register-password-check-valid text-green-600' : 'text-gray-500'}`}>
                       <span>{passwordValidation.hasUpperCase ? '✓' : '○'}</span>
                       <span>Una mayúscula</span>
                     </div>
-                    <div className={`flex items-center gap-2 ${passwordValidation.hasLowerCase ? 'text-green-600' : 'text-gray-500'}`}>
+                    <div className={`register-password-check flex items-center gap-2 ${passwordValidation.hasLowerCase ? 'register-password-check-valid text-green-600' : 'text-gray-500'}`}>
                       <span>{passwordValidation.hasLowerCase ? '✓' : '○'}</span>
                       <span>Una minúscula</span>
                     </div>
-                    <div className={`flex items-center gap-2 ${passwordValidation.hasNumber ? 'text-green-600' : 'text-gray-500'}`}>
+                    <div className={`register-password-check flex items-center gap-2 ${passwordValidation.hasNumber ? 'register-password-check-valid text-green-600' : 'text-gray-500'}`}>
                       <span>{passwordValidation.hasNumber ? '✓' : '○'}</span>
                       <span>Un número</span>
                     </div>
-                    <div className={`flex items-center gap-2 ${passwordValidation.hasSpecialChar ? 'text-green-600' : 'text-gray-500'}`}>
+                    <div className={`register-password-check flex items-center gap-2 ${passwordValidation.hasSpecialChar ? 'register-password-check-valid text-green-600' : 'text-gray-500'}`}>
                       <span>{passwordValidation.hasSpecialChar ? '✓' : '○'}</span>
                       <span>Un carácter especial</span>
                     </div>
@@ -248,7 +274,7 @@ const Register: React.FC = () => {
               )}
             </div>
 
-            <div>
+            <div className="register-form-group">
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                 Confirmar contraseña
               </label>
@@ -260,7 +286,7 @@ const Register: React.FC = () => {
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                   placeholder="Confirma tu contraseña"
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className={`register-form-input w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${formData.confirmPassword && formData.password !== formData.confirmPassword ? 'register-form-input-error' : ''}`}
                   required
                 />
                 <button
@@ -280,7 +306,9 @@ const Register: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`register-button register-gradient-button w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isLoading ? 'register-button-loading' : ''}`}
+              aria-busy={isLoading}
+              aria-disabled={isLoading}
             >
               {isLoading ? 'Creando cuenta...' : 'Crear cuenta'}
             </button>

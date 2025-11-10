@@ -1,4 +1,202 @@
+@keyframes dashboardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dashboardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes dashboardScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes dashboardPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes dashboardCardHover {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-5px);
+  }
+}
+
 .dashboard-container {
   min-height: 100vh;
+  animation: dashboardFadeIn 0.6s ease-out;
+}
+
+.dashboard-header {
+  animation: dashboardFadeIn 0.8s ease-out;
+}
+
+.dashboard-card {
+  animation: dashboardScaleIn 0.6s ease-out both;
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.dashboard-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dashboard-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.dashboard-card:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.dashboard-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.dashboard-button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.dashboard-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+}
+
+.dashboard-button:active {
+  transform: translateY(0);
+}
+
+.dashboard-section {
+  animation: dashboardSlideIn 0.8s ease-out both;
+}
+
+.dashboard-section:nth-child(1) {
+  animation-delay: 0.2s;
+}
+
+.dashboard-section:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.dashboard-section:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+.dashboard-icon {
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover .dashboard-icon {
+  animation: dashboardPulse 1s ease-in-out infinite;
+}
+
+.dashboard-loading {
+  animation: dashboardPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes dashboardProfileButtonPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes dashboardProfileMenuSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.profile-button {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.profile-button:hover {
+  transform: scale(1.05);
+  background-color: #f3f4f6;
+}
+
+.profile-button:active {
+  animation: dashboardProfileButtonPulse 0.3s ease-out;
+}
+
+.profile-button-avatar {
+  transition: all 0.3s ease;
+}
+
+.profile-button:hover .profile-button-avatar {
+  animation: dashboardProfileButtonPulse 0.6s ease-out;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.profile-menu {
+  animation: dashboardProfileMenuSlideDown 0.3s ease-out;
+}
+
+.profile-menu-item {
+  transition: all 0.2s ease;
+}
+
+.profile-menu-item:hover {
+  transform: translateX(4px);
 }
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { XCircle, Building2, Wallet, CreditCard, Banknote, DollarSign } from 'lucide-react';
+import './NewAccountModal.css';
 
 interface Account {
   id?: number;
@@ -53,11 +54,9 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
 
   const prevAccountIdRef = useRef<number | undefined>(account?.id);
   
-  // Actualizar formData cuando account cambia
   useEffect(() => {
     if (account && account.id !== prevAccountIdRef.current) {
       prevAccountIdRef.current = account.id;
-      // Usar setTimeout para evitar setState síncrono en efecto
       setTimeout(() => {
         setFormData({
           name: account.name,
@@ -170,20 +169,20 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={onClose}>
-      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+    <div className="newaccountmodal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={onClose}>
+      <div className="newaccountmodal-container bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-gray-900">
               {account ? 'Editar cuenta' : 'Nueva cuenta'}
             </h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <button onClick={onClose} className="newaccountmodal-close-button text-gray-400 hover:text-gray-600">
               <XCircle className="w-6 h-6" />
             </button>
           </div>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div>
+            <div className="newaccountmodal-form-group">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Tipo de cuenta <span className="text-red-500">*</span>
               </label>
@@ -191,9 +190,9 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                 <button
                   type="button"
                   onClick={() => handleTypeChange('bank')}
-                  className={`p-3 rounded-lg border-2 transition-colors ${
+                  className={`newaccountmodal-type-button p-3 rounded-lg border-2 transition-colors ${
                     formData.type === 'bank'
-                      ? 'border-blue-600 bg-blue-50'
+                      ? 'active border-blue-600 bg-blue-50'
                       : 'border-gray-300 hover:border-gray-400'
                   }`}
                 >
@@ -203,9 +202,9 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                 <button
                   type="button"
                   onClick={() => handleTypeChange('wallet')}
-                  className={`p-3 rounded-lg border-2 transition-colors ${
+                  className={`newaccountmodal-type-button p-3 rounded-lg border-2 transition-colors ${
                     formData.type === 'wallet'
-                      ? 'border-green-600 bg-green-50'
+                      ? 'active border-green-600 bg-green-50'
                       : 'border-gray-300 hover:border-gray-400'
                   }`}
                 >
@@ -215,9 +214,9 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                 <button
                   type="button"
                   onClick={() => handleTypeChange('credit_card')}
-                  className={`p-3 rounded-lg border-2 transition-colors ${
+                  className={`newaccountmodal-type-button p-3 rounded-lg border-2 transition-colors ${
                     formData.type === 'credit_card'
-                      ? 'border-purple-600 bg-purple-50'
+                      ? 'active border-purple-600 bg-purple-50'
                       : 'border-gray-300 hover:border-gray-400'
                   }`}
                 >
@@ -227,9 +226,9 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                 <button
                   type="button"
                   onClick={() => handleTypeChange('cash')}
-                  className={`p-3 rounded-lg border-2 transition-colors ${
+                  className={`newaccountmodal-type-button p-3 rounded-lg border-2 transition-colors ${
                     formData.type === 'cash'
-                      ? 'border-amber-600 bg-amber-50'
+                      ? 'active border-amber-600 bg-amber-50'
                       : 'border-gray-300 hover:border-gray-400'
                   }`}
                 >
@@ -239,9 +238,9 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                 <button
                   type="button"
                   onClick={() => handleTypeChange('other')}
-                  className={`p-3 rounded-lg border-2 transition-colors ${
+                  className={`newaccountmodal-type-button p-3 rounded-lg border-2 transition-colors ${
                     formData.type === 'other'
-                      ? 'border-gray-600 bg-gray-50'
+                      ? 'active border-gray-600 bg-gray-50'
                       : 'border-gray-300 hover:border-gray-400'
                   }`}
                 >
@@ -251,7 +250,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
               </div>
             </div>
 
-            <div>
+            <div className="newaccountmodal-form-group">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Nombre de la cuenta <span className="text-red-500">*</span>
               </label>
@@ -260,20 +259,20 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder={formData.type === 'bank' ? 'Ej: Cuenta Ahorros Bancolombia' : formData.type === 'wallet' ? 'Ej: Nequi Personal' : formData.type === 'credit_card' ? 'Ej: Visa Bancolombia' : 'Ej: Efectivo Casa'}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="newaccountmodal-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
 
             {(formData.type === 'bank' || formData.type === 'credit_card') && (
-              <div>
+              <div className="newaccountmodal-form-group">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Banco <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.bankName}
                   onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="newaccountmodal-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 >
                   <option value="">Seleccionar banco...</option>
@@ -285,14 +284,14 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
             )}
 
             {formData.type === 'wallet' && (
-              <div>
+              <div className="newaccountmodal-form-group">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Billetera digital
                 </label>
                 <select
                   value={formData.bankName}
                   onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="newaccountmodal-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Seleccionar billetera...</option>
                   {wallets.map(wallet => (
@@ -303,7 +302,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
             )}
 
             {(formData.type === 'bank' || formData.type === 'credit_card' || formData.type === 'wallet') && (
-              <div>
+              <div className="newaccountmodal-form-group">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Número de cuenta / Tarjeta
                 </label>
@@ -312,13 +311,13 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                   value={formData.accountNumber}
                   onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
                   placeholder={formData.type === 'credit_card' ? 'Ej: 1234 5678 9012 3456' : 'Ej: 123456789'}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
+                  className="newaccountmodal-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
                 />
               </div>
             )}
 
             {formData.type === 'credit_card' && (
-              <div>
+              <div className="newaccountmodal-form-group">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Límite de crédito
                 </label>
@@ -330,7 +329,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                     onChange={(e) => setFormData({ ...formData, creditLimit: e.target.value })}
                     placeholder="0"
                     step="1000"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="newaccountmodal-input w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 {formData.creditLimit && (
@@ -341,7 +340,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="newaccountmodal-form-group grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Saldo inicial
@@ -354,7 +353,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                     onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
                     placeholder="0"
                     step="1000"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="newaccountmodal-input w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 {formData.balance && (
@@ -371,7 +370,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                 <select
                   value={formData.currency}
                   onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="newaccountmodal-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="COP">COP - Peso Colombiano</option>
                   <option value="USD">USD - Dólar Estadounidense</option>
@@ -380,20 +379,20 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
               </div>
             </div>
 
-            <div>
+            <div className="newaccountmodal-form-group">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Color
               </label>
               <div className="flex items-center gap-3">
                 <div
-                  className="w-8 h-8 rounded-full border-2 border-gray-300 cursor-pointer"
+                  className={`newaccountmodal-color-option w-8 h-8 rounded-full border-2 border-gray-300 cursor-pointer ${formData.color === formData.color ? 'selected' : ''}`}
                   style={{ backgroundColor: formData.color }}
                 ></div>
                 <input
                   type="color"
                   value={formData.color}
                   onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                  className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                  className="newaccountmodal-color-option w-12 h-8 border border-gray-300 rounded cursor-pointer"
                 />
                 <span className="text-sm text-gray-600">{formData.color}</span>
               </div>
@@ -424,13 +423,13 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="newaccountmodal-button flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="newaccountmodal-button flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 {account ? 'Guardar cambios' : 'Crear cuenta'}
               </button>

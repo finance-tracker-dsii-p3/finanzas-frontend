@@ -1,0 +1,253 @@
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.homepage-container {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.homepage-header {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.homepage-title {
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.homepage-subtitle {
+  animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.homepage-buttons {
+  animation: fadeInUp 0.8s ease-out 0.6s both;
+}
+
+.homepage-button-primary {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.homepage-button-primary::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.homepage-button-primary:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.homepage-button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+}
+
+.homepage-button-secondary {
+  transition: all 0.3s ease;
+}
+
+.homepage-button-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2);
+  background-color: #eff6ff;
+}
+
+.homepage-feature-card {
+  animation: scaleIn 0.6s ease-out both;
+  transition: all 0.3s ease;
+}
+
+.homepage-feature-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.homepage-feature-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.homepage-feature-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.homepage-feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.homepage-feature-icon {
+  transition: all 0.3s ease;
+}
+
+.homepage-feature-card:hover .homepage-feature-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.homepage-section-card {
+  animation: slideInLeft 0.8s ease-out both;
+}
+
+.homepage-section-card:nth-child(even) {
+  animation-name: slideInRight;
+}
+
+.homepage-section-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.homepage-section-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.homepage-section-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.homepage-section-card:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.homepage-section-icon {
+  transition: all 0.3s ease;
+}
+
+.homepage-section-card:hover .homepage-section-icon {
+  transform: scale(1.1) rotate(-5deg);
+}
+
+.homepage-more-features {
+  animation: fadeInUp 0.8s ease-out 0.5s both;
+}
+
+.homepage-more-feature-item {
+  animation: scaleIn 0.5s ease-out both;
+  transition: all 0.3s ease;
+}
+
+.homepage-more-feature-item:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.homepage-more-feature-item:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.homepage-more-feature-item:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.homepage-more-feature-item:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.homepage-more-feature-item:hover {
+  transform: translateY(-5px);
+}
+
+.homepage-more-feature-icon {
+  transition: all 0.3s ease;
+}
+
+.homepage-more-feature-item:hover .homepage-more-feature-icon {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.homepage-cta {
+  animation: fadeInUp 0.8s ease-out 0.6s both;
+}
+
+.homepage-cta-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.homepage-cta-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.homepage-cta-button:hover::after {
+  width: 300px;
+  height: 300px;
+}
+
+.homepage-cta-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+

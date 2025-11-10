@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { XCircle, Target, DollarSign } from 'lucide-react';
+import './NewBudgetModal.css';
 
 interface NewBudgetModalProps {
   onClose: () => void;

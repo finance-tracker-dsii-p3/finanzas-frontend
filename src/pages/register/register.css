@@ -1,14 +1,109 @@
+@keyframes registerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes registerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes registerButtonPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes registerInputFocus {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  }
+}
+
+@keyframes registerShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes registerCheckmark {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 .register-container {
   min-height: 100vh;
+  animation: registerFadeIn 0.6s ease-out;
+}
+
+.register-form-container {
+  animation: registerSlideIn 0.8s ease-out;
+}
+
+.register-form-input {
+  transition: all 0.3s ease;
 }
 
 .register-form-input:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  animation: registerInputFocus 0.3s ease-out;
+  transform: translateY(-1px);
 }
 
-.register-password-strength {
+.register-form-input-error {
+  animation: registerShake 0.5s ease-out;
+  border-color: #ef4444;
+}
+
+.register-button {
+  position: relative;
   transition: all 0.3s ease;
+}
+
+.register-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+}
+
+.register-button:active {
+  transform: translateY(0);
+}
+
+.register-button-loading {
+  animation: registerButtonPulse 1.5s ease-in-out infinite;
 }
 
 .register-gradient-button {
@@ -19,24 +114,62 @@
 .register-gradient-button:hover {
   background: linear-gradient(to right, #1d4ed8, #7e22ce);
   transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.register-password-strength {
+  transition: all 0.3s ease;
 }
 
-.register-container > div {
-  animation: slideIn 0.5s ease-out;
+.register-password-check {
+  animation: registerFadeIn 0.3s ease-out both;
+}
+
+.register-password-check-valid {
+  animation: registerCheckmark 0.4s ease-out;
 }
 
 .password-strength-bar {
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, width 0.3s ease;
+}
+
+.register-form-group {
+  animation: registerFadeIn 0.5s ease-out both;
+}
+
+.register-form-group:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.register-form-group:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.register-form-group:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.register-form-group:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.register-form-group:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+.register-form-group:nth-child(6) {
+  animation-delay: 0.6s;
+}
+
+.register-form-group:nth-child(7) {
+  animation-delay: 0.7s;
+}
+
+.register-form-group:nth-child(8) {
+  animation-delay: 0.8s;
+}
+
+.register-error-message {
+  animation: registerFadeIn 0.4s ease-out, registerShake 0.5s ease-out 0.4s;
 }
 

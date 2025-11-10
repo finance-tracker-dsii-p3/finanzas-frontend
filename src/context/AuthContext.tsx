@@ -24,21 +24,26 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [justLoggedIn, setJustLoggedIn] = useState(false);
   const navigate = useNavigate();
 
-  const checkAuth = () => {
+  const checkAuth = React.useCallback(() => {
+    if (justLoggedIn) {
+      return;
+    }
+
     const token = authService.getToken();
     const userData = authService.getUser();
     
     if (token && userData) {
       setUser(userData);
-    } else {
+    } else if (!token) {
       setUser(null);
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     }
     setIsLoading(false);
-  };
+  }, [justLoggedIn]);
 
   useEffect(() => {
     checkAuth();
@@ -52,12 +57,45 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, []);
+  }, [checkAuth]);
 
   const login = async (username: string, password: string) => {
-    const response: LoginResponse = await authService.login({ username, password });
-    setUser(response.user);
-    navigate('/dashboard');
+    try {
+      setJustLoggedIn(true);
+      
+      const response: LoginResponse = await authService.login({ username, password });
+      
+      const savedToken = authService.getToken();
+      const savedUser = authService.getUser();
+      
+      if (!savedToken || !savedUser) {
+        setJustLoggedIn(false);
+        throw new Error('Error al guardar los datos de sesión');
+      }
+      
+      setUser(response.user);
+      setIsLoading(false);
+      
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      const tokenBeforeNavigate = authService.getToken();
+      const userBeforeNavigate = authService.getUser();
+      
+      if (!tokenBeforeNavigate || !userBeforeNavigate) {
+        setJustLoggedIn(false);
+        throw new Error('Error: el token o usuario se perdió');
+      }
+      
+      navigate('/dashboard', { replace: true });
+      
+      setTimeout(() => {
+        setJustLoggedIn(false);
+      }, 1000);
+    } catch (error) {
+      setIsLoading(false);
+      setJustLoggedIn(false);
+      throw error;
+    }
   };
 
   const logout = async () => {

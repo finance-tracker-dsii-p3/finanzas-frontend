@@ -1,14 +1,140 @@
+@keyframes loginFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes loginSlideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes loginSlideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes loginButtonPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes loginInputFocus {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  }
+}
+
+@keyframes loginShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes loginLoading {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .login-container {
   min-height: 100vh;
+  animation: loginFadeIn 0.6s ease-out;
+}
+
+.login-left-panel {
+  animation: loginSlideInLeft 0.8s ease-out;
+}
+
+.login-form-container {
+  animation: loginSlideInRight 0.8s ease-out;
+}
+
+.login-form-input {
+  transition: all 0.3s ease;
 }
 
 .login-form-input:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  animation: loginInputFocus 0.3s ease-out;
+  transform: translateY(-1px);
+}
+
+.login-form-input-error {
+  animation: loginShake 0.5s ease-out;
+  border-color: #ef4444;
+}
+
+.login-button {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+}
+
+.login-button:active {
+  transform: translateY(0);
+}
+
+.login-button-loading {
+  animation: loginButtonPulse 1.5s ease-in-out infinite;
+}
+
+.login-button-loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: auto;
+  border: 2px solid transparent;
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: loginLoading 1s linear infinite;
+}
+
+.login-social-button {
+  transition: all 0.3s ease;
 }
 
 .login-social-button:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .login-gradient-button {
@@ -19,20 +145,30 @@
 .login-gradient-button:hover {
   background: linear-gradient(to right, #1d4ed8, #7e22ce);
   transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.login-error-message {
+  animation: loginFadeIn 0.4s ease-out, loginShake 0.5s ease-out 0.4s;
 }
 
-.login-container > div {
-  animation: fadeIn 0.5s ease-out;
+.login-form-group {
+  animation: loginFadeIn 0.5s ease-out both;
+}
+
+.login-form-group:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.login-form-group:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.login-form-group:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.login-form-group:nth-child(4) {
+  animation-delay: 0.4s;
 }
 

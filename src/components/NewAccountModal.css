@@ -1,0 +1,182 @@
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modalBackdrop {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes buttonPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes inputFocus {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+.newaccountmodal-backdrop {
+  animation: modalBackdrop 0.3s ease-out;
+}
+
+.newaccountmodal-container {
+  animation: modalSlideUp 0.4s ease-out;
+}
+
+.newaccountmodal-close-button {
+  transition: all 0.3s ease;
+}
+
+.newaccountmodal-close-button:hover {
+  transform: rotate(90deg) scale(1.1);
+  color: #ef4444;
+}
+
+.newaccountmodal-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.newaccountmodal-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.newaccountmodal-button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.newaccountmodal-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+}
+
+.newaccountmodal-button:active {
+  transform: translateY(0);
+}
+
+.newaccountmodal-button-loading {
+  animation: buttonPulse 1.5s ease-in-out infinite;
+}
+
+.newaccountmodal-input {
+  transition: all 0.3s ease;
+}
+
+.newaccountmodal-input:focus {
+  animation: inputFocus 0.3s ease-out;
+  transform: translateY(-1px);
+}
+
+.newaccountmodal-input-error {
+  animation: shake 0.5s ease-out;
+  border-color: #ef4444;
+}
+
+.newaccountmodal-type-button {
+  transition: all 0.3s ease;
+}
+
+.newaccountmodal-type-button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.newaccountmodal-type-button.active {
+  animation: buttonPulse 0.6s ease-out;
+}
+
+.newaccountmodal-color-option {
+  transition: all 0.3s ease;
+}
+
+.newaccountmodal-color-option:hover {
+  transform: scale(1.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.newaccountmodal-color-option.selected {
+  animation: buttonPulse 0.4s ease-out;
+  transform: scale(1.15);
+}
+
+.newaccountmodal-form-group {
+  animation: modalFadeIn 0.5s ease-out both;
+}
+
+.newaccountmodal-form-group:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.newaccountmodal-form-group:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.newaccountmodal-form-group:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.newaccountmodal-form-group:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.newaccountmodal-form-group:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+.newaccountmodal-form-group:nth-child(6) {
+  animation-delay: 0.6s;
+}
+

@@ -8,6 +8,7 @@ export interface RegisterData {
   first_name: string;
   last_name: string;
   identification: string;
+  phone?: string;
   role?: 'user' | 'admin';
 }
 
@@ -140,8 +141,25 @@ export const authService = {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Error al iniciar sesión' }));
-      throw new Error(error.message || error.detail || 'Credenciales inválidas');
+      const error = await response.json().catch(() => {
+        return { message: 'Error al iniciar sesión' };
+      });
+      
+      if (error.non_field_errors) {
+        const errorMsg = Array.isArray(error.non_field_errors) ? error.non_field_errors[0] : error.non_field_errors;
+        throw new Error(errorMsg);
+      }
+      if (error.username) {
+        const errorMsg = Array.isArray(error.username) ? error.username[0] : error.username;
+        throw new Error(errorMsg);
+      }
+      if (error.password) {
+        const errorMsg = Array.isArray(error.password) ? error.password[0] : error.password;
+        throw new Error(errorMsg);
+      }
+      
+      const errorMsg = error.message || error.detail || 'Credenciales inválidas';
+      throw new Error(errorMsg);
     }
 
     const result = await response.json();
@@ -218,6 +236,20 @@ export const authService = {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Error al restablecer contraseña' }));
+      
+      if (error.token) {
+        throw new Error(Array.isArray(error.token) ? error.token[0] : error.token);
+      }
+      if (error.new_password) {
+        throw new Error(Array.isArray(error.new_password) ? error.new_password[0] : error.new_password);
+      }
+      if (error.new_password_confirm) {
+        throw new Error(Array.isArray(error.new_password_confirm) ? error.new_password_confirm[0] : error.new_password_confirm);
+      }
+      if (error.non_field_errors) {
+        throw new Error(Array.isArray(error.non_field_errors) ? error.non_field_errors[0] : error.non_field_errors);
+      }
+      
       throw new Error(error.message || error.detail || 'Error al restablecer contraseña');
     }
 

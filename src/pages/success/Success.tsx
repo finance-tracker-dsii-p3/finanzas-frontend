@@ -7,7 +7,6 @@ const Success: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as { email?: string; type?: string; resetUrl?: string } | null;
-  const email = state?.email || '';
   const type = state?.type || 'forgot';
   const resetUrl = state?.resetUrl;
 
@@ -28,36 +27,30 @@ const Success: React.FC = () => {
           <p className="text-gray-600 mb-8">
             {isResetSuccess
               ? 'Tu contraseña ha sido restablecida exitosamente. Ya puedes iniciar sesión con tu nueva contraseña.'
-              : 'Hemos enviado las instrucciones de recuperación a tu correo electrónico. Por favor revisa tu bandeja de entrada.'
+              : 'Si el correo electrónico existe en nuestro sistema, recibirás un enlace de restablecimiento. Por favor revisa tu bandeja de entrada y carpeta de spam.'
             }
           </p>
 
-          {!isResetSuccess && email && (
-            <div className="mb-8 p-4 bg-blue-50 rounded-lg text-left">
-              <p className="text-sm text-blue-800 mb-2">
-                <strong>📧 Correo enviado a:</strong>
-              </p>
-              <p className="text-sm text-blue-900 font-medium mb-3">{email}</p>
-              {resetUrl && (
-                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
-                  <p className="text-xs text-yellow-900 mb-2 font-semibold">🔧 Enlace de desarrollo:</p>
-                  <a 
-                    href={resetUrl} 
-                    className="text-xs text-blue-600 hover:text-blue-700 break-all underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {resetUrl}
-                  </a>
-                  <p className="text-xs text-yellow-800 mt-2">Copia y pega este enlace en tu navegador</p>
-                </div>
-              )}
+          {!isResetSuccess && resetUrl && (
+            <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded text-left">
+              <p className="text-xs text-yellow-900 mb-2 font-semibold">🔧 Enlace de desarrollo:</p>
+              <a 
+                href={resetUrl} 
+                className="text-xs text-blue-600 hover:text-blue-700 break-all underline focus:outline-none focus:ring-2 focus:ring-blue-500"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Enlace de restablecimiento de contraseña"
+              >
+                {resetUrl}
+              </a>
+              <p className="text-xs text-yellow-800 mt-2">Copia y pega este enlace en tu navegador</p>
             </div>
           )}
 
           <button
             onClick={() => navigate('/login')}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            aria-label="Volver a la página de inicio de sesión"
           >
             Volver al inicio de sesión
           </button>
@@ -65,7 +58,8 @@ const Success: React.FC = () => {
           {!isResetSuccess && (
             <button
               onClick={() => navigate('/forgot-password')}
-              className="w-full mt-3 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              className="w-full mt-3 text-sm text-gray-600 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              aria-label="Solicitar nuevo enlace de restablecimiento"
             >
               ¿No recibiste el correo? Reenviar
             </button>
