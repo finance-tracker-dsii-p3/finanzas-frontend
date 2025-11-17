@@ -1,22 +1,9 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Plus, Edit2, Trash2, CreditCard, Wallet, Building2, Banknote, Eye, EyeOff, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Plus, Edit2, Trash2, CreditCard, Wallet, Building2, Banknote, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, Loader2 } from 'lucide-react';
 import NewAccountModal from '../../components/NewAccountModal';
 import CardDetail from '../cards/CardDetail';
+import { accountService, Account, CreateAccountData } from '../../services/accountService';
 import './accounts.css';
-
-interface Account {
-  id: number;
-  name: string;
-  type: 'bank' | 'wallet' | 'credit_card' | 'cash' | 'other';
-  bankName?: string;
-  accountNumber?: string;
-  balance: number;
-  currency: string;
-  isActive: boolean;
-  showBalance: boolean;
-  color: string;
-  creditLimit?: number;
-}
 
 interface AccountsProps {
   onBack: () => void;
@@ -27,6 +14,26 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
   const [showNewAccountModal, setShowNewAccountModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [selectedCard, setSelectedCard] = useState<Account | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showBalance, setShowBalance] = useState<{ [key: number]: boolean }>({});
+
+  useEffect(() => {
+    loadAccounts();
+  }, []);
+
+  const loadAccounts = async () => {
+    try {
+      setIsLoading(true);
+      const accountsData = await accountService.getAllAccounts();
+      setAccounts(accountsData);
+    } catch (error) {
+      console.error('Error al cargar cuentas:', error);
+      alert(error instanceof Error ? error.message : 'Error al cargar las cuentas');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   const formatCurrency = (amount: number, currency: string = 'COP'): string => {
     return new Intl.NumberFormat('es-CO', {
@@ -36,71 +43,105 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
     }).format(Math.abs(amount));
   };
 
-  const getAccountIcon = (type: Account['type']) => {
-    switch (type) {
-      case 'bank':
+  const getAccountIcon = (category: Account['category']) => {
+    switch (category) {
+      case 'bank_account':
+      case 'savings_account':
         return <Building2 className="w-5 h-5" />;
       case 'wallet':
         return <Wallet className="w-5 h-5" />;
       case 'credit_card':
         return <CreditCard className="w-5 h-5" />;
-      case 'cash':
-        return <Banknote className="w-5 h-5" />;
       default:
-        return <CreditCard className="w-5 h-5" />;
+        return <Banknote className="w-5 h-5" />;
     }
   };
 
-  const getAccountTypeLabel = (type: Account['type']) => {
-    switch (type) {
-      case 'bank':
-        return 'Banco';
+  const getAccountTypeLabel = (category: Account['category']) => {
+    switch (category) {
+      case 'bank_account':
+        return 'Cuenta Bancaria';
+      case 'savings_account':
+        return 'Cuenta de Ahorros';
       case 'wallet':
         return 'Billetera';
       case 'credit_card':
         return 'Tarjeta de Crédito';
-      case 'cash':
-        return 'Efectivo';
       default:
         return 'Otro';
     }
   };
 
   const totalBalance = accounts
-    .filter(acc => acc.isActive)
-    .reduce((sum, acc) => sum + acc.balance, 0);
+    .filter(acc => acc.is_active === true)
+    .reduce((sum, acc) => {
+      if (acc.account_type === 'asset') {
+        return sum + acc.current_balance;
+      } else {
+        return sum - acc.current_balance;
+      }
+    }, 0);
 
-  const handleDeleteAccount = (id: number) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar esta cuenta?')) {
-      setAccounts(accounts.filter(acc => acc.id !== id));
+  const handleSaveAccount = async (accountData: CreateAccountData, accountId?: number) => {
+    if (accountId) {
+      await accountService.updateAccount(accountId, accountData);
+    } else {
+      await accountService.createAccount(accountData);
+    }
+    await loadAccounts();
+  };
+
+  const handleDeleteAccount = async (id: number) => {
+    try {
+      const validation = await accountService.validateDeletion(id);
+      
+      if (!validation.can_delete && validation.has_movements) {
+        const message = `Esta cuenta tiene ${validation.movement_count || 0} movimiento(s) asociado(s).\n\n¿Estás seguro de que deseas eliminar esta cuenta? Esta acción no se puede deshacer.`;
+        if (!window.confirm(message)) {
+          return;
+        }
+      } else {
+        if (!window.confirm('¿Estás seguro de que deseas eliminar esta cuenta?')) {
+          return;
+        }
+      }
+
+      await accountService.deleteAccount(id);
+      await loadAccounts();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Error al eliminar la cuenta');
     }
   };
 
-  const toggleAccountStatus = (id: number) => {
-    setAccounts(accounts.map(acc => 
-      acc.id === id ? { ...acc, isActive: !acc.isActive } : acc
-    ));
+  const toggleAccountStatus = async (id: number) => {
+    try {
+      await accountService.toggleActive(id);
+      await loadAccounts();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Error al cambiar el estado de la cuenta');
+    }
   };
 
   const toggleBalanceVisibility = (id: number) => {
-    setAccounts(accounts.map(acc => 
-      acc.id === id ? { ...acc, showBalance: !acc.showBalance } : acc
-    ));
+    setShowBalance(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
   };
 
-  if (selectedCard) {
+  if (selectedCard && selectedCard.category === 'credit_card') {
     return (
       <CardDetail
         card={{
-          id: selectedCard.id,
+          id: selectedCard.id!,
           name: selectedCard.name,
-          bankName: selectedCard.bankName || '',
-          accountNumber: selectedCard.accountNumber || '',
-          limit: selectedCard.creditLimit || 0,
-          available: (selectedCard.creditLimit || 0) + selectedCard.balance,
-          used: Math.abs(selectedCard.balance),
+          bankName: selectedCard.bank_name || '',
+          accountNumber: selectedCard.account_number || '',
+          limit: selectedCard.credit_limit || 0,
+          available: (selectedCard.credit_limit || 0) + selectedCard.current_balance,
+          used: Math.abs(selectedCard.current_balance),
           currency: selectedCard.currency,
-          color: selectedCard.color
+          color: '#8b5cf6'
         }}
         onBack={() => setSelectedCard(null)}
       />
@@ -142,16 +183,23 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
           </div>
           <div>
             <p className="text-sm text-gray-600 mb-1">Cuentas activas</p>
-            <p className="text-2xl font-bold text-blue-600">{accounts.filter(acc => acc.isActive).length}</p>
+            <p className="text-2xl font-bold text-blue-600">{accounts.filter(acc => acc.is_active === true).length}</p>
           </div>
           <div>
             <p className="text-sm text-gray-600 mb-1">Balance total</p>
-            <p className="text-2xl font-bold text-green-600">{formatCurrency(totalBalance)}</p>
+            <p className={`text-2xl font-bold ${totalBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {formatCurrency(totalBalance)}
+            </p>
           </div>
         </div>
       </div>
 
-      {accounts.length === 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <span className="ml-3 text-gray-600">Cargando cuentas...</span>
+        </div>
+      ) : accounts.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-6">
             <CreditCard className="w-10 h-10 text-white" />
@@ -169,23 +217,36 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {accounts.map((account) => {
-            if (account.type === 'credit_card') {
+          {accounts
+            .sort((a, b) => {
+              const aActive = a.is_active === true ? 0 : 1;
+              const bActive = b.is_active === true ? 0 : 1;
+              
+              if (aActive !== bActive) {
+                return aActive - bActive;
+              }
+              
+              return a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
+            })
+            .map((account) => {
+            const isBalanceVisible = showBalance[account.id!] !== false;
+            
+            if (account.category === 'credit_card') {
               const formatCardNumber = (num: string) => {
                 if (!num) return '•••• •••• •••• ••••';
                 const cleaned = num.replace(/\s/g, '');
                 return cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
               };
 
-              const usagePercentage = account.creditLimit ? (Math.abs(account.balance) / account.creditLimit) * 100 : 0;
-              const available = account.creditLimit ? account.creditLimit + account.balance : 0;
+              const usagePercentage = account.credit_limit ? (Math.abs(account.current_balance) / account.credit_limit) * 100 : 0;
+              const available = account.credit_limit ? account.credit_limit + account.current_balance : 0;
 
               return (
                 <div 
                   key={account.id} 
                   className="relative overflow-hidden rounded-2xl shadow-lg transition-all hover:shadow-xl hover:scale-105"
                   style={{
-                    background: `linear-gradient(135deg, ${account.color} 0%, ${account.color}dd 100%)`,
+                    background: `linear-gradient(135deg, #8b5cf6 0%, #8b5cf6dd 100%)`,
                     minHeight: '220px'
                   }}
                 >
@@ -198,29 +259,34 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                         </div>
                         <div>
                           <h3 className="font-bold text-lg">{account.name}</h3>
-                          <p className="text-xs text-white/80">{account.bankName}</p>
+                          {account.bank_name ? (
+                            <p className="text-xs text-white/80">{account.bank_name}</p>
+                          ) : (
+                            <p className="text-xs text-white/60">Sin banco especificado</p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => toggleBalanceVisibility(account.id)}
+                          onClick={() => toggleBalanceVisibility(account.id!)}
                           className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
                         >
-                          {account.showBalance ? (
+                          {isBalanceVisible ? (
                             <Eye className="w-4 h-4" />
                           ) : (
                             <EyeOff className="w-4 h-4" />
                           )}
                         </button>
                         <button
-                          onClick={() => toggleAccountStatus(account.id)}
+                          onClick={() => toggleAccountStatus(account.id!)}
                           className={`p-1.5 rounded-lg transition-colors ${
-                            account.isActive 
+                            account.is_active === true 
                               ? 'text-green-300 hover:bg-white/20' 
                               : 'text-white/50 hover:bg-white/10'
                           }`}
+                          title={account.is_active === true ? 'Desactivar cuenta' : 'Activar cuenta'}
                         >
-                          {account.isActive ? (
+                          {account.is_active === true ? (
                             <CheckCircle className="w-4 h-4" />
                           ) : (
                             <XCircle className="w-4 h-4" />
@@ -236,8 +302,8 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                         </div>
                       </div>
                       <p className="text-2xl font-mono font-bold tracking-wider mb-1">
-                        {account.showBalance 
-                          ? formatCardNumber(account.accountNumber || '')
+                        {isBalanceVisible 
+                          ? formatCardNumber(account.account_number || '')
                           : '•••• •••• •••• ••••'
                         }
                       </p>
@@ -247,8 +313,8 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                       <div>
                         <p className="text-xs text-white/70 mb-1">Límite de crédito</p>
                         <p className="text-lg font-bold">
-                          {account.showBalance && account.creditLimit
-                            ? formatCurrency(account.creditLimit, account.currency)
+                          {isBalanceVisible && account.credit_limit
+                            ? formatCurrency(account.credit_limit, account.currency)
                             : '••••••'
                           }
                         </p>
@@ -256,12 +322,31 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                       <div className="text-right">
                         <p className="text-xs text-white/70 mb-1">Disponible</p>
                         <p className="text-lg font-bold">
-                          {account.showBalance && account.creditLimit
+                          {isBalanceVisible && account.credit_limit
                             ? formatCurrency(available, account.currency)
                             : '••••••'
                           }
                         </p>
                       </div>
+                    </div>
+
+                    <div className="mb-4 space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-white/70">Moneda:</span>
+                        <span className="text-white font-semibold">{account.currency}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-white/70">Banco:</span>
+                        <span className="text-white font-semibold">{account.bank_name || 'No especificado'}</span>
+                      </div>
+                      {account.gmf_exempt !== undefined && (
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-white/70">Exenta GMF:</span>
+                          <span className={`font-semibold ${account.gmf_exempt ? 'text-green-300' : 'text-yellow-300'}`}>
+                            {account.gmf_exempt ? 'Sí' : 'No'}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="mb-4">
@@ -290,16 +375,22 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                         Ver detalle
                       </button>
                       <button
-                        onClick={() => {
-                          setEditingAccount(account);
-                          setShowNewAccountModal(true);
+                        onClick={async () => {
+                          try {
+                            const fullAccount = await accountService.getAccountById(account.id!);
+                            setEditingAccount(fullAccount);
+                            setShowNewAccountModal(true);
+                          } catch (error) {
+                            console.error('Error al cargar detalles de la cuenta:', error);
+                            alert('Error al cargar los detalles de la cuenta');
+                          }
                         }}
                         className="px-3 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-colors"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDeleteAccount(account.id)}
+                        onClick={() => handleDeleteAccount(account.id!)}
                         className="px-3 py-2 bg-red-500/30 hover:bg-red-500/40 backdrop-blur-sm rounded-lg transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -314,7 +405,7 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
               <div 
                 key={account.id} 
                 className={`bg-white rounded-xl shadow-sm border-2 transition-all ${
-                  account.isActive 
+                  account.is_active === true 
                     ? 'border-gray-200 hover:border-blue-300 hover:shadow-md' 
                     : 'border-gray-100 opacity-60'
                 }`}
@@ -324,35 +415,45 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                     <div className="flex items-center gap-3">
                       <div 
                         className="w-12 h-12 rounded-lg flex items-center justify-center text-white"
-                        style={{ backgroundColor: account.color }}
+                        style={{ 
+                          backgroundColor: account.account_type === 'asset' ? '#3b82f6' : '#8b5cf6' 
+                        }}
                       >
-                        {getAccountIcon(account.type)}
+                        {getAccountIcon(account.category)}
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">{account.name}</h3>
-                        <p className="text-xs text-gray-500">{getAccountTypeLabel(account.type)}</p>
+                        <p className="text-xs text-gray-500">
+                          {getAccountTypeLabel(account.category)} • {account.account_type === 'asset' ? 'Activo' : 'Pasivo'}
+                          {account.is_active !== true && (
+                            <span className="ml-2 px-2 py-0.5 bg-gray-200 text-gray-600 rounded text-xs font-medium">
+                              Inactiva
+                            </span>
+                          )}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => toggleBalanceVisibility(account.id)}
+                        onClick={() => toggleBalanceVisibility(account.id!)}
                         className="p-1 hover:bg-gray-100 rounded transition-colors"
                       >
-                        {account.showBalance ? (
+                        {isBalanceVisible ? (
                           <Eye className="w-4 h-4 text-gray-600" />
                         ) : (
                           <EyeOff className="w-4 h-4 text-gray-600" />
                         )}
                       </button>
                       <button
-                        onClick={() => toggleAccountStatus(account.id)}
+                        onClick={() => toggleAccountStatus(account.id!)}
                         className={`p-1 rounded transition-colors ${
-                          account.isActive 
+                          account.is_active === true 
                             ? 'text-green-600 hover:bg-green-50' 
                             : 'text-gray-400 hover:bg-gray-100'
                         }`}
+                        title={account.is_active === true ? 'Desactivar cuenta' : 'Activar cuenta'}
                       >
-                        {account.isActive ? (
+                        {account.is_active === true ? (
                           <CheckCircle className="w-4 h-4" />
                         ) : (
                           <XCircle className="w-4 h-4" />
@@ -364,39 +465,65 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                   <div className="mb-4">
                     <p className="text-xs text-gray-600 mb-1">Balance</p>
                     <p className={`text-2xl font-bold ${
-                      account.balance >= 0 ? 'text-green-600' : 'text-red-600'
+                      account.current_balance >= 0 ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      {account.showBalance 
-                        ? formatCurrency(account.balance, account.currency)
+                      {isBalanceVisible 
+                        ? formatCurrency(account.current_balance, account.currency)
                         : '••••••'
                       }
                     </p>
                   </div>
 
-                  {account.accountNumber && (
+                  <div className="mb-4 grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">Moneda</p>
+                      <p className="text-sm font-semibold text-gray-900">{account.currency}</p>
+                    </div>
+                    {account.gmf_exempt !== undefined && (
+                      <div>
+                        <p className="text-xs text-gray-600 mb-1">Exenta GMF</p>
+                        <p className={`text-sm font-semibold ${account.gmf_exempt ? 'text-green-600' : 'text-orange-600'}`}>
+                          {account.gmf_exempt ? 'Sí' : 'No'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {account.account_number && (
                     <div className="mb-4">
                       <p className="text-xs text-gray-600 mb-1">Número de cuenta</p>
                       <p className="text-sm font-mono text-gray-900">
-                        {account.showBalance 
-                          ? account.accountNumber 
+                        {isBalanceVisible 
+                          ? account.account_number 
                           : '•••• •••• ••••'
                         }
                       </p>
                     </div>
                   )}
 
-                  {account.bankName && (
+                  <div className="mb-4">
+                    <p className="text-xs text-gray-600 mb-1">Banco</p>
+                    <p className="text-sm text-gray-900 font-medium">{account.bank_name || 'No especificado'}</p>
+                  </div>
+
+                  {account.description && (
                     <div className="mb-4">
-                      <p className="text-xs text-gray-600 mb-1">Banco</p>
-                      <p className="text-sm text-gray-900">{account.bankName}</p>
+                      <p className="text-xs text-gray-600 mb-1">Descripción</p>
+                      <p className="text-sm text-gray-900">{account.description}</p>
                     </div>
                   )}
 
                   <div className="flex gap-2 pt-4 border-t border-gray-200">
                     <button
-                      onClick={() => {
-                        setEditingAccount(account);
-                        setShowNewAccountModal(true);
+                      onClick={async () => {
+                        try {
+                          const fullAccount = await accountService.getAccountById(account.id!);
+                          setEditingAccount(fullAccount);
+                          setShowNewAccountModal(true);
+                        } catch (error) {
+                          console.error('Error al cargar detalles de la cuenta:', error);
+                          alert('Error al cargar los detalles de la cuenta');
+                        }
                       }}
                       className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm transition-colors"
                     >
@@ -404,7 +531,7 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                       Editar
                     </button>
                     <button
-                      onClick={() => handleDeleteAccount(account.id)}
+                      onClick={() => handleDeleteAccount(account.id!)}
                       className="flex items-center justify-center gap-2 px-3 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -419,22 +546,13 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
 
       {showNewAccountModal && (
         <NewAccountModal
+          key={editingAccount?.id || 'new'}
           onClose={() => {
             setShowNewAccountModal(false);
             setEditingAccount(null);
           }}
           account={editingAccount}
-          onSave={(accountData) => {
-            if (editingAccount) {
-              setAccounts(accounts.map(acc => 
-                acc.id === editingAccount.id ? { ...accountData, id: editingAccount.id } : acc
-              ));
-            } else {
-              setAccounts([...accounts, { ...accountData, id: Date.now() }]);
-            }
-            setShowNewAccountModal(false);
-            setEditingAccount(null);
-          }}
+          onSave={handleSaveAccount}
         />
       )}
 

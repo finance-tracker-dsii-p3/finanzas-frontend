@@ -202,3 +202,6 @@ Si los tests fallan, el CI bloqueará el merge.
 - [Testing Library Queries](https://testing-library.com/docs/queries/about/)
 
 
+
+
+

@@ -1,80 +1,102 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { XCircle, Building2, Wallet, CreditCard, Banknote, DollarSign } from 'lucide-react';
+import { Account, CreateAccountData, accountService } from '../services/accountService';
 import './NewAccountModal.css';
 
-interface Account {
-  id?: number;
-  name: string;
-  type: 'bank' | 'wallet' | 'credit_card' | 'cash' | 'other';
-  bankName?: string;
-  accountNumber?: string;
-  balance: number;
-  currency: string;
-  isActive: boolean;
-  showBalance: boolean;
-  color: string;
-  creditLimit?: number;
-}
+type LocalAccountType = 'bank' | 'wallet' | 'credit_card' | 'cash' | 'other';
 
 interface NewAccountModalProps {
   onClose: () => void;
   account?: Account | null;
-  onSave: (account: Account) => void;
+  onSave: (accountData: CreateAccountData, accountId?: number) => Promise<void>;
 }
 
 const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onSave }) => {
-  const [formData, setFormData] = useState(() => {
-    if (account) {
+  const categoryToLocalType = (category: Account['category']): LocalAccountType => {
+    switch (category) {
+      case 'bank_account':
+      case 'savings_account':
+        return 'bank';
+      case 'credit_card':
+        return 'credit_card';
+      case 'wallet':
+        return 'wallet';
+      default:
+        return 'other';
+    }
+  };
+
+  const localTypeToCategory = (type: LocalAccountType): Account['category'] => {
+    switch (type) {
+      case 'bank':
+        return 'bank_account';
+      case 'wallet':
+        return 'wallet';
+      case 'credit_card':
+        return 'credit_card';
+      case 'cash':
+        return 'other';
+      default:
+        return 'other';
+    }
+  };
+
+  const initializeFormData = useCallback((accountData: Account | null) => {
+    if (accountData) {
+      const localType = categoryToLocalType(accountData.category);
+      const expirationDate = accountData.expiration_date 
+        ? accountData.expiration_date.split('T')[0] 
+        : '';
+      
       return {
-        name: account.name,
-        type: account.type,
-        bankName: account.bankName || '',
-        accountNumber: account.accountNumber || '',
-        balance: account.balance.toString(),
-        creditLimit: account.creditLimit?.toString() || '',
-        currency: account.currency,
-        isActive: account.isActive,
-        showBalance: account.showBalance,
-        color: account.color
+        name: accountData.name,
+        type: localType,
+        bankName: accountData.bank_name || '',
+        accountNumber: accountData.account_number || '',
+        balance: accountData.current_balance.toString(),
+        creditLimit: accountData.credit_limit?.toString() || '',
+        currency: accountData.currency,
+        isActive: accountData.is_active !== false,
+        description: accountData.description || '',
+        accountType: accountData.account_type,
+        gmfExempt: accountData.gmf_exempt || false,
+        expirationDate: expirationDate
       };
     }
     return {
       name: '',
-      type: 'bank' as Account['type'],
+      type: 'bank' as LocalAccountType,
       bankName: '',
       accountNumber: '',
       balance: '',
       creditLimit: '',
-      currency: 'COP',
+      currency: 'COP' as Account['currency'],
       isActive: true,
-      showBalance: true,
-      color: '#3b82f6'
+      description: '',
+      accountType: 'asset' as Account['account_type'],
+      gmfExempt: false,
+      expirationDate: ''
     };
-  });
+  }, []);
 
-  const prevAccountIdRef = useRef<number | undefined>(account?.id);
-  
+  const [formData, setFormData] = useState(() => initializeFormData(account || null));
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   useEffect(() => {
-    if (account && account.id !== prevAccountIdRef.current) {
-      prevAccountIdRef.current = account.id;
-      setTimeout(() => {
-        setFormData({
-          name: account.name,
-          type: account.type,
-          bankName: account.bankName || '',
-          accountNumber: account.accountNumber || '',
-          balance: account.balance.toString(),
-          creditLimit: account.creditLimit?.toString() || '',
-          currency: account.currency,
-          isActive: account.isActive,
-          showBalance: account.showBalance,
-          color: account.color
-        });
-      }, 0);
+    if (account && account.id) {
+      const newFormData = initializeFormData(account);
+      setFormData(newFormData);
+      setErrors({});
+    } else if (!account) {
+      const emptyFormData = initializeFormData(null);
+      setFormData(emptyFormData);
+      setErrors({});
     }
-  }, [account]);
+  }, [account, initializeFormData]);
 
-  const banks = [
+  const [banks, setBanks] = useState<string[]>([
     'Bancolombia',
     'Banco de Bogotá',
     'Davivienda',
@@ -88,9 +110,9 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
     'Citibank',
     'Scotiabank Colpatria',
     'Otro'
-  ];
+  ]);
 
-  const wallets = [
+  const [wallets, setWallets] = useState<string[]>([
     'Nequi',
     'Daviplata',
     'RappiPay',
@@ -98,9 +120,9 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
     'Lulo Bank',
     'Nu Colombia',
     'Otro'
-  ];
+  ]);
 
-  const creditCardBanks = [
+  const [creditCardBanks, setCreditCardBanks] = useState<string[]>([
     'Bancolombia',
     'Banco de Bogotá',
     'Davivienda',
@@ -109,21 +131,42 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
     'Éxito',
     'Alkosto',
     'Otro'
-  ];
+  ]);
 
-  const typeColors: { [key: string]: string } = {
-    bank: '#3b82f6',
-    wallet: '#10b981',
-    credit_card: '#8b5cf6',
-    cash: '#f59e0b',
-    other: '#6b7280'
-  };
+  useEffect(() => {
+    const loadOptions = async () => {
+      try {
+        const options = await accountService.getAccountOptions();
+        setBanks(options.banks);
+        setWallets(options.wallets);
+        setCreditCardBanks(options.credit_card_banks);
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('no implementado')) {
+          console.info('El endpoint de opciones aún no está implementado en el backend. Usando valores por defecto.');
+        } else {
+          console.warn('No se pudieron cargar las opciones desde el backend, usando valores por defecto:', error);
+        }
+      }
+    };
+    
+    loadOptions();
+  }, []);
 
-  const handleTypeChange = (type: Account['type']) => {
+
+  const handleTypeChange = (type: LocalAccountType) => {
+    let newAccountType: Account['account_type'];
+    if (type === 'credit_card') {
+      newAccountType = 'liability';
+    } else if (formData.type === 'credit_card') {
+      newAccountType = 'asset';
+    } else {
+      newAccountType = formData.accountType;
+    }
+    
     setFormData({
       ...formData,
       type,
-      color: typeColors[type] || '#3b82f6',
+      accountType: newAccountType,
       bankName: '',
       accountNumber: ''
     });
@@ -137,40 +180,92 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
     }).format(Math.abs(amount));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    const category = localTypeToCategory(formData.type);
+    const isCreditCard = category === 'credit_card';
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'El nombre de la cuenta es requerido';
+    }
+    
+    if (isCreditCard) {
+      const balance = parseFloat(formData.balance) || 0;
+      if (balance > 0) {
+        newErrors.balance = 'Las tarjetas de crédito no pueden tener saldo positivo';
+      }
+      
+      if (formData.creditLimit) {
+        const creditLimit = parseFloat(formData.creditLimit);
+        if (isNaN(creditLimit) || creditLimit <= 0) {
+          newErrors.creditLimit = 'El límite de crédito debe ser mayor a cero';
+        }
+      }
+    } else {
+      if (formData.expirationDate) {
+        newErrors.expirationDate = 'La fecha de vencimiento solo aplica para tarjetas de crédito';
+      }
+      if (formData.creditLimit) {
+        newErrors.creditLimit = 'El límite de crédito solo aplica para tarjetas de crédito';
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name) {
-      alert('Por favor ingresa el nombre de la cuenta');
-      return;
-    }
-    if ((formData.type === 'bank' || formData.type === 'credit_card') && !formData.bankName) {
-      alert('Por favor selecciona el banco');
+    
+    if (!validateForm()) {
       return;
     }
 
-    const accountData: Account = {
-      name: formData.name,
-      type: formData.type,
-      bankName: formData.bankName || undefined,
-      accountNumber: formData.accountNumber || undefined,
-      balance: parseFloat(formData.balance) || 0,
-      creditLimit: formData.type === 'credit_card' && formData.creditLimit ? parseFloat(formData.creditLimit) : undefined,
+    const balance = parseFloat(formData.balance) || 0;
+    const category = localTypeToCategory(formData.type);
+    const isCreditCard = category === 'credit_card';
+    
+    const accountType = isCreditCard ? undefined : formData.accountType;
+
+    const accountData: CreateAccountData = {
+      name: formData.name.trim(),
+      account_type: accountType,
+      category: category,
       currency: formData.currency,
-      isActive: formData.isActive,
-      showBalance: formData.showBalance,
-      color: formData.color
+      current_balance: balance,
+      description: formData.description.trim() || undefined,
+      is_active: formData.isActive,
+      gmf_exempt: formData.gmfExempt,
+      bank_name: formData.bankName.trim() || undefined,
+      account_number: formData.accountNumber.trim() || undefined
     };
-
-    if (account?.id) {
-      accountData.id = account.id;
+    
+    if (isCreditCard) {
+      if (formData.expirationDate) {
+        accountData.expiration_date = formData.expirationDate;
+      }
+      if (formData.creditLimit) {
+        const creditLimit = parseFloat(formData.creditLimit);
+        if (!isNaN(creditLimit) && creditLimit > 0) {
+          accountData.credit_limit = creditLimit;
+        }
+      }
     }
 
-    onSave(accountData);
+    setIsSubmitting(true);
+    try {
+      await onSave(accountData, account?.id);
+      onClose();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Error al guardar la cuenta');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="newaccountmodal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={onClose}>
-      <div className="newaccountmodal-container bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="newaccountmodal-container bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto overflow-x-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-gray-900">
@@ -257,27 +352,58 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, name: e.target.value });
+                  if (errors.name) {
+                    setErrors({ ...errors, name: '' });
+                  }
+                }}
                 placeholder={formData.type === 'bank' ? 'Ej: Cuenta Ahorros Bancolombia' : formData.type === 'wallet' ? 'Ej: Nequi Personal' : formData.type === 'credit_card' ? 'Ej: Visa Bancolombia' : 'Ej: Efectivo Casa'}
-                className="newaccountmodal-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`newaccountmodal-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.name ? 'border-red-500' : 'border-gray-300'
+                }`}
                 required
               />
+              {errors.name && (
+                <p className="text-xs text-red-600 mt-1">{errors.name}</p>
+              )}
             </div>
 
-            {(formData.type === 'bank' || formData.type === 'credit_card') && (
+            {formData.type === 'bank' && (
               <div className="newaccountmodal-form-group">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Banco <span className="text-red-500">*</span>
+                  Banco
                 </label>
                 <select
-                  value={formData.bankName}
+                  value={formData.bankName || ''}
                   onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
                   className="newaccountmodal-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
                 >
                   <option value="">Seleccionar banco...</option>
-                  {(formData.type === 'bank' ? banks : creditCardBanks).map(bank => (
-                    <option key={bank} value={bank}>{bank}</option>
+                  {banks.map((bank) => (
+                    <option key={bank} value={bank}>
+                      {bank}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {formData.type === 'credit_card' && (
+              <div className="newaccountmodal-form-group">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Banco
+                </label>
+                <select
+                  value={formData.bankName || ''}
+                  onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                  className="newaccountmodal-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Seleccionar banco...</option>
+                  {creditCardBanks.map((bank) => (
+                    <option key={bank} value={bank}>
+                      {bank}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -289,13 +415,15 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                   Billetera digital
                 </label>
                 <select
-                  value={formData.bankName}
+                  value={formData.bankName || ''}
                   onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
                   className="newaccountmodal-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Seleccionar billetera...</option>
-                  {wallets.map(wallet => (
-                    <option key={wallet} value={wallet}>{wallet}</option>
+                  {wallets.map((wallet) => (
+                    <option key={wallet} value={wallet}>
+                      {wallet}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -317,27 +445,65 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
             )}
 
             {formData.type === 'credit_card' && (
-              <div className="newaccountmodal-form-group">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Límite de crédito
-                </label>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="number"
-                    value={formData.creditLimit}
-                    onChange={(e) => setFormData({ ...formData, creditLimit: e.target.value })}
-                    placeholder="0"
-                    step="1000"
-                    className="newaccountmodal-input w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+              <>
+                <div className="newaccountmodal-form-group">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Límite de crédito
+                  </label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="number"
+                      value={formData.creditLimit}
+                      onChange={(e) => {
+                        setFormData({ ...formData, creditLimit: e.target.value });
+                        if (errors.creditLimit) {
+                          setErrors({ ...errors, creditLimit: '' });
+                        }
+                      }}
+                      placeholder="0"
+                      step="1000"
+                      min="0"
+                      className={`newaccountmodal-input w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        errors.creditLimit ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                  </div>
+                  {errors.creditLimit && (
+                    <p className="text-xs text-red-600 mt-1">{errors.creditLimit}</p>
+                  )}
+                  {formData.creditLimit && !errors.creditLimit && (
+                    <p className="text-xs text-gray-600 mt-1">
+                      {formatCurrency(parseFloat(formData.creditLimit) || 0, formData.currency)}
+                    </p>
+                  )}
                 </div>
-                {formData.creditLimit && (
-                  <p className="text-xs text-gray-600 mt-1">
-                    {formatCurrency(parseFloat(formData.creditLimit) || 0, formData.currency)}
+
+                <div className="newaccountmodal-form-group">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Fecha de vencimiento
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.expirationDate}
+                    onChange={(e) => {
+                      setFormData({ ...formData, expirationDate: e.target.value });
+                      if (errors.expirationDate) {
+                        setErrors({ ...errors, expirationDate: '' });
+                      }
+                    }}
+                    className={`newaccountmodal-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      errors.expirationDate ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                  {errors.expirationDate && (
+                    <p className="text-xs text-red-600 mt-1">{errors.expirationDate}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Fecha de vencimiento de la tarjeta (opcional)
                   </p>
-                )}
-              </div>
+                </div>
+              </>
             )}
 
             <div className="newaccountmodal-form-group grid grid-cols-2 gap-4">
@@ -350,15 +516,30 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                   <input
                     type="number"
                     value={formData.balance}
-                    onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, balance: e.target.value });
+                      if (errors.balance) {
+                        setErrors({ ...errors, balance: '' });
+                      }
+                    }}
                     placeholder="0"
                     step="1000"
-                    className="newaccountmodal-input w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={`newaccountmodal-input w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      errors.balance ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   />
                 </div>
-                {formData.balance && (
+                {errors.balance && (
+                  <p className="text-xs text-red-600 mt-1">{errors.balance}</p>
+                )}
+                {formData.balance && !errors.balance && (
                   <p className="text-xs text-gray-600 mt-1">
                     {formatCurrency(parseFloat(formData.balance) || 0, formData.currency)}
+                  </p>
+                )}
+                {formData.type === 'credit_card' && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Las tarjetas de crédito no pueden tener saldo positivo
                   </p>
                 )}
               </div>
@@ -369,7 +550,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                 </label>
                 <select
                   value={formData.currency}
-                  onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, currency: e.target.value as Account['currency'] })}
                   className="newaccountmodal-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="COP">COP - Peso Colombiano</option>
@@ -381,21 +562,67 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
 
             <div className="newaccountmodal-form-group">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Color
+                Descripción (opcional)
               </label>
-              <div className="flex items-center gap-3">
-                <div
-                  className={`newaccountmodal-color-option w-8 h-8 rounded-full border-2 border-gray-300 cursor-pointer ${formData.color === formData.color ? 'selected' : ''}`}
-                  style={{ backgroundColor: formData.color }}
-                ></div>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Agrega una descripción adicional de la cuenta..."
+                rows={3}
+                className="newaccountmodal-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              />
+            </div>
+
+            <div className="newaccountmodal-form-group">
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
-                  type="color"
-                  value={formData.color}
-                  onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                  className="newaccountmodal-color-option w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                  type="checkbox"
+                  checked={formData.gmfExempt}
+                  onChange={(e) => setFormData({ ...formData, gmfExempt: e.target.checked })}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-600">{formData.color}</span>
+                <span className="text-sm text-gray-700">Exenta GMF</span>
+              </label>
+              <p className="text-xs text-gray-500 mt-1 ml-6">
+                Si está marcada, la cuenta está exenta del GMF (Gravamen a los Movimientos Financieros - 4x1000)
+              </p>
+            </div>
+
+            <div className="newaccountmodal-form-group">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tipo de cuenta (Activo/Pasivo)
+              </label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="accountType"
+                    value="asset"
+                    checked={formData.accountType === 'asset'}
+                    onChange={() => setFormData({ ...formData, accountType: 'asset' })}
+                    disabled={formData.type === 'credit_card'}
+                    className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">Activo</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="accountType"
+                    value="liability"
+                    checked={formData.accountType === 'liability'}
+                    onChange={() => setFormData({ ...formData, accountType: 'liability' })}
+                    disabled={formData.type === 'credit_card'}
+                    className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">Pasivo</span>
+                </label>
               </div>
+              {formData.type === 'credit_card' && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Las tarjetas de crédito se manejan automáticamente como pasivo
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -408,30 +635,23 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                 />
                 <span className="text-sm text-gray-700">Cuenta activa</span>
               </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.showBalance}
-                  onChange={(e) => setFormData({ ...formData, showBalance: e.target.checked })}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700">Mostrar saldo públicamente</span>
-              </label>
             </div>
 
             <div className="flex gap-3 pt-4">
               <button
                 type="button"
                 onClick={onClose}
-                className="newaccountmodal-button flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                disabled={isSubmitting}
+                className="newaccountmodal-button flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="newaccountmodal-button flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                disabled={isSubmitting}
+                className="newaccountmodal-button flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {account ? 'Guardar cambios' : 'Crear cuenta'}
+                {isSubmitting ? 'Guardando...' : (account ? 'Guardar cambios' : 'Crear cuenta')}
               </button>
             </div>
           </form>
