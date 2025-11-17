@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp, PieChart, CheckCircle, DollarSign, FileText, CreditCard, BarChart3, AlertCircle, Download, Settings } from 'lucide-react';
-import './HomePage.css';
+import './homepage.css';
 
 export const HomePage: React.FC = () => {
     return (

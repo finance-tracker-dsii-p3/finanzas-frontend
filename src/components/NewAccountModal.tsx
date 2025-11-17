@@ -83,6 +83,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [generalError, setGeneralError] = useState<string | null>(null);
 
   useEffect(() => {
     if (account && account.id) {
@@ -225,7 +226,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
     const category = localTypeToCategory(formData.type);
     const isCreditCard = category === 'credit_card';
     
-    const accountType = isCreditCard ? undefined : formData.accountType;
+    const accountType = isCreditCard ? 'liability' : formData.accountType;
 
     const accountData: CreateAccountData = {
       name: formData.name.trim(),
@@ -253,11 +254,14 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
     }
 
     setIsSubmitting(true);
+    setGeneralError(null);
     try {
       await onSave(accountData, account?.id);
       onClose();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Error al guardar la cuenta');
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar la cuenta';
+      setGeneralError(errorMessage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setIsSubmitting(false);
     }
@@ -275,6 +279,13 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
               <XCircle className="w-6 h-6" />
             </button>
           </div>
+
+          {generalError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-700 font-medium">Error al guardar la cuenta</p>
+              <p className="text-sm text-red-600 mt-1">{generalError}</p>
+            </div>
+          )}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="newaccountmodal-form-group">

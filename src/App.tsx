@@ -2,10 +2,11 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CategoryProvider } from './context/CategoryContext';
+import { BudgetProvider } from './context/BudgetContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { HomePage } from './pages/HomePage';
-import { ProfilePage } from './pages/ProfilePage';
-import { AboutPage } from './pages/AboutPage';
+import { HomePage } from './pages/home/HomePage';
+import { ProfilePage } from './pages/profile/ProfilePage';
+import { AboutPage } from './pages/about/AboutPage';
 import Login from './pages/login/Login';
 import Register from './pages/register/Register';
 import ForgotPassword from './pages/forgot-password/ForgotPassword';
@@ -18,7 +19,8 @@ const App: React.FC = () => {
         <BrowserRouter>
             <AuthProvider>
                 <CategoryProvider>
-                    <main>
+                    <BudgetProvider>
+                        <main>
                         <Routes>
                             <Route path="/" element={<HomePage />} />
                             <Route path="/about" element={<AboutPage />} />
@@ -45,6 +47,7 @@ const App: React.FC = () => {
                             />
                         </Routes>
                     </main>
+                    </BudgetProvider>
                 </CategoryProvider>
             </AuthProvider>
         </BrowserRouter>

@@ -195,7 +195,14 @@ const Dashboard: React.FC = () => {
           />
         )}
         {currentView === 'movements' && <Movements showTaxes={showTaxes} setShowTaxes={setShowTaxes} onBack={() => setCurrentView('dashboard')} />}
-        {currentView === 'budgets' && <Budgets showTaxes={showTaxes} setShowTaxes={setShowTaxes} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} onBack={() => setCurrentView('dashboard')} />}
+        {currentView === 'budgets' && (
+          <Budgets
+            onBack={() => setCurrentView('dashboard')}
+            onViewMovements={() => {
+              setCurrentView('movements');
+            }}
+          />
+        )}
         {currentView === 'reports' && <Reports showTaxes={showTaxes} setShowTaxes={setShowTaxes} onBack={() => setCurrentView('dashboard')} />}
         {currentView === 'accounts' && <Accounts key="accounts" onBack={() => setCurrentView('dashboard')} />}
         {currentView === 'categories' && <CategoriesPage onBack={() => setCurrentView('dashboard')} />}

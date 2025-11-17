@@ -135,7 +135,6 @@ describe('CategoriesPage', () => {
     }
 
     await waitFor(() => {
-      // Verificar que el modal se abrió buscando el input de nombre por placeholder o por texto cercano
       const nameInput = screen.getByPlaceholderText(/ej\. comida, transporte/i);
       expect(nameInput).toBeInTheDocument();
     });

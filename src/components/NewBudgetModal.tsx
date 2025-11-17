@@ -1,199 +1,306 @@
-import React, { useMemo, useState } from 'react';
-import { XCircle, Target, DollarSign } from 'lucide-react';
-import './NewBudgetModal.css';
+import React, { useMemo, useState, useEffect } from 'react';
+import { X, Loader2, AlertCircle } from 'lucide-react';
+import { useBudgets } from '../context/BudgetContext';
 import { useCategories } from '../context/CategoryContext';
+import { BudgetListItem, CalculationMode } from '../services/budgetService';
+import './NewBudgetModal.css';
 
 interface NewBudgetModalProps {
   onClose: () => void;
-  selectedMonth: string;
+  budgetToEdit?: BudgetListItem | null;
 }
 
-const NewBudgetModal: React.FC<NewBudgetModalProps> = ({ onClose, selectedMonth }) => {
+const NewBudgetModal: React.FC<NewBudgetModalProps> = ({ onClose, budgetToEdit }) => {
+  const { createBudget, updateBudget, getCategoriesWithoutBudget } = useBudgets();
   const { getActiveCategoriesByType } = useCategories();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [availableCategories, setAvailableCategories] = useState<Array<{ id: number; name: string; color: string; icon: string }>>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+
   const [formData, setFormData] = useState({
     category: '',
-    limit: '',
-    includeTaxes: false,
-    color: '#3b82f6'
+    amount: '',
+    calculation_mode: 'base' as CalculationMode,
+    alert_threshold: '80',
+    is_active: true,
   });
 
   const expenseCategories = useMemo(() => getActiveCategoriesByType('expense'), [getActiveCategoriesByType]);
 
-  const handleCategoryChange = (category: string) => {
-    const found = expenseCategories.find((item) => item.id.toString() === category);
-    setFormData({
-      ...formData,
-      category,
-      color: found?.color || '#3b82f6'
-    });
-  };
+  useEffect(() => {
+    const loadAvailableCategories = async () => {
+      setIsLoadingCategories(true);
+      try {
+        if (budgetToEdit) {
+          setAvailableCategories(expenseCategories.map((cat) => ({
+            id: cat.id,
+            name: cat.name,
+            color: cat.color,
+            icon: cat.icon || '',
+          })));
+          setFormData({
+            category: budgetToEdit.category.toString(),
+            amount: budgetToEdit.amount,
+            calculation_mode: budgetToEdit.calculation_mode,
+            alert_threshold: budgetToEdit.alert_threshold,
+            is_active: budgetToEdit.is_active,
+          });
+        } else {
+          const response = await getCategoriesWithoutBudget('monthly');
+          setAvailableCategories(response.categories);
+        }
+      } catch (err) {
+        console.error('Error al cargar categorías:', err);
+        setAvailableCategories(expenseCategories.map((cat) => ({
+          id: cat.id,
+          name: cat.name,
+          color: cat.color,
+          icon: cat.icon || '',
+        })));
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
 
-  const formatCurrency = (amount: number): string => {
+    loadAvailableCategories();
+  }, [budgetToEdit, getCategoriesWithoutBudget, expenseCategories]);
+
+  const formatCurrency = (amount: number | string): string => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) || 0 : amount;
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
-      minimumFractionDigits: 0
-    }).format(Math.abs(amount));
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(Math.abs(numAmount));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.category || !formData.limit) {
-      alert('Por favor completa todos los campos requeridos');
+    setError(null);
+
+    if (!formData.category || !formData.amount) {
+      setError('Por favor completa todos los campos requeridos');
       return;
     }
-    console.log('Nuevo presupuesto:', formData);
-    onClose();
+
+    const amount = parseFloat(formData.amount);
+    if (isNaN(amount) || amount <= 0) {
+      setError('El monto debe ser mayor a cero');
+      return;
+    }
+
+    const alertThreshold = parseFloat(formData.alert_threshold);
+    if (isNaN(alertThreshold) || alertThreshold < 0 || alertThreshold > 100) {
+      setError('El umbral de alerta debe estar entre 0 y 100');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (budgetToEdit) {
+        await updateBudget(budgetToEdit.id, {
+          amount: formData.amount,
+          calculation_mode: formData.calculation_mode,
+          alert_threshold: formData.alert_threshold,
+          is_active: formData.is_active,
+        });
+      } else {
+        await createBudget({
+          category: parseInt(formData.category),
+          amount: formData.amount,
+          calculation_mode: formData.calculation_mode,
+          period: 'monthly',
+          alert_threshold: formData.alert_threshold,
+          is_active: formData.is_active,
+        });
+      }
+      onClose();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo guardar el presupuesto';
+      setError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
+  const selectedCategory = useMemo(() => {
+    if (!formData.category) return null;
+    const categoryId = parseInt(formData.category);
+    return availableCategories.find((cat) => cat.id === categoryId) || expenseCategories.find((cat) => cat.id === categoryId);
+  }, [formData.category, availableCategories, expenseCategories]);
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={onClose}>
-      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-gray-900">Nuevo presupuesto</h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-              <XCircle className="w-6 h-6" />
-            </button>
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900">
+            {budgetToEdit ? 'Editar presupuesto' : 'Nuevo presupuesto'}
+          </h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-sm text-red-700 rounded-lg p-3 flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Categoría <span className="text-red-500">*</span>
+            </label>
+            {isLoadingCategories ? (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Cargando categorías...
+              </div>
+            ) : availableCategories.length === 0 && !budgetToEdit ? (
+              <div className="px-3 py-2 border border-amber-200 rounded-lg bg-amber-50 text-sm text-amber-800">
+                No hay categorías disponibles sin presupuesto. Todas las categorías de gasto ya tienen un presupuesto mensual.
+              </div>
+            ) : (
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                disabled={!!budgetToEdit}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-500"
+                required
+              >
+                <option value="">Seleccionar categoría...</option>
+                {availableCategories.map((cat) => (
+                  <option key={cat.id} value={cat.id.toString()}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Período
-              </label>
-              <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-700">
-                {new Date(selectedMonth + '-01').toLocaleDateString('es-CO', { month: 'long', year: 'numeric' })}
+          {selectedCategory && (
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white"
+                style={{ backgroundColor: selectedCategory.color }}
+              >
+                {selectedCategory.icon ? (
+                  <i className={`fa-solid ${selectedCategory.icon}`} aria-hidden="true"></i>
+                ) : (
+                  selectedCategory.name.charAt(0).toUpperCase()
+                )}
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-900">{selectedCategory.name}</p>
+                <p className="text-xs text-gray-500">Categoría seleccionada</p>
               </div>
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Categoría <span className="text-red-500">*</span>
-              </label>
-              {expenseCategories.length === 0 ? (
-                <div className="px-3 py-2 border border-amber-200 rounded-lg bg-amber-50 text-sm text-amber-800">
-                  No tienes categorías de gasto activas. Ve a Catálogo &gt; Categorías para crear una.
-                </div>
-              ) : (
-                <select
-                  value={formData.category}
-                  onChange={(e) => handleCategoryChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Seleccionar categoría...</option>
-                  {expenseCategories.map(cat => (
-                    <option key={cat.id} value={cat.id.toString()}>{cat.name}</option>
-                  ))}
-                </select>
-              )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Límite mensual <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <input
+                type="number"
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                placeholder="0"
+                min="0"
+                step="1000"
+                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
             </div>
+            {formData.amount && (
+              <p className="text-xs text-gray-600 mt-1">{formatCurrency(formData.amount)}</p>
+            )}
+          </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Modo de cálculo <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={formData.calculation_mode}
+              onChange={(e) => setFormData({ ...formData, calculation_mode: e.target.value as CalculationMode })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="base">Base (sin impuestos)</option>
+              <option value="total">Total (con impuestos)</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              {formData.calculation_mode === 'base'
+                ? 'El presupuesto se calculará solo sobre el monto base, sin incluir impuestos.'
+                : 'El presupuesto se calculará sobre el monto total, incluyendo impuestos.'}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Umbral de alerta (%)
+            </label>
+            <input
+              type="number"
+              value={formData.alert_threshold}
+              onChange={(e) => setFormData({ ...formData, alert_threshold: e.target.value })}
+              placeholder="80"
+              min="0"
+              max="100"
+              step="1"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Se activará una alerta cuando el gasto alcance este porcentaje del límite (0-100%).
+            </p>
+          </div>
+
+          {budgetToEdit && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Límite mensual <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="number"
-                  value={formData.limit}
-                  onChange={(e) => setFormData({ ...formData, limit: e.target.value })}
-                  placeholder="0"
-                  min="0"
-                  step="1000"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-              {formData.limit && (
-                <p className="text-xs text-gray-600 mt-1">
-                  {formatCurrency(parseFloat(formData.limit) || 0)}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Color
-              </label>
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-8 h-8 rounded-full border-2 border-gray-300 cursor-pointer"
-                  style={{ backgroundColor: formData.color }}
-                ></div>
-                <input
-                  type="color"
-                  value={formData.color}
-                  onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                  className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
-                />
-                <span className="text-sm text-gray-600">{formData.color}</span>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={formData.includeTaxes}
-                  onChange={(e) => setFormData({ ...formData, includeTaxes: e.target.checked })}
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                   className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                 />
-                <div>
-                  <span className="text-sm font-medium text-blue-900">Incluir impuestos en el presupuesto</span>
-                  <p className="text-xs text-blue-800 mt-1">
-                    Si está activado, el límite incluirá el IVA. Si está desactivado, el límite será solo la base gravable.
-                  </p>
-                </div>
+                <span className="text-sm text-gray-700">Presupuesto activo</span>
               </label>
             </div>
+          )}
 
-            {formData.includeTaxes && formData.limit && (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Target className="w-5 h-5 text-gray-600" />
-                  <p className="text-sm font-medium text-gray-900">Desglose del presupuesto</p>
-                </div>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Base gravable:</span>
-                    <span className="font-medium">{formatCurrency((parseFloat(formData.limit) || 0) / 1.19)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">IVA (19%):</span>
-                    <span className="font-medium">{formatCurrency((parseFloat(formData.limit) || 0) - (parseFloat(formData.limit) || 0) / 1.19)}</span>
-                  </div>
-                  <div className="flex justify-between pt-2 border-t border-gray-300">
-                    <span className="font-semibold text-gray-900">Total límite:</span>
-                    <span className="font-bold">{formatCurrency(parseFloat(formData.limit) || 0)}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                Crear presupuesto
-              </button>
-            </div>
-          </form>
-        </div>
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting || availableCategories.length === 0}
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {budgetToEdit ? 'Guardar cambios' : 'Crear presupuesto'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
 };
 
 export default NewBudgetModal;
-

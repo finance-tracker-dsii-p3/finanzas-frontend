@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Mail, Phone, Lock, Eye, EyeOff, Save, X, Camera, CheckCircle, Trash2, Loader2, LogOut } from 'lucide-react';
-import { authService } from '../services/authService';
-import { useAuth } from '../context/AuthContext';
+import { authService } from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
 import './profile.css';
 
 export const ProfilePage: React.FC = () => {

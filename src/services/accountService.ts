@@ -95,23 +95,49 @@ export const accountService = {
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Error al crear la cuenta' }));
       
-      if (error.name) {
-        throw new Error(Array.isArray(error.name) ? error.name[0] : error.name);
-      }
-      if (error.account_type) {
-        throw new Error(Array.isArray(error.account_type) ? error.account_type[0] : error.account_type);
-      }
-      if (error.category) {
-        throw new Error(Array.isArray(error.category) ? error.category[0] : error.category);
-      }
-      if (error.currency) {
-        throw new Error(Array.isArray(error.currency) ? error.currency[0] : error.currency);
-      }
-      if (error.current_balance) {
-        throw new Error(Array.isArray(error.current_balance) ? error.current_balance[0] : error.current_balance);
+      const errorMessages: string[] = [];
+      
+      const fields = ['name', 'account_type', 'category', 'currency', 'current_balance', 'credit_limit', 'bank_name', 'account_number'];
+      
+      for (const field of fields) {
+        if (error[field]) {
+          const fieldError = Array.isArray(error[field]) ? error[field][0] : error[field];
+          const fieldLabel = {
+            name: 'Nombre',
+            account_type: 'Tipo de cuenta',
+            category: 'Categoría',
+            currency: 'Moneda',
+            current_balance: 'Saldo inicial',
+            credit_limit: 'Límite de crédito',
+            bank_name: 'Banco',
+            account_number: 'Número de cuenta',
+          }[field] || field;
+          errorMessages.push(`${fieldLabel}: ${fieldError}`);
+        }
       }
       
-      throw new Error(error.message || error.detail || 'Error al crear la cuenta');
+      if (error.message) {
+        errorMessages.push(error.message);
+      }
+      if (error.detail) {
+        errorMessages.push(error.detail);
+      }
+      if (error.non_field_errors) {
+        const nonFieldErrors = Array.isArray(error.non_field_errors) ? error.non_field_errors : [error.non_field_errors];
+        errorMessages.push(...nonFieldErrors);
+      }
+      
+      if (errorMessages.length === 0) {
+        const errorValues = Object.values(error);
+        const firstArrayValue = Array.isArray(errorValues[0]) ? errorValues[0][0] : null;
+        if (firstArrayValue) {
+          errorMessages.push(String(firstArrayValue));
+        } else {
+          errorMessages.push('Error al crear la cuenta. Verifica que todos los campos obligatorios estén completos.');
+        }
+      }
+      
+      throw new Error(errorMessages.join('. '));
     }
 
     return response.json();
