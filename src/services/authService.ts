@@ -102,6 +102,10 @@ export interface ChangePasswordResponse {
   message: string;
 }
 
+export interface DeleteAccountResponse {
+  message: string;
+}
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   return {
@@ -325,6 +329,30 @@ export const authService = {
       }
       
       throw new Error(error.message || error.detail || 'Error al cambiar contraseña');
+    }
+
+    return response.json();
+  },
+
+  async deleteAccount(password: string): Promise<DeleteAccountResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/profile/delete/`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ password }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'No se pudo eliminar la cuenta' }));
+
+      if (error.password) {
+        const errorMsg = Array.isArray(error.password) ? error.password[0] : error.password;
+        throw new Error(errorMsg || 'Contraseña incorrecta');
+      }
+      if (error.detail) {
+        throw new Error(error.detail);
+      }
+
+      throw new Error(error.message || 'No se pudo eliminar la cuenta');
     }
 
     return response.json();

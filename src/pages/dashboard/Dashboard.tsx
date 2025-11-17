@@ -6,6 +6,7 @@ import Movements from '../movements/Movements';
 import Budgets from '../budgets/Budgets';
 import Reports from '../reports/Reports';
 import Accounts from '../accounts/Accounts';
+import CategoriesPage from '../categories/Categories';
 import './dashboard.css';
 
 interface MonthData {
@@ -30,7 +31,7 @@ interface CategoryData {
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'categories'>('dashboard');
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [includePending, setIncludePending] = useState(false);
   const [showTaxes, setShowTaxes] = useState(true);
@@ -131,6 +132,16 @@ const Dashboard: React.FC = () => {
                 >
                   Cuentas
                 </button>
+                <button
+                  onClick={() => setCurrentView('categories')}
+                  className={`text-sm font-medium transition-colors ${
+                    currentView === 'categories'
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Categorías
+                </button>
               </nav>
             </div>
             <div className="flex items-center gap-4">
@@ -187,6 +198,7 @@ const Dashboard: React.FC = () => {
         {currentView === 'budgets' && <Budgets showTaxes={showTaxes} setShowTaxes={setShowTaxes} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} onBack={() => setCurrentView('dashboard')} />}
         {currentView === 'reports' && <Reports showTaxes={showTaxes} setShowTaxes={setShowTaxes} onBack={() => setCurrentView('dashboard')} />}
         {currentView === 'accounts' && <Accounts key="accounts" onBack={() => setCurrentView('dashboard')} />}
+        {currentView === 'categories' && <CategoriesPage onBack={() => setCurrentView('dashboard')} />}
       </main>
     </div>
   );

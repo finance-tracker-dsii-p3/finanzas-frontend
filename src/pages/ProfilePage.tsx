@@ -20,6 +20,11 @@ export const ProfilePage: React.FC = () => {
   const [passwordSuccess, setPasswordSuccess] = useState<string>('');
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
+  const [deleteAccountError, setDeleteAccountError] = useState('');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   
   const [personalInfo, setPersonalInfo] = useState({
     first_name: '',
@@ -156,10 +161,31 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
-  const handleDeleteAccount = () => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.')) {
-      console.log('Eliminar cuenta');
-      navigate('/login');
+  const handleOpenDeleteModal = () => {
+    setDeleteAccountError('');
+
+    if (!deletePassword) {
+      setDeleteAccountError('Debes ingresar tu contraseña para continuar');
+      return;
+    }
+
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleteAccountError('');
+
+    try {
+      setIsDeletingAccount(true);
+      await authService.deleteAccount(deletePassword);
+      await logout();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo eliminar la cuenta';
+      setDeleteAccountError(errorMessage);
+    } finally {
+      setIsDeletingAccount(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -563,14 +589,91 @@ export const ProfilePage: React.FC = () => {
               <p className="text-sm text-gray-600 mb-4">
                 Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, ten cuidado.
               </p>
+              {deleteAccountError && (
+                <div className="profile-error-message mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-800">{deleteAccountError}</p>
+                </div>
+              )}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Confirma tu contraseña</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type={showDeletePassword ? 'text' : 'password'}
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    placeholder="Ingresa tu contraseña actual"
+                    className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowDeletePassword(!showDeletePassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showDeletePassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
               <button
-                onClick={handleDeleteAccount}
-                className="profile-danger-button flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                onClick={handleOpenDeleteModal}
+                disabled={isDeletingAccount}
+                className={`profile-danger-button flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed ${isDeletingAccount ? 'opacity-75' : 'hover:bg-red-700'}`}
               >
-                <Trash2 className="w-4 h-4" />
-                Eliminar mi cuenta
+                {isDeletingAccount ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Eliminar mi cuenta
+                  </>
+                )}
               </button>
             </div>
+            {showDeleteModal && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center px-4">
+                <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4">
+                  <div className="flex items-center gap-3 text-red-700">
+                    <Trash2 className="w-5 h-5" />
+                    <h4 className="text-lg font-semibold">Confirmar eliminación</h4>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    ¿Estás seguro de que deseas eliminar tu cuenta? Esta acción es permanente y no se puede deshacer.
+                  </p>
+                  <div className="text-sm text-gray-500 bg-red-50 border border-red-100 rounded-lg p-3">
+                    Se cerrará tu sesión inmediatamente después de eliminar la cuenta.
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                    <button
+                      onClick={handleDeleteAccount}
+                      disabled={isDeletingAccount}
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isDeletingAccount ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Eliminando...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="w-4 h-4" />
+                          Sí, eliminar
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setShowDeleteModal(false)}
+                      disabled={isDeletingAccount}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>

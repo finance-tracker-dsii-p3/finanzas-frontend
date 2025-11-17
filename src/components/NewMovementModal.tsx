@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { XCircle, TrendingDown, TrendingUp, ArrowRight, CreditCard } from 'lucide-react';
 import './NewMovementModal.css';
+import { useCategories } from '../context/CategoryContext';
 
 interface NewMovementModalProps {
   onClose: () => void;
 }
 
 const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose }) => {
+  const { getActiveCategoriesByType } = useCategories();
   const [formData, setFormData] = useState({
     type: 'expense',
     date: new Date().toISOString().split('T')[0],
@@ -26,9 +28,37 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose }) => {
   });
 
   const [calculationMode, setCalculationMode] = useState<'total' | 'base'>('total');
-
-  const categories = ['Alimentación', 'Transporte', 'Vivienda', 'Entretenimiento', 'Salud', 'Ingreso', 'Sin clasificar'];
   const accounts = ['Bancolombia', 'Nequi', 'Tarjeta Crédito Visa', 'Efectivo'];
+
+  const availableCategories = useMemo(() => {
+    if (formData.type === 'transfer') {
+      return [];
+    }
+    const type = formData.type === 'income' ? 'income' : 'expense';
+    return getActiveCategoriesByType(type);
+  }, [formData.type, getActiveCategoriesByType]);
+
+  const suggestedCategory = useMemo(() => {
+    if (!formData.description) {
+      return '';
+    }
+    const desc = formData.description.toLowerCase();
+    const suggestionRules = [
+      { keywords: ['uber', 'taxi', 'gasolina', 'peaje'], label: 'Transporte' },
+      { keywords: ['supermercado', 'restaurante', 'comida', 'mercado'], label: 'Alimentación' },
+      { keywords: ['arriendo', 'alquiler', 'luz', 'agua', 'gas'], label: 'Vivienda' },
+      { keywords: ['netflix', 'cine', 'spotify'], label: 'Entretenimiento' },
+      { keywords: ['farmacia', 'doctor', 'medicina'], label: 'Salud' },
+      { keywords: ['salario', 'nómina', 'bono'], label: 'Salario' },
+    ];
+
+    const candidate = suggestionRules.find((rule) => rule.keywords.some((word) => desc.includes(word)));
+    if (!candidate) {
+      return '';
+    }
+    const found = availableCategories.find((category) => category.name.toLowerCase() === candidate.label.toLowerCase());
+    return found?.name ?? '';
+  }, [formData.description, availableCategories]);
 
   const handleAmountChange = (value: string, mode: 'total' | 'base') => {
     if (mode === 'total') {
@@ -41,16 +71,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose }) => {
       const total = base + iva;
       setFormData({ ...formData, base: value, amount: total.toFixed(2) });
     }
-  };
-
-  const suggestedCategory = (): string => {
-    const desc = formData.description.toLowerCase();
-    if (desc.includes('uber') || desc.includes('taxi') || desc.includes('gasolina')) return 'Transporte';
-    if (desc.includes('supermercado') || desc.includes('restaurante') || desc.includes('comida')) return 'Alimentación';
-    if (desc.includes('arriendo') || desc.includes('alquiler') || desc.includes('luz') || desc.includes('agua')) return 'Vivienda';
-    if (desc.includes('netflix') || desc.includes('cine') || desc.includes('spotify')) return 'Entretenimiento';
-    if (desc.includes('farmacia') || desc.includes('doctor') || desc.includes('medicina')) return 'Salud';
-    return 'Sin clasificar';
   };
 
   const formatCurrency = (amount: number): string => {
@@ -148,9 +168,9 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose }) => {
                 placeholder="Ej: Supermercado Éxito"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-              {formData.description && !formData.category && (
+              {formData.description && !formData.category && suggestedCategory && (
                 <p className="text-xs text-blue-600 mt-1">
-                  💡 Sugerencia: {suggestedCategory()}
+                  💡 Sugerencia: {suggestedCategory}
                 </p>
               )}
             </div>
@@ -188,16 +208,31 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose }) => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Seleccionar...</option>
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
+                  {formData.type === 'transfer' ? (
+                    <div className="px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-500">
+                      Las transferencias no requieren categoría
+                    </div>
+                  ) : availableCategories.length === 0 ? (
+                    <div className="px-3 py-2 border border-amber-200 rounded-lg bg-amber-50 text-sm text-amber-800 space-y-1">
+                      <p>No hay categorías activas para este tipo.</p>
+                      <p className="text-xs">
+                        Ve a la pestaña <span className="font-semibold">Categorías</span> en el Dashboard para crear una nueva.
+                      </p>
+                    </div>
+                  ) : (
+                    <select
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Seleccionar...</option>
+                      {availableCategories.map((cat) => (
+                        <option key={cat.id} value={cat.id.toString()}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta</label>

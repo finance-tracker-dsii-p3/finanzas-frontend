@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { XCircle, Target, DollarSign } from 'lucide-react';
 import './NewBudgetModal.css';
+import { useCategories } from '../context/CategoryContext';
 
 interface NewBudgetModalProps {
   onClose: () => void;
@@ -8,6 +9,7 @@ interface NewBudgetModalProps {
 }
 
 const NewBudgetModal: React.FC<NewBudgetModalProps> = ({ onClose, selectedMonth }) => {
+  const { getActiveCategoriesByType } = useCategories();
   const [formData, setFormData] = useState({
     category: '',
     limit: '',
@@ -15,37 +17,14 @@ const NewBudgetModal: React.FC<NewBudgetModalProps> = ({ onClose, selectedMonth 
     color: '#3b82f6'
   });
 
-  const categories = [
-    'Alimentación',
-    'Transporte',
-    'Vivienda',
-    'Entretenimiento',
-    'Salud',
-    'Educación',
-    'Ropa',
-    'Tecnología',
-    'Servicios',
-    'Otros'
-  ];
-
-  const categoryColors: { [key: string]: string } = {
-    'Alimentación': '#10b981',
-    'Transporte': '#3b82f6',
-    'Vivienda': '#8b5cf6',
-    'Entretenimiento': '#f59e0b',
-    'Salud': '#ef4444',
-    'Educación': '#06b6d4',
-    'Ropa': '#ec4899',
-    'Tecnología': '#6366f1',
-    'Servicios': '#14b8a6',
-    'Otros': '#6b7280'
-  };
+  const expenseCategories = useMemo(() => getActiveCategoriesByType('expense'), [getActiveCategoriesByType]);
 
   const handleCategoryChange = (category: string) => {
+    const found = expenseCategories.find((item) => item.id.toString() === category);
     setFormData({
       ...formData,
       category,
-      color: categoryColors[category] || '#3b82f6'
+      color: found?.color || '#3b82f6'
     });
   };
 
@@ -92,17 +71,23 @@ const NewBudgetModal: React.FC<NewBudgetModalProps> = ({ onClose, selectedMonth 
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Categoría <span className="text-red-500">*</span>
               </label>
-              <select
-                value={formData.category}
-                onChange={(e) => handleCategoryChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              >
-                <option value="">Seleccionar categoría...</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
+              {expenseCategories.length === 0 ? (
+                <div className="px-3 py-2 border border-amber-200 rounded-lg bg-amber-50 text-sm text-amber-800">
+                  No tienes categorías de gasto activas. Ve a Catálogo &gt; Categorías para crear una.
+                </div>
+              ) : (
+                <select
+                  value={formData.category}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Seleccionar categoría...</option>
+                  {expenseCategories.map(cat => (
+                    <option key={cat.id} value={cat.id.toString()}>{cat.name}</option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div>
