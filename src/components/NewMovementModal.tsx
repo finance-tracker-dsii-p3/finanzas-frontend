@@ -13,7 +13,7 @@ interface NewMovementModalProps {
 }
 
 const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess, transactionToEdit, transactionToDuplicate }) => {
-  const { getActiveCategoriesByType, createCategory } = useCategories();
+  const { getActiveCategoriesByType, createCategory, refreshCategories } = useCategories();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -161,16 +161,32 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     
     try {
       setIsCreatingCategory(true);
+      setError(null); // Limpiar errores previos
       const categoryType = formData.type === 'income' ? 'income' : 'expense';
       const payload = {
         name: newCategoryName.trim(),
         type: categoryType as 'income' | 'expense',
       };
-      await createCategory(payload);
+      const newCategory = await createCategory(payload);
+      
+      // Recargar categorías para asegurar sincronización
+      try {
+        await refreshCategories({ active_only: false });
+      } catch (refreshError) {
+        console.warn('No se pudieron recargar las categorías, pero la categoría fue creada:', refreshError);
+      }
+      
+      // Seleccionar automáticamente la nueva categoría creada
+      if (newCategory?.id) {
+        setFormData({ ...formData, category: newCategory.id.toString() });
+      }
       setNewCategoryName('');
       setShowNewCategoryForm(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al crear categoría');
+      const errorMessage = err instanceof Error ? err.message : 'Error al crear categoría';
+      setError(errorMessage);
+      console.error('Error al crear categoría:', err);
+      // No cerrar el formulario si hay error, para que el usuario pueda intentar de nuevo
     } finally {
       setIsCreatingCategory(false);
     }
@@ -181,7 +197,9 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       return [];
     }
     const type = formData.type === 'income' ? 'income' : 'expense';
-    return getActiveCategoriesByType(type);
+    const categories = getActiveCategoriesByType(type);
+    // Filtrar categorías que no tengan id válido
+    return categories.filter((cat) => cat && cat.id != null);
   }, [formData.type, getActiveCategoriesByType]);
 
   const getTransactionType = (): TransactionType => {
@@ -533,11 +551,15 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                       aria-required="true"
                     >
                       <option value="">Seleccionar...</option>
-                      {availableCategories.map((cat) => (
-                        <option key={cat.id} value={cat.id.toString()}>
-                          {cat.name}
-                        </option>
-                      ))}
+                      {availableCategories.map((cat) => {
+                        // Validación adicional por si acaso
+                        if (!cat || cat.id == null) return null;
+                        return (
+                          <option key={cat.id} value={cat.id.toString()}>
+                            {cat.name || 'Sin nombre'}
+                          </option>
+                        );
+                      })}
                     </select>
                   )}
                   {showNewCategoryForm && (

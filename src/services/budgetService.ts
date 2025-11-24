@@ -1,3 +1,5 @@
+import { checkAndHandleAuthError } from '../utils/authErrorHandler';
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
 
 export type CalculationMode = 'base' | 'total';
@@ -159,6 +161,11 @@ const getAuthHeaders = () => {
 };
 
 const parseError = async (response: Response) => {
+  // Manejar errores de autenticación primero
+  if (response.status === 401) {
+    checkAndHandleAuthError(response);
+  }
+
   const fallback = { message: 'Error en la operación de presupuestos' };
   const error = await response.json().catch(() => fallback);
   const errorValues = Object.values(error);

@@ -1,3 +1,5 @@
+import { checkAndHandleAuthError } from '../utils/authErrorHandler';
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
 
 export type CategoryType = 'income' | 'expense';
@@ -72,6 +74,11 @@ const buildQueryParams = (filters?: CategoryFilters) => {
 };
 
 const parseError = async (response: Response) => {
+  // Manejar errores de autenticación primero
+  if (response.status === 401) {
+    checkAndHandleAuthError(response);
+  }
+
   const fallback = { message: 'Error en la operación de categorías' };
   const error = await response.json().catch(() => fallback);
   const detail =

@@ -1,3 +1,5 @@
+import { checkAndHandleAuthError } from '../utils/authErrorHandler';
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
 
 export interface CreditCardDetails {
@@ -102,6 +104,7 @@ const parseError = async (response: Response, defaultMessage: string = 'Error en
 
   // Manejar errores de autenticación
   if (response.status === 401) {
+    checkAndHandleAuthError(response);
     return new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
   }
 

@@ -52,10 +52,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       checkAuth();
     };
     
+    const handleAuthLogout = () => {
+      setUser(null);
+      setIsLoading(false);
+    };
+    
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('auth:logout', handleAuthLogout);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('auth:logout', handleAuthLogout);
     };
   }, [checkAuth]);
 

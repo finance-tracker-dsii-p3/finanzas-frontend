@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '../test/utils/test-utils';
+import { render, screen, waitFor, act } from '../test/utils/test-utils';
 import userEvent from '@testing-library/user-event';
 import NewAccountModal from './NewAccountModal';
 import * as accountService from '../services/accountService';
@@ -34,7 +34,7 @@ describe('NewAccountModal', () => {
     expect(textboxes.length).toBeGreaterThan(0);
   });
 
-  it('debe mostrar el modal de edición cuando se pasa una cuenta', () => {
+  it('debe mostrar el modal de edición cuando se pasa una cuenta', async () => {
     const account = {
       id: 1,
       name: 'Cuenta Test',
@@ -45,10 +45,14 @@ describe('NewAccountModal', () => {
       is_active: true,
     };
 
-    render(<NewAccountModal onClose={mockOnClose} onSave={mockOnSave} account={account} />);
+    await act(async () => {
+      render(<NewAccountModal onClose={mockOnClose} onSave={mockOnSave} account={account} />);
+    });
     
-    expect(screen.getByText(/editar cuenta/i)).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Cuenta Test')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/editar cuenta/i)).toBeInTheDocument();
+      expect(screen.getByDisplayValue('Cuenta Test')).toBeInTheDocument();
+    });
   });
 
   it('debe permitir escribir en el campo de nombre', async () => {

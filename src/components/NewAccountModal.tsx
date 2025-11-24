@@ -138,9 +138,16 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
     const loadOptions = async () => {
       try {
         const options = await accountService.getAccountOptions();
-        setBanks(options.banks);
-        setWallets(options.wallets);
-        setCreditCardBanks(options.credit_card_banks);
+        // Solo actualizar si los arrays existen y tienen elementos
+        if (options.banks && Array.isArray(options.banks) && options.banks.length > 0) {
+          setBanks(options.banks);
+        }
+        if (options.wallets && Array.isArray(options.wallets) && options.wallets.length > 0) {
+          setWallets(options.wallets);
+        }
+        if (options.credit_card_banks && Array.isArray(options.credit_card_banks) && options.credit_card_banks.length > 0) {
+          setCreditCardBanks(options.credit_card_banks);
+        }
       } catch (error) {
         if (error instanceof Error && error.message.includes('no implementado')) {
           console.info('El endpoint de opciones aún no está implementado en el backend. Usando valores por defecto.');

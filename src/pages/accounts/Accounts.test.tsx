@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '../../test/utils/test-utils';
+import { render, screen, waitFor, act } from '../../test/utils/test-utils';
 import userEvent from '@testing-library/user-event';
 import Accounts from './Accounts';
 import * as accountService from '../../services/accountService';
@@ -77,11 +77,15 @@ describe('Accounts', () => {
     });
   });
 
-  it('debe mostrar el botón de volver', () => {
-    render(<Accounts onBack={mockOnBack} />);
+  it('debe mostrar el botón de volver', async () => {
+    await act(async () => {
+      render(<Accounts onBack={mockOnBack} />);
+    });
     
-    const backButton = screen.getByText(/volver al dashboard/i);
-    expect(backButton).toBeInTheDocument();
+    await waitFor(() => {
+      const backButton = screen.getByText(/volver al dashboard/i);
+      expect(backButton).toBeInTheDocument();
+    });
   });
 
   it('debe llamar a onBack cuando se hace clic en volver', async () => {
@@ -94,11 +98,15 @@ describe('Accounts', () => {
     expect(mockOnBack).toHaveBeenCalled();
   });
 
-  it('debe mostrar el botón de nueva cuenta', () => {
-    render(<Accounts onBack={mockOnBack} />);
+  it('debe mostrar el botón de nueva cuenta', async () => {
+    await act(async () => {
+      render(<Accounts onBack={mockOnBack} />);
+    });
     
-    const newAccountButton = screen.getByText(/nueva cuenta/i);
-    expect(newAccountButton).toBeInTheDocument();
+    await waitFor(() => {
+      const newAccountButton = screen.getByText(/nueva cuenta/i);
+      expect(newAccountButton).toBeInTheDocument();
+    });
   });
 
   it('debe cargar y mostrar las cuentas', async () => {

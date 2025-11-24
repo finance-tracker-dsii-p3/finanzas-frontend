@@ -1,3 +1,5 @@
+import { checkAndHandleAuthError } from '../utils/authErrorHandler';
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
 
 export type TransactionType = 1 | 2 | 3 | 4; // 1=Income, 2=Expense, 3=Transfer, 4=Saving
@@ -118,6 +120,7 @@ const parseError = async (response: Response) => {
 
   // Manejar errores de autenticación
   if (response.status === 401) {
+    checkAndHandleAuthError(response);
     throw new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
   }
 
