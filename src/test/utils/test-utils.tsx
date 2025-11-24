@@ -2,12 +2,15 @@ import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../../context/AuthContext';
+import { CategoryProvider } from '../../context/CategoryContext';
 
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        {children}
+        <CategoryProvider>
+          {children}
+        </CategoryProvider>
       </AuthProvider>
     </BrowserRouter>
   );

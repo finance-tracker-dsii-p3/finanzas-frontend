@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Plus, Edit2, Trash2, CreditCard, Wallet, Building2, Banknote, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Edit2, Trash2, CreditCard, Wallet, Building2, Banknote, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import NewAccountModal from '../../components/NewAccountModal';
 import CardDetail from '../cards/CardDetail';
 import { accountService, Account, CreateAccountData } from '../../services/accountService';
@@ -16,6 +16,7 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
   const [selectedCard, setSelectedCard] = useState<Account | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showBalance, setShowBalance] = useState<{ [key: number]: boolean }>({});
+  const [expandedCards, setExpandedCards] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
     loadAccounts();
@@ -72,15 +73,16 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
     }
   };
 
+  // Balance total solo de activos (dinero disponible)
+  // No incluir tarjetas de crédito u otros pasivos
   const totalBalance = accounts
-    .filter(acc => acc.is_active === true)
-    .reduce((sum, acc) => {
-      if (acc.account_type === 'asset') {
-        return sum + acc.current_balance;
-      } else {
-        return sum - acc.current_balance;
-      }
-    }, 0);
+    .filter(acc => acc.is_active === true && acc.account_type === 'asset')
+    .reduce((sum, acc) => sum + acc.current_balance, 0);
+  
+  // Deudas totales (solo para referencia, no se incluyen en el balance)
+  const totalDebts = accounts
+    .filter(acc => acc.is_active === true && acc.account_type === 'liability')
+    .reduce((sum, acc) => sum + acc.current_balance, 0);
 
   const handleSaveAccount = async (accountData: CreateAccountData, accountId?: number) => {
     if (accountId) {
@@ -129,7 +131,27 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
     }));
   };
 
+  const toggleCardExpansion = (id: number) => {
+    setExpandedCards(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
   if (selectedCard && selectedCard.category === 'credit_card') {
+    const creditDetails = selectedCard.credit_card_details;
+    const creditLimit = creditDetails?.credit_limit ?? selectedCard.credit_limit ?? 0;
+    const currentBalance = selectedCard.current_balance ?? 0;
+    
+    // Calcular disponible de forma segura
+    let available = 0;
+    if (creditDetails?.available_credit !== undefined && creditDetails.available_credit !== null) {
+      available = creditDetails.available_credit;
+    } else if (creditLimit > 0) {
+      available = Math.max(0, creditLimit + currentBalance);
+    }
+    available = isNaN(available) || !isFinite(available) ? 0 : available;
+    
     return (
       <CardDetail
         card={{
@@ -137,9 +159,13 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
           name: selectedCard.name,
           bankName: selectedCard.bank_name || '',
           accountNumber: selectedCard.account_number || '',
-          limit: selectedCard.credit_limit || 0,
-          available: (selectedCard.credit_limit || 0) + selectedCard.current_balance,
-          used: Math.abs(selectedCard.current_balance),
+          limit: creditLimit,
+          available: available,
+          used: creditDetails?.used_credit ?? Math.abs(currentBalance),
+          currentDebt: creditDetails?.current_debt ?? currentBalance,
+          totalPaid: creditDetails?.total_paid ?? 0,
+          utilizationPercentage: creditDetails?.utilization_percentage ?? 
+            (creditLimit > 0 ? (Math.abs(currentBalance) / creditLimit) * 100 : 0),
           currency: selectedCard.currency,
           color: '#8b5cf6'
         }}
@@ -176,7 +202,7 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
       </div>
 
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div>
             <p className="text-sm text-gray-600 mb-1">Total de cuentas</p>
             <p className="text-2xl font-bold text-gray-900">{accounts.length}</p>
@@ -186,11 +212,21 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
             <p className="text-2xl font-bold text-blue-600">{accounts.filter(acc => acc.is_active === true).length}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-600 mb-1">Balance total</p>
-            <p className={`text-2xl font-bold ${totalBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <p className="text-sm text-gray-600 mb-1">Balance disponible</p>
+            <p className="text-2xl font-bold text-green-600">
               {formatCurrency(totalBalance)}
             </p>
+            <p className="text-xs text-gray-500 mt-1">Solo activos</p>
           </div>
+          {totalDebts > 0 && (
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Deudas totales</p>
+              <p className="text-2xl font-bold text-red-600">
+                {formatCurrency(totalDebts)}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">Tarjetas de crédito</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -238,35 +274,71 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                 return cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
               };
 
-              const usagePercentage = account.credit_limit ? (Math.abs(account.current_balance) / account.credit_limit) * 100 : 0;
-              const available = account.credit_limit ? account.credit_limit + account.current_balance : 0;
+              // Usar datos del backend si están disponibles, sino calcular localmente
+              const creditDetails = account.credit_card_details;
+              const creditLimit = creditDetails?.credit_limit ?? account.credit_limit ?? 0;
+              const currentBalance = account.current_balance ?? 0;
+              
+              // Calcular valores de forma segura
+              const usedCredit = creditDetails?.used_credit ?? Math.abs(currentBalance);
+              const currentDebt = creditDetails?.current_debt ?? currentBalance;
+              const totalPaid = creditDetails?.total_paid ?? 0;
+              
+              // Calcular disponible de forma segura
+              let available = 0;
+              if (creditDetails?.available_credit !== undefined && creditDetails.available_credit !== null) {
+                available = creditDetails.available_credit;
+              } else if (creditLimit > 0) {
+                // Para tarjetas de crédito: disponible = límite - deuda actual
+                // current_balance es negativo para pasivos, así que lo sumamos
+                available = Math.max(0, creditLimit + currentBalance);
+              }
+              
+              // Asegurar que available sea un número válido
+              available = isNaN(available) || !isFinite(available) ? 0 : available;
+              
+              const usagePercentage = creditDetails?.utilization_percentage ?? 
+                (creditLimit > 0 ? (usedCredit / creditLimit) * 100 : 0);
 
+              const isExpanded = expandedCards[account.id!] === true;
+              
               return (
-                <div 
-                  key={account.id} 
-                  className="relative overflow-hidden rounded-2xl shadow-lg transition-all hover:shadow-xl hover:scale-105"
-                  style={{
-                    background: `linear-gradient(135deg, #8b5cf6 0%, #8b5cf6dd 100%)`,
-                    minHeight: '220px'
-                  }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                  <div className="relative p-6 text-white">
-                    <div className="flex items-start justify-between mb-6">
+                 <div 
+                   key={account.id} 
+                   className="relative overflow-hidden rounded-2xl shadow-lg transition-all hover:shadow-xl"
+                   style={{
+                     background: `linear-gradient(135deg, #8b5cf6 0%, #8b5cf6dd 100%)`,
+                     minHeight: isExpanded ? 'auto' : '176px'
+                   }}
+                 >
+                   <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+                   <div className="relative p-4 text-white">
+                     <div className="flex items-start justify-between mb-4">
+                       <div className="flex items-center gap-2">
+                         <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                           <CreditCard className="w-5 h-5" />
+                         </div>
+                         <div>
+                           <h3 className="font-bold text-base">{account.name}</h3>
+                           {account.bank_name ? (
+                             <p className="text-xs text-white/80">{account.bank_name}</p>
+                           ) : (
+                             <p className="text-xs text-white/60">Sin banco especificado</p>
+                           )}
+                         </div>
+                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                          <CreditCard className="w-6 h-6" />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-lg">{account.name}</h3>
-                          {account.bank_name ? (
-                            <p className="text-xs text-white/80">{account.bank_name}</p>
+                        <button
+                          onClick={() => toggleCardExpansion(account.id!)}
+                          className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                          title={isExpanded ? 'Contraer' : 'Expandir'}
+                        >
+                          {isExpanded ? (
+                            <ChevronUp className="w-4 h-4" />
                           ) : (
-                            <p className="text-xs text-white/60">Sin banco especificado</p>
+                            <ChevronDown className="w-4 h-4" />
                           )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
+                        </button>
                         <button
                           onClick={() => toggleBalanceVisibility(account.id!)}
                           className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
@@ -295,107 +367,165 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                       </div>
                     </div>
 
-                    <div className="mb-6">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-12 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded flex items-center justify-center">
-                          <div className="w-8 h-6 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-sm"></div>
+                     <div className="mb-4">
+                       <div className="flex items-center gap-2 mb-1.5">
+                         <div className="w-10 h-6 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded flex items-center justify-center">
+                           <div className="w-7 h-4 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-sm"></div>
+                         </div>
+                       </div>
+                       <p className="text-xl font-mono font-bold tracking-wider mb-0.5">
+                         {isBalanceVisible 
+                           ? formatCardNumber(account.account_number || '')
+                           : '•••• •••• •••• ••••'
+                         }
+                       </p>
+                     </div>
+
+                     <div className="grid grid-cols-2 gap-2 mb-3">
+                       <div>
+                         <p className="text-xs text-white/70 mb-0.5">Límite de crédito</p>
+                         <p className="text-base font-bold">
+                           {isBalanceVisible && creditLimit
+                             ? formatCurrency(creditLimit, account.currency)
+                             : '••••••'
+                           }
+                         </p>
+                       </div>
+                       <div className="text-right">
+                         <p className="text-xs text-white/70 mb-0.5">Disponible</p>
+                         <p className="text-base font-bold">
+                           {isBalanceVisible && creditLimit
+                             ? formatCurrency(available, account.currency)
+                             : '••••••'
+                           }
+                         </p>
+                       </div>
+                     </div>
+
+                    {/* Información detallada de uso - Solo visible cuando está expandida */}
+                    {isExpanded && isBalanceVisible && (
+                      <div className="mb-4 p-3 bg-white/10 rounded-lg backdrop-blur-sm space-y-2">
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <p className="text-white/70 mb-0.5">Lo usado</p>
+                            <p className="text-white font-semibold">{formatCurrency(usedCredit, account.currency)}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-white/70 mb-0.5">Lo que se debe</p>
+                            <p className="text-white font-semibold">{formatCurrency(Math.abs(currentDebt), account.currency)}</p>
+                          </div>
                         </div>
+                        {totalPaid > 0 && (
+                          <div className="pt-2 border-t border-white/20">
+                            <p className="text-white/70 text-xs mb-0.5">Total pagado</p>
+                            <p className="text-white font-semibold text-sm">
+                              {formatCurrency(totalPaid, account.currency)}
+                              {creditLimit > 0 && totalPaid > creditLimit && (
+                                <span className="ml-1 text-yellow-300 text-xs">(incluye intereses)</span>
+                              )}
+                            </p>
+                            {currentDebt < 0 && Math.abs(currentDebt) > 0 && (
+                              <p className="text-white/60 text-xs mt-1">
+                                Ha pagado {((totalPaid / Math.abs(currentDebt)) * 100).toFixed(1)}% de la deuda actual
+                                {totalPaid > Math.abs(currentDebt) && (
+                                  <span className="text-yellow-300"> (exceso por intereses acumulados)</span>
+                                )}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        {totalPaid === 0 && currentDebt < 0 && (
+                          <div className="pt-2 border-t border-white/20">
+                            <p className="text-white/70 text-xs mb-0.5">Total pagado</p>
+                            <p className="text-white font-semibold text-sm">{formatCurrency(0, account.currency)}</p>
+                            <p className="text-white/60 text-xs mt-1">No se han registrado pagos aún</p>
+                          </div>
+                        )}
                       </div>
-                      <p className="text-2xl font-mono font-bold tracking-wider mb-1">
-                        {isBalanceVisible 
-                          ? formatCardNumber(account.account_number || '')
-                          : '•••• •••• •••• ••••'
-                        }
-                      </p>
-                    </div>
+                    )}
 
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <p className="text-xs text-white/70 mb-1">Límite de crédito</p>
-                        <p className="text-lg font-bold">
-                          {isBalanceVisible && account.credit_limit
-                            ? formatCurrency(account.credit_limit, account.currency)
-                            : '••••••'
-                          }
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-white/70 mb-1">Disponible</p>
-                        <p className="text-lg font-bold">
-                          {isBalanceVisible && account.credit_limit
-                            ? formatCurrency(available, account.currency)
-                            : '••••••'
-                          }
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mb-4 space-y-2">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-white/70">Moneda:</span>
-                        <span className="text-white font-semibold">{account.currency}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-white/70">Banco:</span>
-                        <span className="text-white font-semibold">{account.bank_name || 'No especificado'}</span>
-                      </div>
-                      {account.gmf_exempt !== undefined && (
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-white/70">Exenta GMF:</span>
-                          <span className={`font-semibold ${account.gmf_exempt ? 'text-green-300' : 'text-yellow-300'}`}>
-                            {account.gmf_exempt ? 'Sí' : 'No'}
-                          </span>
+                    {/* Información adicional y barra de uso - Solo visible cuando está expandida */}
+                    {isExpanded && (
+                      <>
+                        <div className="mb-4 space-y-2">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-white/70">Moneda:</span>
+                            <span className="text-white font-semibold">{account.currency}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-white/70">Banco:</span>
+                            <span className="text-white font-semibold">{account.bank_name || 'No especificado'}</span>
+                          </div>
+                          {account.gmf_exempt !== undefined && (
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-white/70">Exenta GMF:</span>
+                              <span className={`font-semibold ${account.gmf_exempt ? 'text-green-300' : 'text-yellow-300'}`}>
+                                {account.gmf_exempt ? 'Sí' : 'No'}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
 
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="text-white/80">Uso del crédito</span>
-                        <span className="font-semibold">{usagePercentage.toFixed(1)}%</span>
-                      </div>
-                      <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
-                        <div 
-                          className={`h-full rounded-full transition-all ${
-                            usagePercentage >= 90 ? 'bg-red-300' : 
-                            usagePercentage >= 70 ? 'bg-yellow-300' : 
-                            'bg-green-300'
-                          }`}
-                          style={{ width: `${Math.min(usagePercentage, 100)}%` }}
-                        ></div>
-                      </div>
-                    </div>
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between text-xs mb-1">
+                            <span className="text-white/80">Uso del crédito</span>
+                            <span className="font-semibold">
+                              {isBalanceVisible 
+                                ? `${usagePercentage.toFixed(1)}%`
+                                : '•••%'
+                              }
+                            </span>
+                          </div>
+                          <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full transition-all ${
+                                usagePercentage >= 90 ? 'bg-red-400' : 
+                                usagePercentage >= 70 ? 'bg-yellow-400' : 
+                                'bg-green-400'
+                              }`}
+                              style={{ width: `${Math.min(usagePercentage, 100)}%` }}
+                            ></div>
+                          </div>
+                          {isBalanceVisible && (
+                            <div className="flex items-center justify-between text-xs mt-1 text-white/60">
+                              <span>Usado: {formatCurrency(usedCredit, account.currency)}</span>
+                              <span>Disponible: {formatCurrency(isNaN(available) ? 0 : available, account.currency)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
 
-                    <div className="flex gap-2 pt-4 border-t border-white/20">
-                      <button
-                        onClick={() => setSelectedCard(account)}
-                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg text-sm font-medium transition-colors"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        Ver detalle
-                      </button>
-                      <button
-                        onClick={async () => {
-                          try {
-                            const fullAccount = await accountService.getAccountById(account.id!);
-                            setEditingAccount(fullAccount);
-                            setShowNewAccountModal(true);
-                          } catch (error) {
-                            console.error('Error al cargar detalles de la cuenta:', error);
-                            alert('Error al cargar los detalles de la cuenta');
-                          }
-                        }}
-                        className="px-3 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-colors"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteAccount(account.id!)}
-                        className="px-3 py-2 bg-red-500/30 hover:bg-red-500/40 backdrop-blur-sm rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                     <div className="flex gap-2 pt-3 border-t border-white/20">
+                       <button
+                         onClick={() => setSelectedCard(account)}
+                         className="flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg text-xs font-medium transition-colors"
+                       >
+                         <ExternalLink className="w-3.5 h-3.5" />
+                         Ver detalle
+                       </button>
+                       <button
+                         onClick={async () => {
+                           try {
+                             const fullAccount = await accountService.getAccountById(account.id!);
+                             setEditingAccount(fullAccount);
+                             setShowNewAccountModal(true);
+                           } catch (error) {
+                             console.error('Error al cargar detalles de la cuenta:', error);
+                             alert('Error al cargar los detalles de la cuenta');
+                           }
+                         }}
+                         className="px-2.5 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-colors"
+                       >
+                         <Edit2 className="w-3.5 h-3.5" />
+                       </button>
+                       <button
+                         onClick={() => handleDeleteAccount(account.id!)}
+                         className="px-2.5 py-1.5 bg-red-500/30 hover:bg-red-500/40 backdrop-blur-sm rounded-lg transition-colors"
+                       >
+                         <Trash2 className="w-3.5 h-3.5" />
+                       </button>
+                     </div>
                   </div>
                 </div>
               );
@@ -410,11 +540,11 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                     : 'border-gray-100 opacity-60'
                 }`}
               >
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
+                <div className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-2">
                       <div 
-                        className="w-12 h-12 rounded-lg flex items-center justify-center text-white"
+                        className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
                         style={{ 
                           backgroundColor: account.account_type === 'asset' ? '#3b82f6' : '#8b5cf6' 
                         }}
@@ -422,26 +552,26 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                         {getAccountIcon(account.category)}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900">{account.name}</h3>
+                        <h3 className="font-semibold text-sm text-gray-900">{account.name}</h3>
                         <p className="text-xs text-gray-500">
                           {getAccountTypeLabel(account.category)} • {account.account_type === 'asset' ? 'Activo' : 'Pasivo'}
                           {account.is_active !== true && (
-                            <span className="ml-2 px-2 py-0.5 bg-gray-200 text-gray-600 rounded text-xs font-medium">
+                            <span className="ml-1.5 px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded text-xs font-medium">
                               Inactiva
                             </span>
                           )}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => toggleBalanceVisibility(account.id!)}
                         className="p-1 hover:bg-gray-100 rounded transition-colors"
                       >
                         {isBalanceVisible ? (
-                          <Eye className="w-4 h-4 text-gray-600" />
+                          <Eye className="w-3.5 h-3.5 text-gray-600" />
                         ) : (
-                          <EyeOff className="w-4 h-4 text-gray-600" />
+                          <EyeOff className="w-3.5 h-3.5 text-gray-600" />
                         )}
                       </button>
                       <button
@@ -454,17 +584,17 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                         title={account.is_active === true ? 'Desactivar cuenta' : 'Activar cuenta'}
                       >
                         {account.is_active === true ? (
-                          <CheckCircle className="w-4 h-4" />
+                          <CheckCircle className="w-3.5 h-3.5" />
                         ) : (
-                          <XCircle className="w-4 h-4" />
+                          <XCircle className="w-3.5 h-3.5" />
                         )}
                       </button>
                     </div>
                   </div>
 
-                  <div className="mb-4">
-                    <p className="text-xs text-gray-600 mb-1">Balance</p>
-                    <p className={`text-2xl font-bold ${
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-600 mb-0.5">Balance</p>
+                    <p className={`text-xl font-bold ${
                       account.current_balance >= 0 ? 'text-green-600' : 'text-red-600'
                     }`}>
                       {isBalanceVisible 
@@ -474,46 +604,45 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                     </p>
                   </div>
 
-                  <div className="mb-4 grid grid-cols-2 gap-3 text-sm">
+                  {/* Información compacta en grid */}
+                  <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <p className="text-xs text-gray-600 mb-1">Moneda</p>
-                      <p className="text-sm font-semibold text-gray-900">{account.currency}</p>
+                      <p className="text-xs text-gray-600 mb-0.5">Moneda</p>
+                      <p className="text-xs font-semibold text-gray-900">{account.currency}</p>
                     </div>
                     {account.gmf_exempt !== undefined && (
                       <div>
-                        <p className="text-xs text-gray-600 mb-1">Exenta GMF</p>
-                        <p className={`text-sm font-semibold ${account.gmf_exempt ? 'text-green-600' : 'text-orange-600'}`}>
+                        <p className="text-xs text-gray-600 mb-0.5">Exenta GMF</p>
+                        <p className={`text-xs font-semibold ${account.gmf_exempt ? 'text-green-600' : 'text-orange-600'}`}>
                           {account.gmf_exempt ? 'Sí' : 'No'}
                         </p>
                       </div>
                     )}
-                  </div>
-
-                  {account.account_number && (
-                    <div className="mb-4">
-                      <p className="text-xs text-gray-600 mb-1">Número de cuenta</p>
-                      <p className="text-sm font-mono text-gray-900">
-                        {isBalanceVisible 
-                          ? account.account_number 
-                          : '•••• •••• ••••'
-                        }
-                      </p>
+                    {account.account_number && (
+                      <div>
+                        <p className="text-xs text-gray-600 mb-0.5">Número de cuenta</p>
+                        <p className="text-xs font-mono text-gray-900">
+                          {isBalanceVisible 
+                            ? account.account_number 
+                            : '•••• •••• ••••'
+                          }
+                        </p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-xs text-gray-600 mb-0.5">Banco</p>
+                      <p className="text-xs text-gray-900 font-medium truncate">{account.bank_name || 'No especificado'}</p>
                     </div>
-                  )}
-
-                  <div className="mb-4">
-                    <p className="text-xs text-gray-600 mb-1">Banco</p>
-                    <p className="text-sm text-gray-900 font-medium">{account.bank_name || 'No especificado'}</p>
                   </div>
 
                   {account.description && (
-                    <div className="mb-4">
-                      <p className="text-xs text-gray-600 mb-1">Descripción</p>
-                      <p className="text-sm text-gray-900">{account.description}</p>
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-600 mb-0.5">Descripción</p>
+                      <p className="text-xs text-gray-900 line-clamp-2">{account.description}</p>
                     </div>
                   )}
 
-                  <div className="flex gap-2 pt-4 border-t border-gray-200">
+                  <div className="flex gap-2 pt-3 border-t border-gray-200">
                     <button
                       onClick={async () => {
                         try {
@@ -525,16 +654,16 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                           alert('Error al cargar los detalles de la cuenta');
                         }
                       }}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-xs transition-colors"
                     >
-                      <Edit2 className="w-4 h-4" />
+                      <Edit2 className="w-3.5 h-3.5" />
                       Editar
                     </button>
                     <button
                       onClick={() => handleDeleteAccount(account.id!)}
-                      className="flex items-center justify-center gap-2 px-3 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm transition-colors"
+                      className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-xs transition-colors"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>

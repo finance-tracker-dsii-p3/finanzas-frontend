@@ -11,6 +11,9 @@ interface CardAccount {
   limit: number;
   available: number;
   used: number;
+  currentDebt?: number;
+  totalPaid?: number;
+  utilizationPercentage?: number;
   currency: string;
   color: string;
 }
@@ -49,8 +52,10 @@ const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
     }).format(Math.abs(amount));
   };
 
-  const usagePercentage = card.limit > 0 ? (card.used / card.limit) * 100 : 0;
+  const usagePercentage = card.utilizationPercentage ?? (card.limit > 0 ? (card.used / card.limit) * 100 : 0);
   const availablePercentage = card.limit > 0 ? (card.available / card.limit) * 100 : 0;
+  const currentDebt = card.currentDebt ?? -card.used;
+  const totalPaid = card.totalPaid ?? 0;
 
   const getUsageStatus = () => {
     if (usagePercentage >= 90) return { color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', message: 'Límite casi alcanzado' };
@@ -117,6 +122,39 @@ const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
             <p className="text-xs text-red-700 mt-1">{usagePercentage.toFixed(1)}% del límite</p>
           </div>
         </div>
+
+        {/* Información adicional: Lo que se debe y Lo que se ha pagado */}
+        {(currentDebt !== undefined || totalPaid !== undefined) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingDown className="w-5 h-5 text-amber-600" />
+                <p className="text-sm font-medium text-amber-900">Lo que se debe</p>
+              </div>
+              <p className="text-2xl font-bold text-amber-900">{formatCurrency(Math.abs(currentDebt), card.currency)}</p>
+              <p className="text-xs text-amber-700 mt-1">Deuda actual</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-5 h-5 text-purple-600" />
+                <p className="text-sm font-medium text-purple-900">Total pagado</p>
+              </div>
+              <p className="text-2xl font-bold text-purple-900">
+                {formatCurrency(totalPaid, card.currency)}
+                {totalPaid > card.limit && (
+                  <span className="ml-2 text-xs text-purple-600">(incluye intereses)</span>
+                )}
+              </p>
+              <p className="text-xs text-purple-700 mt-1">
+                {totalPaid > card.limit 
+                  ? `Ha pagado más que el límite debido a intereses`
+                  : `Total histórico de pagos`
+                }
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">

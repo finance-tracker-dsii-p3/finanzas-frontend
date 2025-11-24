@@ -1,5 +1,14 @@
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
 
+export interface CreditCardDetails {
+  credit_limit: number;
+  used_credit: number;
+  current_debt: number;
+  total_paid: number;
+  available_credit: number;
+  utilization_percentage: number;
+}
+
 export interface Account {
   id?: number;
   name: string;
@@ -14,6 +23,7 @@ export interface Account {
   credit_limit?: number;
   gmf_exempt?: boolean;
   expiration_date?: string;
+  credit_card_details?: CreditCardDetails;
 }
 
 export interface CreateAccountData {
@@ -54,201 +64,294 @@ const getAuthHeaders = () => {
   };
 };
 
+const parseError = async (response: Response, defaultMessage: string = 'Error en la operación'): Promise<Error> => {
+  // Manejar errores del servidor (500, 502, 503, etc.)
+  if (response.status >= 500) {
+    let errorText = await response.text();
+    
+    // Si es HTML (página de error de Django), extraer el mensaje de error
+    if (errorText.includes('<!DOCTYPE html>') || errorText.includes('<html')) {
+      // Intentar extraer el mensaje del pre.exception_value
+      const exceptionMatch = errorText.match(/<pre class="exception_value">([^<]+)<\/pre>/);
+      if (exceptionMatch) {
+        errorText = exceptionMatch[1].trim();
+      } else {
+        // Intentar extraer del título
+        const titleMatch = errorText.match(/<title>([^<]+)<\/title>/);
+        if (titleMatch) {
+          errorText = titleMatch[1].trim();
+        } else {
+          errorText = 'Error interno del servidor. Revisa los logs del backend para más detalles.';
+        }
+      }
+    } else {
+      // Intentar parsear como JSON si es posible
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorText = errorJson.detail || errorJson.message || errorJson.error || errorText;
+      } catch {
+        // Si no es JSON, usar el texto directamente (pero limitar la longitud)
+        if (errorText.length > 500) {
+          errorText = errorText.substring(0, 500) + '...';
+        }
+      }
+    }
+    
+    return new Error(`Error del servidor (${response.status}): ${errorText}. Por favor, intenta nuevamente más tarde o contacta al administrador.`);
+  }
+
+  // Manejar errores de autenticación
+  if (response.status === 401) {
+    return new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
+  }
+
+  // Manejar errores de permisos
+  if (response.status === 403) {
+    return new Error('No tienes permisos para realizar esta operación.');
+  }
+
+  // Manejar errores de recurso no encontrado
+  if (response.status === 404) {
+    return new Error('El recurso solicitado no fue encontrado.');
+  }
+
+  // Manejar otros errores del cliente (400, 422, etc.)
+  const fallback = { message: defaultMessage };
+  let error;
+  try {
+    error = await response.json();
+  } catch {
+    error = fallback;
+  }
+
+  const errorMessages: string[] = [];
+
+  // Primero, mostrar el mensaje general si existe
+  if (error.message && !errorMessages.includes(error.message)) {
+    errorMessages.push(error.message);
+  }
+  if (error.detail && !errorMessages.includes(error.detail)) {
+    errorMessages.push(error.detail);
+  }
+
+  // Agregar errores de campos específicos
+  const fields = ['name', 'account_type', 'category', 'currency', 'current_balance', 'credit_limit', 'bank_name', 'account_number'];
+
+  for (const field of fields) {
+    if (error[field]) {
+      const fieldError = Array.isArray(error[field]) ? error[field][0] : error[field];
+      const fieldLabel = {
+        name: 'Nombre',
+        account_type: 'Tipo de cuenta',
+        category: 'Categoría',
+        currency: 'Moneda',
+        current_balance: 'Saldo',
+        credit_limit: 'Límite de crédito',
+        bank_name: 'Banco',
+        account_number: 'Número de cuenta',
+      }[field] || field;
+      errorMessages.push(`${fieldLabel}: ${fieldError}`);
+    }
+  }
+
+  if (error.non_field_errors) {
+    const nonFieldErrors = Array.isArray(error.non_field_errors) ? error.non_field_errors : [error.non_field_errors];
+    errorMessages.push(...nonFieldErrors);
+  }
+
+  // Si no se encontraron mensajes específicos, usar el mensaje de fallback
+  if (errorMessages.length === 0) {
+    errorMessages.push(defaultMessage);
+  }
+
+  return new Error(errorMessages.join('. '));
+};
+
+const handleFetchError = (error: unknown): Error => {
+  if (error instanceof TypeError && error.message.includes('fetch')) {
+    return new Error('No se pudo conectar con el servidor. Verifica que el backend esté ejecutándose en http://localhost:8000');
+  }
+  if (error instanceof Error) {
+    return error;
+  }
+  return new Error('Error desconocido al realizar la operación');
+};
+
 export const accountService = {
   async getAllAccounts(): Promise<Account[]> {
-    const response = await fetch(`${API_BASE_URL}/api/accounts/`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/accounts/`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Error al obtener cuentas' }));
-      throw new Error(error.message || error.detail || 'Error al obtener cuentas');
+      if (!response.ok) {
+        throw await parseError(response, 'Error al obtener cuentas');
+      }
+
+      const data = await response.json();
+      
+      // Manejar respuestas paginadas
+      if (data.results && Array.isArray(data.results)) {
+        return data.results;
+      }
+      if (data.data && Array.isArray(data.data)) {
+        return data.data;
+      }
+      if (data.accounts && Array.isArray(data.accounts)) {
+        return data.accounts;
+      }
+      if (Array.isArray(data)) {
+        return data;
+      }
+      
+      return [];
+    } catch (error) {
+      throw handleFetchError(error);
     }
-
-    const data = await response.json();
-    
-    return data;
   },
 
   async getAccountById(id: number): Promise<Account> {
-    const response = await fetch(`${API_BASE_URL}/api/accounts/${id}/`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/accounts/${id}/`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Error al obtener la cuenta' }));
-      throw new Error(error.message || error.detail || 'Error al obtener la cuenta');
+      if (!response.ok) {
+        throw await parseError(response, 'Error al obtener la cuenta');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw handleFetchError(error);
     }
-
-    return response.json();
   },
 
   async createAccount(data: CreateAccountData): Promise<Account> {
-    const response = await fetch(`${API_BASE_URL}/api/accounts/`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/accounts/`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Error al crear la cuenta' }));
-      
-      const errorMessages: string[] = [];
-      
-      const fields = ['name', 'account_type', 'category', 'currency', 'current_balance', 'credit_limit', 'bank_name', 'account_number'];
-      
-      for (const field of fields) {
-        if (error[field]) {
-          const fieldError = Array.isArray(error[field]) ? error[field][0] : error[field];
-          const fieldLabel = {
-            name: 'Nombre',
-            account_type: 'Tipo de cuenta',
-            category: 'Categoría',
-            currency: 'Moneda',
-            current_balance: 'Saldo inicial',
-            credit_limit: 'Límite de crédito',
-            bank_name: 'Banco',
-            account_number: 'Número de cuenta',
-          }[field] || field;
-          errorMessages.push(`${fieldLabel}: ${fieldError}`);
-        }
+      if (!response.ok) {
+        throw await parseError(response, 'Error al crear la cuenta');
       }
-      
-      if (error.message) {
-        errorMessages.push(error.message);
-      }
-      if (error.detail) {
-        errorMessages.push(error.detail);
-      }
-      if (error.non_field_errors) {
-        const nonFieldErrors = Array.isArray(error.non_field_errors) ? error.non_field_errors : [error.non_field_errors];
-        errorMessages.push(...nonFieldErrors);
-      }
-      
-      if (errorMessages.length === 0) {
-        const errorValues = Object.values(error);
-        const firstArrayValue = Array.isArray(errorValues[0]) ? errorValues[0][0] : null;
-        if (firstArrayValue) {
-          errorMessages.push(String(firstArrayValue));
-        } else {
-          errorMessages.push('Error al crear la cuenta. Verifica que todos los campos obligatorios estén completos.');
-        }
-      }
-      
-      throw new Error(errorMessages.join('. '));
+
+      return await response.json();
+    } catch (error) {
+      throw handleFetchError(error);
     }
-
-    return response.json();
   },
 
   async updateAccount(id: number, data: UpdateAccountData): Promise<Account> {
-    const response = await fetch(`${API_BASE_URL}/api/accounts/${id}/`, {
-      method: 'PATCH',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/accounts/${id}/`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Error al actualizar la cuenta' }));
-      
-      if (error.account_type) {
-        const errorMsg = Array.isArray(error.account_type) ? error.account_type[0] : error.account_type;
-        throw new Error(`Error en tipo de cuenta: ${errorMsg}`);
+      if (!response.ok) {
+        throw await parseError(response, 'Error al actualizar la cuenta');
       }
-      if (error.category) {
-        const errorMsg = Array.isArray(error.category) ? error.category[0] : error.category;
-        throw new Error(`Error en categoría: ${errorMsg}`);
-      }
-      if (error.name) {
-        const errorMsg = Array.isArray(error.name) ? error.name[0] : error.name;
-        throw new Error(`Error en nombre: ${errorMsg}`);
-      }
-      if (error.current_balance) {
-        const errorMsg = Array.isArray(error.current_balance) ? error.current_balance[0] : error.current_balance;
-        throw new Error(`Error en saldo: ${errorMsg}`);
-      }
-      
-      throw new Error(error.message || error.detail || 'Error al actualizar la cuenta');
+
+      return await response.json();
+    } catch (error) {
+      throw handleFetchError(error);
     }
-
-    return response.json();
   },
 
   async deleteAccount(id: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/accounts/${id}/`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/accounts/${id}/`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Error al eliminar la cuenta' }));
-      throw new Error(error.message || error.detail || 'Error al eliminar la cuenta');
+      if (!response.ok) {
+        throw await parseError(response, 'Error al eliminar la cuenta');
+      }
+    } catch (error) {
+      throw handleFetchError(error);
     }
   },
 
   async validateDeletion(id: number): Promise<ValidateDeletionResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/accounts/${id}/validate_deletion/`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ force: false }),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/accounts/${id}/validate_deletion/`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ force: false }),
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Error al validar eliminación' }));
-      throw new Error(error.message || error.detail || 'Error al validar eliminación');
+      if (!response.ok) {
+        throw await parseError(response, 'Error al validar eliminación');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw handleFetchError(error);
     }
-
-    return response.json();
   },
 
   async updateBalance(id: number, newBalance: number, reason?: string): Promise<Account> {
-    const response = await fetch(`${API_BASE_URL}/api/accounts/${id}/update_balance/`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
-        new_balance: newBalance,
-        reason: reason || 'Ajuste manual'
-      }),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/accounts/${id}/update_balance/`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          new_balance: newBalance,
+          reason: reason || 'Ajuste manual'
+        }),
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Error al actualizar el saldo' }));
-      throw new Error(error.message || error.detail || 'Error al actualizar el saldo');
+      if (!response.ok) {
+        throw await parseError(response, 'Error al actualizar el saldo');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw handleFetchError(error);
     }
-
-    return response.json();
   },
 
   async toggleActive(id: number): Promise<Account> {
-    const response = await fetch(`${API_BASE_URL}/api/accounts/${id}/toggle_active/`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/accounts/${id}/toggle_active/`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Error al cambiar estado de la cuenta' }));
-      throw new Error(error.message || error.detail || 'Error al cambiar estado de la cuenta');
+      if (!response.ok) {
+        throw await parseError(response, 'Error al cambiar estado de la cuenta');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw handleFetchError(error);
     }
-
-    return response.json();
   },
 
   async getAccountOptions(): Promise<AccountOptions> {
-    const response = await fetch(`${API_BASE_URL}/api/accounts/options/`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/accounts/options/`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('Endpoint no implementado en el backend');
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Endpoint no implementado en el backend');
+        }
+        throw await parseError(response, 'Error al obtener opciones');
       }
-      const error = await response.json().catch(() => ({ message: 'Error al obtener opciones' }));
-      throw new Error(error.message || error.detail || 'Error al obtener opciones');
-    }
 
-    return response.json();
+      return await response.json();
+    } catch (error) {
+      throw handleFetchError(error);
+    }
   },
 };

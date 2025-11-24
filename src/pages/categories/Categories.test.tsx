@@ -1,3 +1,4 @@
+import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '../../test/utils/test-utils';
 import userEvent from '@testing-library/user-event';
@@ -71,6 +72,7 @@ const mockUseCategoriesFn = vi.fn(() => mockUseCategories);
 
 vi.mock('../../context/CategoryContext', () => ({
   useCategories: () => mockUseCategoriesFn(),
+  CategoryProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 describe('CategoriesPage', () => {

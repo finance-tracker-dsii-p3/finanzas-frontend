@@ -1,26 +1,29 @@
-import React, { useState } from 'react';
-import { Search, Filter, Download, Plus, Edit2, Trash2, MoreVertical, AlertCircle, FileText, CreditCard, Percent, ArrowLeft, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Download, Plus, Edit2, Trash2, Copy, FileText, ArrowLeft, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import MovementDetailModal from '../../components/MovementDetailModal';
 import NewMovementModal from '../../components/NewMovementModal';
+import { transactionService, Transaction } from '../../services/transactionService';
+import { accountService, Account } from '../../services/accountService';
 import './movements.css';
 
 interface Movement {
   id: number;
   date: string;
-  description: string;
-  category: string;
-  account: string;
-  amount: number;
-  base: number;
-  iva: number;
-  taxRate: number;
-  status: 'confirmed' | 'pending';
-  type: 'income' | 'expense' | 'transfer';
-  paymentMethod: 'debit' | 'credit' | 'cash' | 'transfer';
-  installment?: string;
-  totalInstallments?: number;
-  isGMF?: boolean;
-  isInterest?: boolean;
+  note?: string | null;
+  tag?: string | null;
+  origin_account: number;
+  origin_account_name?: string;
+  destination_account: number | null;
+  destination_account_name?: string;
+  type: 1 | 2 | 3 | 4; // 1=Income, 2=Expense, 3=Transfer, 4=Saving
+  type_display?: string;
+  base_amount: number;
+  tax_percentage: number | null;
+  total_amount: number;
+  capital_amount?: number | null; // Capital pagado (reduce deuda en tarjetas de crédito)
+  interest_amount?: number | null; // Intereses pagados (no reduce deuda)
+  gmf_amount?: number | null; // GMF calculado
+  taxed_amount?: number | null; // IVA calculado
 }
 
 interface MovementsProps {
@@ -32,14 +35,172 @@ interface MovementsProps {
 const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }) => {
   const [selectedMovement, setSelectedMovement] = useState<Movement | null>(null);
   const [showNewMovementModal, setShowNewMovementModal] = useState(false);
-  const [movements] = useState<Movement[]>([]);
-  const [summary] = useState({
+  const [movementToEdit, setMovementToEdit] = useState<Transaction | null>(null);
+  const [movementToDuplicate, setMovementToDuplicate] = useState<Transaction | null>(null);
+  const [movements, setMovements] = useState<Transaction[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<1 | 2 | 3 | 4 | 'all'>('all');
+  
+  const [summary, setSummary] = useState({
     income: 0,
     expenses: 0,
     balance: 0,
-    iva: 0,
-    gmf: 0
   });
+
+  useEffect(() => {
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterType]);
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Intentar primero con ordering, si falla intentar sin ordering
+      let transactionsData: Transaction[] = [];
+      try {
+        transactionsData = await transactionService.list({ 
+          ordering: '-date',
+          ...(filterType !== 'all' && { type: filterType as 1 | 2 | 3 | 4 })
+        });
+      } catch (orderingError) {
+        // Si falla con ordering, intentar sin ordering
+        console.warn('Error al ordenar transacciones, intentando sin ordenamiento:', orderingError);
+        transactionsData = await transactionService.list({ 
+          ...(filterType !== 'all' && { type: filterType as 1 | 2 | 3 | 4 })
+        });
+        // Ordenar manualmente por fecha (más reciente primero)
+        if (Array.isArray(transactionsData)) {
+          transactionsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        }
+      }
+      
+      // Asegurarse de que transactionsData es un array
+      if (!Array.isArray(transactionsData)) {
+        console.warn('transactionsData no es un array:', transactionsData);
+        transactionsData = [];
+      }
+      
+      const accountsData = await accountService.getAllAccounts();
+      
+      setMovements(transactionsData);
+      // Filtrar solo cuentas activas para mostrar
+      const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
+      setAccounts(activeAccounts);
+      
+      // Calcular resumen
+      const income = transactionsData
+        .filter(t => t && t.type === 1 && typeof t.total_amount === 'number')
+        .reduce((sum, t) => sum + t.total_amount, 0);
+      const expenses = transactionsData
+        .filter(t => t && t.type === 2 && typeof t.total_amount === 'number')
+        .reduce((sum, t) => sum + t.total_amount, 0);
+      
+      setSummary({
+        income,
+        expenses,
+        balance: income - expenses,
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar movimientos';
+      setError(errorMessage);
+      console.error('Error al cargar datos:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar este movimiento?')) {
+      return;
+    }
+    
+    try {
+      await transactionService.delete(id);
+      await loadData();
+      // Recargar cuentas para actualizar saldos después de eliminar
+      try {
+        const accountsData = await accountService.getAllAccounts();
+        const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
+        setAccounts(activeAccounts);
+      } catch (err) {
+        console.error('Error al recargar cuentas:', err);
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error al eliminar el movimiento');
+    }
+  };
+
+  const handleDuplicate = (transaction: Transaction) => {
+    setMovementToDuplicate(transaction);
+    setShowNewMovementModal(true);
+  };
+
+  const handleEdit = (transaction: Transaction) => {
+    setMovementToEdit(transaction);
+    setShowNewMovementModal(true);
+  };
+
+  const handleModalClose = () => {
+    setShowNewMovementModal(false);
+    setMovementToEdit(null);
+    setMovementToDuplicate(null);
+  };
+
+  const handleModalSuccess = async () => {
+    // Recargar movimientos y cuentas para actualizar saldos
+    await loadData();
+    // También recargar cuentas explícitamente para asegurar que los saldos estén actualizados
+    try {
+      const accountsData = await accountService.getAllAccounts();
+      const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
+      setAccounts(activeAccounts);
+    } catch (err) {
+      console.error('Error al recargar cuentas:', err);
+    }
+  };
+
+  const getAccountName = (accountId: number | null): string => {
+    if (!accountId) return '';
+    const account = accounts.find(a => a.id === accountId);
+    return account?.name || `Cuenta ${accountId}`;
+  };
+
+  const getTypeLabel = (type: number): string => {
+    switch (type) {
+      case 1: return 'Ingreso';
+      case 2: return 'Gasto';
+      case 3: return 'Transferencia';
+      case 4: return 'Ahorro';
+      default: return 'Desconocido';
+    }
+  };
+
+  const getTypeColor = (type: number): string => {
+    switch (type) {
+      case 1: return 'text-green-600';
+      case 2: return 'text-red-600';
+      case 3: return 'text-gray-600';
+      case 4: return 'text-blue-600';
+      default: return 'text-gray-600';
+    }
+  };
+
+  const filteredMovements = Array.isArray(movements) ? movements.filter(mov => {
+    if (!mov) return false;
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const note = mov.note?.toLowerCase() || '';
+      const tag = mov.tag?.toLowerCase() || '';
+      const accountName = getAccountName(mov.origin_account).toLowerCase();
+      return note.includes(searchLower) || tag.includes(searchLower) || accountName.includes(searchLower);
+    }
+    return true;
+  }) : [];
 
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('es-CO', {
@@ -64,15 +225,24 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Buscar movimientos..."
+            placeholder="Buscar por nota, etiqueta o cuenta..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
         <div className="flex gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <Filter className="w-4 h-4" />
-            Filtros
-          </button>
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value as 1 | 2 | 3 | 4 | 'all')}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <option value="all">Todos</option>
+            <option value={1}>Ingresos</option>
+            <option value={2}>Gastos</option>
+            <option value={3}>Transferencias</option>
+            <option value={4}>Ahorros</option>
+          </select>
           <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
             <Download className="w-4 h-4" />
             Exportar
@@ -150,13 +320,14 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nota</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoría</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cuenta</th>
               {showTaxes && (
                 <>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Base</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">IVA</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">GMF</th>
                 </>
               )}
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
@@ -165,15 +336,42 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {movements.length === 0 ? (
+            {isLoading ? (
               <tr>
-                <td colSpan={showTaxes ? 9 : 7} className="px-6 py-12">
+                <td colSpan={showTaxes ? 10 : 7} className="px-6 py-12">
+                  <div className="text-center">
+                    <p className="text-gray-600">Cargando movimientos...</p>
+                  </div>
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan={showTaxes ? 10 : 7} className="px-6 py-12">
+                  <div className="text-center">
+                    <p className="text-red-600">{error}</p>
+                    <button
+                      onClick={loadData}
+                      className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                    >
+                      Reintentar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ) : filteredMovements.length === 0 ? (
+              <tr>
+                <td colSpan={showTaxes ? 10 : 7} className="px-6 py-12">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
                       <FileText className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">¡Comencemos a registrar tus movimientos!</h3>
-                    <p className="text-gray-600 mb-4">No hay movimientos registrados aún</p>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {searchTerm || filterType !== 'all' ? 'No se encontraron movimientos' : '¡Comencemos a registrar tus movimientos!'}
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      {searchTerm || filterType !== 'all' ? 'Intenta con otros filtros de búsqueda' : 'No hay movimientos registrados aún'}
+                    </p>
+                    {!searchTerm && filterType === 'all' && (
                     <button
                       onClick={() => setShowNewMovementModal(true)}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
@@ -181,75 +379,109 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
                       <Plus className="w-4 h-4" />
                       Agregar tu primer movimiento
                     </button>
+                    )}
                   </div>
                 </td>
               </tr>
             ) : (
-              movements.map((mov) => (
+              filteredMovements.map((mov) => (
               <tr key={mov.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 text-sm text-gray-600">
-                  {new Date(mov.date).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}
+                  {new Date(mov.date).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm font-medium text-gray-900">{mov.description}</div>
-                  {mov.paymentMethod === 'credit' && mov.installment && (
-                    <div className="flex items-center gap-1 mt-1">
-                      <CreditCard className="w-3 h-3 text-blue-600" />
-                      <span className="text-xs text-blue-600">{mov.installment}</span>
+                  <div className="text-sm font-medium text-gray-900">
+                    {mov.note || getTypeLabel(mov.type)}
                     </div>
-                  )}
-                  {mov.isGMF && (
-                    <span className="inline-flex items-center gap-1 mt-1 text-xs text-orange-600">
-                      <Percent className="w-3 h-3" />
-                      GMF
-                    </span>
-                  )}
-                  {mov.isInterest && (
-                    <span className="inline-flex items-center gap-1 mt-1 text-xs text-red-600">
-                      <AlertCircle className="w-3 h-3" />
-                      Intereses
+                  {mov.tag && (
+                    <span className="inline-flex items-center gap-1 mt-1 text-xs text-blue-600">
+                      {mov.tag}
                     </span>
                   )}
                 </td>
                 <td className="px-6 py-4">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 cursor-pointer hover:bg-purple-200 transition-colors">
-                    {mov.category}
-                  </span>
+                  {mov.category_name ? (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      {mov.category_name}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      {getTypeLabel(mov.type)}
+                    </span>
+                  )}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">{mov.account}</td>
+                <td className="px-6 py-4 text-sm text-gray-600">
+                  {mov.type === 3 ? (
+                    <span>{getAccountName(mov.origin_account)} → {getAccountName(mov.destination_account)}</span>
+                  ) : (
+                    getAccountName(mov.origin_account)
+                  )}
+                </td>
                 {showTaxes && (
                   <>
                     <td className="px-6 py-4 text-sm text-gray-600 text-right">
-                      {formatCurrency(mov.base)}
+                      {formatCurrency(mov.base_amount)}
                     </td>
                     <td className="px-6 py-4 text-sm text-amber-600 text-right">
-                      {mov.iva !== 0 ? formatCurrency(mov.iva) : '-'}
+                      {mov.tax_percentage && mov.tax_percentage > 0 
+                        ? formatCurrency(mov.taxed_amount ?? (mov.total_amount - mov.base_amount - (mov.gmf_amount || 0)))
+                        : '-'
+                      }
+                    </td>
+                    <td className="px-6 py-4 text-sm text-blue-600 text-right">
+                      {mov.gmf_amount && mov.gmf_amount > 0 ? formatCurrency(mov.gmf_amount) : '-'}
                     </td>
                   </>
                 )}
-                <td className={`px-6 py-4 text-sm font-semibold text-right ${mov.type === 'income' ? 'text-green-600' : mov.type === 'transfer' ? 'text-gray-600' : 'text-red-600'}`}>
-                  {mov.type === 'income' ? '+' : mov.type === 'transfer' ? '' : '-'}{formatCurrency(mov.amount)}
+                <td className={`px-6 py-4 text-sm font-semibold text-right ${getTypeColor(mov.type)}`}>
+                  {mov.type === 1 ? '+' : mov.type === 2 ? '-' : ''}{formatCurrency(mov.total_amount)}
                 </td>
                 <td className="px-6 py-4 text-center">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    mov.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {mov.status === 'confirmed' ? 'Confirmado' : 'Pendiente'}
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Confirmado
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2">
                     <button 
-                      onClick={() => setSelectedMovement(mov)}
-                      className="p-1 hover:bg-gray-100 rounded transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedMovement(mov);
+                      }}
+                      className="p-2 hover:bg-blue-50 rounded transition-colors border border-gray-200 hover:border-blue-300"
+                      title="Ver detalle"
                     >
-                      <FileText className="w-4 h-4 text-gray-600" />
+                      <FileText className="w-4 h-4 text-blue-600" />
                     </button>
-                    <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-                      <Edit2 className="w-4 h-4 text-gray-600" />
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(mov);
+                      }}
+                      className="p-2 hover:bg-green-50 rounded transition-colors border border-gray-200 hover:border-green-300"
+                      title="Editar"
+                    >
+                      <Edit2 className="w-4 h-4 text-green-600" />
                     </button>
-                    <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-                      <Trash2 className="w-4 h-4 text-gray-600" />
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDuplicate(mov);
+                      }}
+                      className="p-2 hover:bg-purple-50 rounded transition-colors border border-gray-200 hover:border-purple-300"
+                      title="Duplicar"
+                    >
+                      <Copy className="w-4 h-4 text-purple-600" />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(mov.id);
+                      }}
+                      className="p-2 hover:bg-red-50 rounded transition-colors border border-red-200 hover:border-red-300"
+                      title="Eliminar"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
                     </button>
                   </div>
                 </td>
@@ -261,13 +493,32 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
       </div>
 
       <div className="md:hidden space-y-3">
-        {movements.length === 0 ? (
+        {isLoading ? (
+          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 text-center">
+            <p className="text-gray-600">Cargando movimientos...</p>
+          </div>
+        ) : error ? (
+          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 text-center">
+            <p className="text-red-600">{error}</p>
+            <button
+              onClick={loadData}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            >
+              Reintentar
+            </button>
+          </div>
+        ) : filteredMovements.length === 0 ? (
           <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 text-center">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <FileText className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">¡Comencemos a registrar tus movimientos!</h3>
-            <p className="text-gray-600 mb-4">No hay movimientos registrados aún</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {searchTerm || filterType !== 'all' ? 'No se encontraron movimientos' : '¡Comencemos a registrar tus movimientos!'}
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {searchTerm || filterType !== 'all' ? 'Intenta con otros filtros de búsqueda' : 'No hay movimientos registrados aún'}
+            </p>
+            {!searchTerm && filterType === 'all' && (
             <button
               onClick={() => setShowNewMovementModal(true)}
               className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
@@ -275,9 +526,10 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
               <Plus className="w-4 h-4" />
               Agregar tu primer movimiento
             </button>
+            )}
           </div>
         ) : (
-          movements.map((mov) => (
+          filteredMovements.map((mov) => (
           <div 
             key={mov.id} 
             className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
@@ -285,47 +537,91 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
           >
             <div className="flex justify-between items-start mb-2">
               <div className="flex-1">
-                <h4 className="font-medium text-gray-900">{mov.description}</h4>
-                <p className="text-sm text-gray-600">{mov.date}</p>
+                <h4 className="font-medium text-gray-900">{mov.note || getTypeLabel(mov.type)}</h4>
+                <p className="text-sm text-gray-600">{new Date(mov.date).toLocaleDateString('es-CO')}</p>
+                {mov.tag && (
+                  <span className="inline-flex items-center gap-1 mt-1 text-xs text-blue-600">
+                    {mov.tag}
+                  </span>
+                )}
               </div>
-              <p className={`text-lg font-semibold ${mov.type === 'income' ? 'text-green-600' : mov.type === 'transfer' ? 'text-gray-600' : 'text-red-600'}`}>
-                {mov.type === 'income' ? '+' : mov.type === 'transfer' ? '' : '-'}{formatCurrency(mov.amount)}
+              <p className={`text-lg font-semibold ${getTypeColor(mov.type)}`}>
+                {mov.type === 1 ? '+' : mov.type === 2 ? '-' : ''}{formatCurrency(mov.total_amount)}
               </p>
             </div>
             
-            {showTaxes && mov.iva !== 0 && (
-              <div className="text-xs text-gray-600 mb-2">
-                Base: {formatCurrency(mov.base)} + IVA: {formatCurrency(mov.iva)}
+            {/* Desglose de pago a tarjeta de crédito */}
+            {mov.type === 3 && mov.destination_account && (mov.capital_amount || mov.interest_amount) && (
+              <div className="text-xs mb-2 space-y-1">
+                {mov.capital_amount && mov.capital_amount > 0 && (
+                  <div className="text-green-600">Capital: {formatCurrency(mov.capital_amount)}</div>
+                )}
+                {mov.interest_amount && mov.interest_amount > 0 && (
+                  <div className="text-amber-600">Intereses: {formatCurrency(mov.interest_amount)}</div>
+                )}
+              </div>
+            )}
+            
+            {showTaxes && ((mov.tax_percentage && mov.tax_percentage > 0) || mov.gmf_amount) && (
+              <div className="text-xs text-gray-600 mb-2 space-y-1">
+                <div>Base: {formatCurrency(mov.base_amount)}</div>
+                {mov.tax_percentage && mov.tax_percentage > 0 && (
+                  <div>IVA: {formatCurrency(mov.taxed_amount ?? (mov.total_amount - mov.base_amount - (mov.gmf_amount || 0)))}</div>
+                )}
+                {mov.gmf_amount && mov.gmf_amount > 0 && (
+                  <div className="text-blue-600">GMF: {formatCurrency(mov.gmf_amount)}</div>
+                )}
               </div>
             )}
             
             <div className="flex flex-wrap gap-2 mb-3">
+              {mov.category_name ? (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                {mov.category}
+                  {mov.category_name}
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  {getTypeLabel(mov.type)}
               </span>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                mov.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-              }`}>
-                {mov.status === 'confirmed' ? 'Confirmado' : 'Pendiente'}
+              )}
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Confirmado
               </span>
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                {mov.account}
+                {mov.type === 3 ? `${getAccountName(mov.origin_account)} → ${getAccountName(mov.destination_account)}` : getAccountName(mov.origin_account)}
               </span>
-              {mov.paymentMethod === 'credit' && mov.installment && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  <CreditCard className="w-3 h-3" />
-                  {mov.installment}
-                </span>
-              )}
             </div>
             
             <div className="flex gap-2">
-              <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm transition-colors">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(mov);
+                }}
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm transition-colors font-medium"
+              >
                 <Edit2 className="w-4 h-4" />
                 Editar
               </button>
-              <button className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                <MoreVertical className="w-4 h-4" />
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDuplicate(mov);
+                }}
+                className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                title="Duplicar"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(mov.id);
+                }}
+                className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                title="Eliminar"
+              >
+                <Trash2 className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -335,7 +631,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
 
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          Mostrando <span className="font-medium">{movements.length > 0 ? 1 : 0}</span> de <span className="font-medium">{movements.length}</span> movimientos
+          Mostrando <span className="font-medium">{filteredMovements.length}</span> de <span className="font-medium">{movements.length}</span> movimientos
         </p>
         <div className="flex gap-2">
         </div>
@@ -345,11 +641,29 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
         <MovementDetailModal 
           movement={selectedMovement} 
           onClose={() => setSelectedMovement(null)} 
+          onEdit={() => {
+            const mov = movements.find(m => m.id === selectedMovement.id);
+            if (mov) {
+              setSelectedMovement(null);
+              handleEdit(mov);
+            }
+          }}
+          onDelete={() => {
+            if (selectedMovement) {
+              setSelectedMovement(null);
+              handleDelete(selectedMovement.id);
+            }
+          }}
         />
       )}
 
       {showNewMovementModal && (
-        <NewMovementModal onClose={() => setShowNewMovementModal(false)} />
+        <NewMovementModal 
+          onClose={handleModalClose}
+          onSuccess={handleModalSuccess}
+          transactionToEdit={movementToEdit || undefined}
+          transactionToDuplicate={movementToDuplicate || undefined}
+        />
       )}
     </div>
   );
