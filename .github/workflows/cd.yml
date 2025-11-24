@@ -41,7 +41,7 @@ jobs:
   deploy-staging:
     name: Desplegar en Staging (develop)
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     
     steps:
       - name: Checkout código
