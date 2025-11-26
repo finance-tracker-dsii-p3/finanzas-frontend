@@ -179,7 +179,7 @@ describe('Register', () => {
     const submitButton = screen.getByRole('button', { name: /crear cuenta/i });
     await user.click(submitButton);
     
-    expect(screen.getByText(/creando cuenta/i)).toBeInTheDocument();
+    expect(screen.getByText(/creando cuenta\.\.\./i)).toBeInTheDocument();
     expect(submitButton).toBeDisabled();
   });
 

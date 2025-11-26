@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   ArrowLeft,
   Plus,
@@ -34,6 +34,14 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
     getBudgetDetail,
   } = useBudgets();
 
+  // Log para verificar cuando cambia el estado de budgets
+  useEffect(() => {
+    console.log('📊 Estado de budgets actualizado en componente Budgets:', budgets.length, 'presupuestos');
+    if (budgets.length > 0) {
+      console.log('📊 Primer presupuesto - Gastado:', budgets[0]?.spent_amount, 'Límite:', budgets[0]?.amount);
+    }
+  }, [budgets]);
+
   const [budgetToEdit, setBudgetToEdit] = useState<BudgetListItem | null>(null);
   const [budgetToDelete, setBudgetToDelete] = useState<BudgetListItem | null>(null);
   const [budgetDetail, setBudgetDetail] = useState<BudgetDetail | null>(null);
@@ -42,6 +50,47 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isToggling, setIsToggling] = useState<number | null>(null);
   const [activeOnly, setActiveOnly] = useState(true);
+
+  // Refrescar presupuestos al montar el componente y cuando cambie activeOnly
+  useEffect(() => {
+    refreshBudgets({ active_only: activeOnly, period: 'monthly' });
+  }, [activeOnly, refreshBudgets]); // Refrescar cuando cambie activeOnly o al montar
+
+  // Escuchar eventos de actualización de transacciones para refrescar presupuestos
+  useEffect(() => {
+    const handleTransactionUpdate = async () => {
+      console.log('🔄 Evento de transacción detectado en página Presupuestos, refrescando...');
+      // Pequeño delay para dar tiempo al backend
+      await new Promise(resolve => setTimeout(resolve, 500));
+      try {
+        await refreshBudgets({ active_only: activeOnly, period: 'monthly' });
+        console.log('✅ Presupuestos refrescados desde la página Presupuestos');
+      } catch (error) {
+        console.error('❌ Error al refrescar presupuestos desde la página:', error);
+      }
+    };
+
+    window.addEventListener('transactionCreated', handleTransactionUpdate);
+    window.addEventListener('transactionUpdated', handleTransactionUpdate);
+    window.addEventListener('transactionDeleted', handleTransactionUpdate);
+
+    return () => {
+      window.removeEventListener('transactionCreated', handleTransactionUpdate);
+      window.removeEventListener('transactionUpdated', handleTransactionUpdate);
+      window.removeEventListener('transactionDeleted', handleTransactionUpdate);
+    };
+  }, [activeOnly, refreshBudgets]);
+
+  // Función para refrescar manualmente
+  const handleManualRefresh = useCallback(async () => {
+    console.log('🔄 Refresco manual de presupuestos...');
+    try {
+      await refreshBudgets({ active_only: activeOnly, period: 'monthly' });
+      console.log('✅ Presupuestos refrescados manualmente');
+    } catch (error) {
+      console.error('❌ Error al refrescar presupuestos manualmente:', error);
+    }
+  }, [activeOnly, refreshBudgets]);
 
   const formatCurrency = (amount: string | number): string => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -138,6 +187,10 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
   );
 
   const filteredBudgets = useMemo(() => {
+    console.log('🔄 filteredBudgets recalculado. Total budgets:', budgets.length);
+    if (budgets.length > 0) {
+      console.log('🔄 Primer presupuesto en filteredBudgets - Gastado:', budgets[0]?.spent_amount);
+    }
     if (activeOnly) {
       return budgets.filter((b) => b.is_active);
     }
@@ -186,7 +239,7 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => refreshBudgets({ active_only: activeOnly, period: 'monthly' })}
+                onClick={handleManualRefresh}
                 className="inline-flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 <RefreshCcw className="w-4 h-4" />
@@ -359,7 +412,9 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Límite</p>
-                      <p className="text-sm font-semibold text-gray-900">{formatCurrency(budget.amount)}</p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {formatCurrency(budget.amount)} {('currency' in budget && typeof budget.currency === 'string') ? budget.currency : 'COP'}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Gastado</p>

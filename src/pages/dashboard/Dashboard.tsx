@@ -2,11 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DollarSign, Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, CreditCard, AlertCircle, User, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useBudgets } from '../../context/BudgetContext';
+import { MonthlySummaryResponse } from '../../services/budgetService';
 import Movements from '../movements/Movements';
 import Budgets from '../budgets/Budgets';
 import Reports from '../reports/Reports';
 import Accounts from '../accounts/Accounts';
 import CategoriesPage from '../categories/Categories';
+import AlertCenter from '../../components/AlertCenter';
 import './dashboard.css';
 
 interface MonthData {
@@ -145,6 +148,11 @@ const Dashboard: React.FC = () => {
               </nav>
             </div>
             <div className="flex items-center gap-4">
+              <AlertCenter
+                onViewBudget={() => {
+                  setCurrentView('budgets');
+                }}
+              />
               <div className="relative" ref={profileMenuRef}>
                     <button 
                       onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -236,12 +244,33 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   setShowTaxes,
   setCurrentView
 }) => {
-  const formatCurrency = (amount: number): string => {
+  const { getMonthlySummary } = useBudgets();
+  const [budgetSummary, setBudgetSummary] = React.useState<MonthlySummaryResponse | null>(null);
+
+  React.useEffect(() => {
+    const loadBudgetSummary = async () => {
+      try {
+        const summary = await getMonthlySummary();
+        setBudgetSummary(summary);
+      } catch (err) {
+        console.error('Error al cargar resumen de presupuestos:', err);
+      }
+    };
+    loadBudgetSummary();
+  }, [getMonthlySummary]);
+
+  const formatCurrency = (amount: number | string): string => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0
-    }).format(Math.abs(amount));
+    }).format(Math.abs(numAmount));
+  };
+
+  const formatPercentage = (value: string | number): string => {
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    return `${numValue.toFixed(1)}%`;
   };
 
   const userName = user?.username || user?.email?.split('@')[0] || 'Usuario';
@@ -400,6 +429,107 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             )}
           </div>
         </div>
+
+      {/* Resumen de Presupuestos */}
+      {budgetSummary && budgetSummary.budgets && budgetSummary.budgets.length > 0 && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-blue-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Resumen de Presupuestos</h3>
+            </div>
+            <button
+              onClick={() => setCurrentView('budgets')}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+            >
+              Ver todos
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {budgetSummary.budgets.slice(0, 6).map((budget) => {
+              const spentPercentage = parseFloat(budget.spent_percentage);
+              const statusColor =
+                budget.status === 'exceeded'
+                  ? 'bg-red-500'
+                  : budget.status === 'warning'
+                    ? 'bg-amber-500'
+                    : 'bg-green-500';
+              const statusTextColor =
+                budget.status === 'exceeded'
+                  ? 'text-red-600'
+                  : budget.status === 'warning'
+                    ? 'text-amber-600'
+                    : 'text-green-600';
+
+              return (
+                <div
+                  key={budget.budget_id}
+                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm"
+                      style={{ backgroundColor: budget.category_color }}
+                    >
+                      {budget.category_icon ? (
+                        <i className={`fa-solid ${budget.category_icon}`} aria-hidden="true"></i>
+                      ) : (
+                        budget.category_name.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{budget.category_name}</p>
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-gray-600">Progreso</span>
+                      <span className={`text-xs font-semibold ${statusTextColor}`}>
+                        {formatPercentage(budget.spent_percentage)}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-full rounded-full transition-all ${statusColor}`}
+                        style={{ width: `${Math.min(spentPercentage, 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <p className="text-gray-500">Límite</p>
+                      <p className="font-semibold text-gray-900">{formatCurrency(budget.amount)}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Gastado</p>
+                      <p className="font-semibold text-red-600">{formatCurrency(budget.spent_amount)}</p>
+                    </div>
+                  </div>
+                  {budget.projection && budget.projection.will_exceed && (
+                    <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
+                      <p className="font-semibold">⚠️ Proyección: Excederá el límite</p>
+                      <p className="text-amber-700">
+                        Estimado: {formatCurrency(budget.projection.projected_amount)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {budgetSummary.budgets.length > 6 && (
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setCurrentView('budgets')}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Ver {budgetSummary.budgets.length - 6} presupuesto{budgetSummary.budgets.length - 6 !== 1 ? 's' : ''} más
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {showTaxes && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

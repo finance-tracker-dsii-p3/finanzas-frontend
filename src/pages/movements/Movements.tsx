@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Search, Download, Plus, Edit2, Trash2, Copy, FileText, ArrowLeft, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import MovementDetailModal from '../../components/MovementDetailModal';
 import NewMovementModal from '../../components/NewMovementModal';
+import ConfirmModal from '../../components/ConfirmModal';
 import { transactionService, Transaction } from '../../services/transactionService';
 import { accountService, Account } from '../../services/accountService';
+import { useBudgets } from '../../context/BudgetContext';
 import './movements.css';
 
 interface Movement {
@@ -33,6 +35,7 @@ interface MovementsProps {
 }
 
 const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }) => {
+  const { refreshBudgets } = useBudgets();
   const [selectedMovement, setSelectedMovement] = useState<Movement | null>(null);
   const [showNewMovementModal, setShowNewMovementModal] = useState(false);
   const [movementToEdit, setMovementToEdit] = useState<Transaction | null>(null);
@@ -43,6 +46,17 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<1 | 2 | 3 | 4 | 'all'>('all');
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
   
   const [summary, setSummary] = useState({
     income: 0,
@@ -115,21 +129,56 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este movimiento?')) {
-      return;
-    }
-    
+    setConfirmModal({
+      isOpen: true,
+      title: 'Confirmar eliminación',
+      message: '¿Estás seguro de que deseas eliminar este movimiento? Esta acción no se puede deshacer.',
+      onConfirm: async () => {
+        setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+        await performDelete(id);
+      },
+    });
+  };
+
+  const performDelete = async (id: number) => {
     try {
       await transactionService.delete(id);
+      
+      // Disparar evento para que el contexto refresque automáticamente
+      window.dispatchEvent(new Event('transactionDeleted'));
+      
       await loadData();
+      
+      // Dar un delay más largo para que el backend procese y recalcule después de eliminar
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       // Recargar cuentas para actualizar saldos después de eliminar
       try {
         const accountsData = await accountService.getAllAccounts();
         const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
         setAccounts(activeAccounts);
-      } catch (err) {
-        console.error('Error al recargar cuentas:', err);
+      } catch (accountError) {
+        console.warn('Error al recargar cuentas:', accountError);
       }
+      // Refrescar presupuestos después de eliminar un movimiento
+      // Esto asegura que los cálculos de gasto se actualicen
+      try {
+        await refreshBudgets({ active_only: true, period: 'monthly' });
+        console.log('✅ Presupuestos refrescados después de eliminar movimiento');
+      } catch (refreshError) {
+        // No bloquear el flujo si falla el refresh, solo loguear
+        console.warn('⚠️ No se pudieron refrescar los presupuestos después de eliminar el movimiento:', refreshError);
+      }
+      
+      // Segundo refresh después de un delay adicional para asegurar que el backend haya recalculado
+      setTimeout(async () => {
+        try {
+          await refreshBudgets({ active_only: true, period: 'monthly' });
+          console.log('✅ Segundo refresh de presupuestos después de eliminar (verificación)');
+        } catch (refreshError) {
+          console.warn('⚠️ Error en segundo refresh:', refreshError);
+        }
+      }, 2000);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Error al eliminar el movimiento');
     }
@@ -154,6 +203,10 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   const handleModalSuccess = async () => {
     // Recargar movimientos y cuentas para actualizar saldos
     await loadData();
+    
+    // Dar un delay más largo para que el backend procese y recalcule la transacción
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     // También recargar cuentas explícitamente para asegurar que los saldos estén actualizados
     try {
       const accountsData = await accountService.getAllAccounts();
@@ -162,6 +215,25 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
     } catch (err) {
       console.error('Error al recargar cuentas:', err);
     }
+    // Refrescar presupuestos después de crear/editar un movimiento
+    // Esto asegura que los cálculos de gasto se actualicen
+    try {
+      await refreshBudgets({ active_only: true, period: 'monthly' });
+      console.log('✅ Presupuestos refrescados después del movimiento');
+    } catch (refreshError) {
+      // No bloquear el flujo si falla el refresh, solo loguear
+      console.warn('⚠️ No se pudieron refrescar los presupuestos después del movimiento:', refreshError);
+    }
+    
+    // Segundo refresh después de un delay adicional para asegurar que el backend haya recalculado
+    setTimeout(async () => {
+      try {
+        await refreshBudgets({ active_only: true, period: 'monthly' });
+        console.log('✅ Segundo refresh de presupuestos (verificación)');
+      } catch (refreshError) {
+        console.warn('⚠️ Error en segundo refresh:', refreshError);
+      }
+    }, 2000);
   };
 
   const getAccountName = (accountId: number | null): string => {
@@ -665,6 +737,17 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
           transactionToDuplicate={movementToDuplicate || undefined}
         />
       )}
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.title === 'Error' ? 'Aceptar' : 'Eliminar'}
+        cancelText={confirmModal.title === 'Error' ? undefined : 'Cancelar'}
+        type={confirmModal.title === 'Error' ? 'danger' : 'warning'}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: () => {} })}
+      />
     </div>
   );
 };

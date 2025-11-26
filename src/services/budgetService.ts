@@ -29,6 +29,7 @@ export interface BudgetDetail {
   category_color: string;
   category_icon: string;
   amount: string;
+  currency: string; // 'COP', 'USD', 'EUR'
   calculation_mode: CalculationMode;
   calculation_mode_display: string;
   period: Period;
@@ -61,6 +62,7 @@ export interface BudgetListResponse {
 export interface BudgetPayload {
   category: number;
   amount: string;
+  currency: string; // 'COP', 'USD', 'EUR' - Requerido
   calculation_mode?: CalculationMode;
   period?: Period;
   start_date?: string;
@@ -68,7 +70,7 @@ export interface BudgetPayload {
   alert_threshold?: string;
 }
 
-export interface BudgetUpdatePayload extends Partial<Pick<BudgetPayload, 'amount' | 'calculation_mode' | 'alert_threshold'>> {
+export interface BudgetUpdatePayload extends Partial<Pick<BudgetPayload, 'amount' | 'currency' | 'calculation_mode' | 'alert_threshold'>> {
   is_active?: boolean;
 }
 
@@ -181,7 +183,7 @@ const parseError = async (response: Response) => {
 
   // Manejar errores de recurso no encontrado
   if (response.status === 404) {
-    throw new Error('El recurso solicitado no fue encontrado.');
+    throw new Error('El presupuesto que buscas no existe o fue eliminado.');
   }
 
   // Manejar otros errores del cliente (400, 422, etc.)
@@ -254,158 +256,218 @@ const parseError = async (response: Response) => {
   throw new Error(errorMessages.join('. '));
 };
 
+const handleFetchError = (error: unknown): never => {
+  if (error instanceof TypeError && error.message.includes('fetch')) {
+    throw new Error('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
+  }
+  if (error instanceof Error) {
+    throw error;
+  }
+  throw new Error('Error inesperado al procesar la solicitud.');
+};
+
 export const budgetService = {
   async list(filters?: { active_only?: boolean; period?: Period }): Promise<BudgetListResponse> {
-    const params = new URLSearchParams();
-    if (filters?.active_only !== undefined) {
-      params.append('active_only', String(filters.active_only));
-    }
-    if (filters?.period) {
-      params.append('period', filters.period);
-    }
-    const query = params.toString() ? `?${params.toString()}` : '';
+    try {
+      const params = new URLSearchParams();
+      if (filters?.active_only !== undefined) {
+        params.append('active_only', String(filters.active_only));
+      }
+      if (filters?.period) {
+        params.append('period', filters.period);
+      }
+      const query = params.toString() ? `?${params.toString()}` : '';
 
-    const response = await fetch(`${API_BASE_URL}/api/budgets/${query}`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
+      const response = await fetch(`${API_BASE_URL}/api/budgets/${query}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      await parseError(response);
+      if (!response.ok) {
+        await parseError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      handleFetchError(error);
+      throw error; // Nunca se alcanza, pero satisface TypeScript
     }
-
-    return response.json();
   },
 
   async get(id: number): Promise<BudgetDetail> {
-    const response = await fetch(`${API_BASE_URL}/api/budgets/${id}/`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/budgets/${id}/`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      await parseError(response);
+      if (!response.ok) {
+        await parseError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      handleFetchError(error);
+      throw error; // Nunca se alcanza, pero satisface TypeScript
     }
-
-    return response.json();
   },
 
   async create(payload: BudgetPayload): Promise<BudgetDetail> {
-    const response = await fetch(`${API_BASE_URL}/api/budgets/`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(payload),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/budgets/`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
 
-    if (!response.ok) {
-      await parseError(response);
+      if (!response.ok) {
+        await parseError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      handleFetchError(error);
+      throw error; // Nunca se alcanza, pero satisface TypeScript
     }
-
-    return response.json();
   },
 
   async update(id: number, payload: BudgetUpdatePayload): Promise<BudgetDetail> {
-    const response = await fetch(`${API_BASE_URL}/api/budgets/${id}/`, {
-      method: 'PATCH',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(payload),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/budgets/${id}/`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
 
-    if (!response.ok) {
-      await parseError(response);
+      if (!response.ok) {
+        await parseError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      handleFetchError(error);
+      throw error; // Nunca se alcanza, pero satisface TypeScript
     }
-
-    return response.json();
   },
 
   async delete(id: number): Promise<BudgetDeleteResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/budgets/${id}/`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/budgets/${id}/`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      await parseError(response);
+      if (!response.ok) {
+        await parseError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      handleFetchError(error);
+      throw error; // Nunca se alcanza, pero satisface TypeScript
     }
-
-    return response.json();
   },
 
   async toggleActive(id: number): Promise<BudgetToggleResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/budgets/${id}/toggle_active/`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/budgets/${id}/toggle_active/`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      await parseError(response);
+      if (!response.ok) {
+        await parseError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      handleFetchError(error);
+      throw error; // Nunca se alcanza, pero satisface TypeScript
     }
-
-    return response.json();
   },
 
   async getMonthlySummary(): Promise<MonthlySummaryResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/budgets/monthly_summary/`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/budgets/monthly_summary/`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      await parseError(response);
+      if (!response.ok) {
+        await parseError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      handleFetchError(error);
+      throw error; // Nunca se alcanza, pero satisface TypeScript
     }
-
-    return response.json();
   },
 
   async getByCategory(categoryId: number, activeOnly?: boolean): Promise<BudgetByCategoryResponse> {
-    const params = new URLSearchParams();
-    if (activeOnly !== undefined) {
-      params.append('active_only', String(activeOnly));
+    try {
+      const params = new URLSearchParams();
+      if (activeOnly !== undefined) {
+        params.append('active_only', String(activeOnly));
+      }
+      const query = params.toString() ? `?${params.toString()}` : '';
+
+      const response = await fetch(`${API_BASE_URL}/api/budgets/by_category/${categoryId}/${query}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        await parseError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      handleFetchError(error);
+      throw error; // Nunca se alcanza, pero satisface TypeScript
     }
-    const query = params.toString() ? `?${params.toString()}` : '';
-
-    const response = await fetch(`${API_BASE_URL}/api/budgets/by_category/${categoryId}/${query}`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
-
-    if (!response.ok) {
-      await parseError(response);
-    }
-
-    return response.json();
   },
 
   async getCategoriesWithoutBudget(period?: Period): Promise<CategoriesWithoutBudgetResponse> {
-    const params = new URLSearchParams();
-    if (period) {
-      params.append('period', period);
+    try {
+      const params = new URLSearchParams();
+      if (period) {
+        params.append('period', period);
+      }
+      const query = params.toString() ? `?${params.toString()}` : '';
+
+      const response = await fetch(`${API_BASE_URL}/api/budgets/categories_without_budget/${query}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        await parseError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      handleFetchError(error);
+      throw error; // Nunca se alcanza, pero satisface TypeScript
     }
-    const query = params.toString() ? `?${params.toString()}` : '';
-
-    const response = await fetch(`${API_BASE_URL}/api/budgets/categories_without_budget/${query}`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
-
-    if (!response.ok) {
-      await parseError(response);
-    }
-
-    return response.json();
   },
 
   async getAlerts(): Promise<BudgetAlertsResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/budgets/alerts/`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/budgets/alerts/`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      await parseError(response);
+      if (!response.ok) {
+        await parseError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      handleFetchError(error);
+      throw error; // Nunca se alcanza, pero satisface TypeScript
     }
-
-    return response.json();
   },
 };
 
