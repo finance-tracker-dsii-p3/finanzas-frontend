@@ -126,7 +126,51 @@ export const authService = {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Error al registrar usuario' }));
-      throw new Error(error.message || error.detail || 'Error al registrar usuario');
+      
+      // Manejar errores de campos específicos
+      const errorMessages: string[] = [];
+      
+      // Campos comunes de registro
+      const fields = ['username', 'email', 'password', 'password_confirm', 'first_name', 'last_name', 'identification', 'phone'];
+      
+      for (const field of fields) {
+        if (error[field]) {
+          const fieldError = Array.isArray(error[field]) ? error[field][0] : error[field];
+          const fieldLabel = {
+            username: 'Nombre de usuario',
+            email: 'Email',
+            password: 'Contraseña',
+            password_confirm: 'Confirmación de contraseña',
+            first_name: 'Nombre',
+            last_name: 'Apellido',
+            identification: 'Identificación',
+            phone: 'Teléfono',
+          }[field] || field;
+          errorMessages.push(`${fieldLabel}: ${fieldError}`);
+        }
+      }
+      
+      // Errores generales
+      if (error.message && !errorMessages.includes(error.message)) {
+        errorMessages.push(error.message);
+      }
+      if (error.detail && !errorMessages.includes(error.detail)) {
+        errorMessages.push(error.detail);
+      }
+      if (error.non_field_errors) {
+        const nonFieldErrors = Array.isArray(error.non_field_errors) ? error.non_field_errors : [error.non_field_errors];
+        nonFieldErrors.forEach((err: string) => {
+          if (!errorMessages.includes(err)) {
+            errorMessages.push(err);
+          }
+        });
+      }
+      
+      if (errorMessages.length === 0) {
+        errorMessages.push('Error al registrar usuario');
+      }
+      
+      throw new Error(errorMessages.join('. '));
     }
 
     return response.json();

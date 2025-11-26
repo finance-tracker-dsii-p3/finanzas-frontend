@@ -36,8 +36,8 @@ export interface CreateTransactionData {
   origin_account: number;
   destination_account?: number | null;
   type: TransactionType;
-  base_amount: number;
-  total_amount?: number;
+  base_amount?: number; // Opcional: no se envía si se usa total_amount (HU-15)
+  total_amount?: number; // Opcional: no se envía si se usa base_amount (modo tradicional)
   tax_percentage?: number | null;
   capital_amount?: number | null; // Para pagos a tarjetas de crédito
   interest_amount?: number | null; // Para pagos a tarjetas de crédito
@@ -145,51 +145,96 @@ const parseError = async (response: Response) => {
   
   const errorMessages: string[] = [];
   
-  // Primero, mostrar el mensaje general si existe
-  if (error.message && !errorMessages.includes(error.message)) {
+  // Primero, mostrar el mensaje general si existe (pero no si es genérico)
+  if (error.message && 
+      error.message !== 'Error en la petición' && 
+      !errorMessages.includes(error.message)) {
     errorMessages.push(error.message);
   }
   if (error.detail && !errorMessages.includes(error.detail)) {
     errorMessages.push(error.detail);
   }
   
+  // El backend puede devolver errores en `details` o directamente en el objeto
+  const errorDetails = error.details || error;
+  
   // Luego, mostrar errores de campos específicos
-  const fields = ['origin_account', 'destination_account', 'type', 'base_amount', 'tax_percentage', 'date', 'category', 'tag', 'note'];
+  const fields = ['origin_account', 'destination_account', 'type', 'base_amount', 'total_amount', 'tax_percentage', 'date', 'category', 'tag', 'note', 'capital_amount', 'interest_amount'];
   
   for (const field of fields) {
-    if (error[field]) {
-      const fieldError = Array.isArray(error[field]) ? error[field][0] : error[field];
+    // Buscar primero en details, luego en el objeto principal
+    const fieldError = errorDetails[field] || error[field];
+    if (fieldError) {
+      const errorText = Array.isArray(fieldError) ? fieldError[0] : fieldError;
       const fieldLabel = {
         origin_account: 'Cuenta origen',
         destination_account: 'Cuenta destino',
         type: 'Tipo de transacción',
-        base_amount: 'Monto',
-        tax_percentage: 'Porcentaje de impuesto',
+        base_amount: 'Monto base',
+        total_amount: 'Monto total',
+        tax_percentage: 'Porcentaje de IVA',
         date: 'Fecha',
         category: 'Categoría',
         tag: 'Etiqueta',
         note: 'Nota',
+        capital_amount: 'Monto de capital',
+        interest_amount: 'Monto de intereses',
       }[field] || field;
-      errorMessages.push(`${fieldLabel}: ${fieldError}`);
+      errorMessages.push(`${fieldLabel}: ${errorText}`);
     }
   }
   
+  // Si hay un objeto details, buscar otros campos que no estén en la lista
+  if (error.details && typeof error.details === 'object') {
+    Object.keys(error.details).forEach(key => {
+      if (!fields.includes(key) && 
+          key !== 'message' && 
+          key !== 'detail' && 
+          key !== 'non_field_errors' &&
+          error.details[key]) {
+        const fieldError = Array.isArray(error.details[key]) ? error.details[key][0] : error.details[key];
+        if (typeof fieldError === 'string' && !errorMessages.includes(fieldError)) {
+          const fieldLabel = {
+            origin_account: 'Cuenta origen',
+            destination_account: 'Cuenta destino',
+            type: 'Tipo de transacción',
+            base_amount: 'Monto base',
+            total_amount: 'Monto total',
+            tax_percentage: 'Porcentaje de IVA',
+            date: 'Fecha',
+            category: 'Categoría',
+            tag: 'Etiqueta',
+            note: 'Nota',
+            capital_amount: 'Monto de capital',
+            interest_amount: 'Monto de intereses',
+          }[key] || key;
+          errorMessages.push(`${fieldLabel}: ${fieldError}`);
+        }
+      }
+    });
+  }
+  
   // Errores no relacionados con campos específicos
-  if (error.non_field_errors) {
-    const nonFieldErrors = Array.isArray(error.non_field_errors) ? error.non_field_errors : [error.non_field_errors];
-    nonFieldErrors.forEach((err: string) => {
+  const nonFieldErrors = errorDetails.non_field_errors || error.non_field_errors;
+  if (nonFieldErrors) {
+    const nonFieldErrorsArray = Array.isArray(nonFieldErrors) ? nonFieldErrors : [nonFieldErrors];
+    nonFieldErrorsArray.forEach((err: string) => {
       if (!errorMessages.includes(err)) {
         errorMessages.push(err);
       }
     });
   }
   
-  // Si hay otros campos de error, agregarlos
+  // Si hay otros campos de error en el objeto principal (no en details), agregarlos
   Object.keys(error).forEach(key => {
-    if (!fields.includes(key) && 
+    if (key !== 'details' &&
+        !fields.includes(key) && 
         key !== 'message' && 
         key !== 'detail' && 
         key !== 'non_field_errors' &&
+        key !== 'error' &&
+        key !== 'status_code' &&
+        key !== 'suggestion' &&
         error[key]) {
       const fieldError = Array.isArray(error[key]) ? error[key][0] : error[key];
       if (typeof fieldError === 'string' && !errorMessages.includes(fieldError)) {
@@ -198,8 +243,14 @@ const parseError = async (response: Response) => {
     }
   });
   
+  // Si no hay mensajes de error específicos, mostrar un mensaje genérico
   if (errorMessages.length === 0) {
-    errorMessages.push('Error en la operación. Verifica que todos los campos obligatorios estén completos.');
+    // Si hay una sugerencia del backend, usarla
+    if (error.suggestion) {
+      errorMessages.push(error.suggestion);
+    } else {
+      errorMessages.push('Error en la operación. Verifica que todos los campos obligatorios estén completos.');
+    }
   }
   
   throw new Error(errorMessages.join('. '));
@@ -278,25 +329,49 @@ export const transactionService = {
 
   async create(data: CreateTransactionData): Promise<Transaction> {
     try {
-      // Calcular total_amount si no se proporciona
-      let totalAmount = data.total_amount;
-      if (totalAmount === undefined) {
-        const baseAmount = Math.round(data.base_amount); // Redondear a entero
-        const taxPercentage = data.tax_percentage || 0;
-        totalAmount = Math.round(baseAmount * (1 + taxPercentage / 100));
-      } else {
-        // Redondear total_amount si se proporciona explícitamente
-        totalAmount = Math.round(totalAmount);
-      }
-
       // Limpiar el objeto de datos: remover campos undefined y null innecesarios
       const cleanData: Record<string, unknown> = {
         origin_account: data.origin_account,
         type: data.type,
-        base_amount: Math.round(data.base_amount), // Convertir a entero
-        total_amount: totalAmount, // Incluir total_amount (requerido por el backend)
         date: data.date,
       };
+
+      // Modo HU-15: Si se envía total_amount, NO enviar base_amount
+      if (data.total_amount !== undefined && data.total_amount > 0) {
+        cleanData.total_amount = Math.round(data.total_amount);
+        // Asegurar que NO se incluya base_amount cuando se usa total_amount (HU-15)
+        // Eliminar explícitamente base_amount si existe
+        if ('base_amount' in cleanData) {
+          delete cleanData.base_amount;
+        }
+      } else if (data.base_amount !== undefined && data.base_amount > 0) {
+        // Modo tradicional: Enviar base_amount
+        cleanData.base_amount = Math.round(data.base_amount);
+        // Calcular total_amount si hay tax_percentage
+        if (data.tax_percentage && data.tax_percentage > 0) {
+          const baseAmount = cleanData.base_amount as number;
+          cleanData.total_amount = Math.round(baseAmount * (1 + data.tax_percentage / 100));
+        } else {
+          // Si no hay IVA, total = base
+          cleanData.total_amount = cleanData.base_amount;
+        }
+        // Asegurar que NO se incluya total_amount del parámetro original si ya calculamos uno
+        // (solo si viene en data.total_amount y no debería estar)
+        if (data.total_amount !== undefined && data.total_amount !== cleanData.total_amount) {
+          // Ya calculamos total_amount desde base_amount, no usar el que viene en data
+          // (no hacer nada, ya tenemos el correcto)
+        }
+      } else {
+        // Validación: debe haber al menos uno de los dos
+        throw new Error('Debe proporcionarse base_amount o total_amount');
+      }
+      
+      // Validación final: asegurar que no se incluyan ambos campos simultáneamente
+      // Esto es una medida de seguridad adicional
+      if (cleanData.total_amount !== undefined && cleanData.base_amount !== undefined) {
+        // Si ambos están presentes, priorizar total_amount (modo HU-15)
+        delete cleanData.base_amount;
+      }
 
       // Solo incluir destination_account si está presente y no es null (solo para transferencias)
       if (data.destination_account !== undefined && data.destination_account !== null) {
@@ -361,8 +436,14 @@ export const transactionService = {
       if (data.type !== undefined) {
         cleanData.type = data.type;
       }
-      if (data.base_amount !== undefined) {
-        cleanData.base_amount = Math.round(data.base_amount); // Convertir a entero
+      // Modo HU-15: Si se envía total_amount, NO enviar base_amount
+      if (data.total_amount !== undefined) {
+        cleanData.total_amount = Math.round(data.total_amount);
+        // NO incluir base_amount cuando se usa total_amount (HU-15)
+        // Si hay base_amount también, el backend rechazará la petición
+      } else if (data.base_amount !== undefined) {
+        // Modo tradicional: Enviar base_amount
+        cleanData.base_amount = Math.round(data.base_amount);
         // Si se actualiza base_amount, recalcular total_amount si hay tax_percentage
         if (data.tax_percentage !== undefined && data.tax_percentage !== null && data.tax_percentage > 0) {
           const baseAmount = cleanData.base_amount as number;
@@ -371,9 +452,6 @@ export const transactionService = {
           // Si no hay tax_percentage, total_amount = base_amount
           cleanData.total_amount = cleanData.base_amount;
         }
-      }
-      if (data.total_amount !== undefined) {
-        cleanData.total_amount = Math.round(data.total_amount);
       }
       if (data.date !== undefined) {
         cleanData.date = data.date;

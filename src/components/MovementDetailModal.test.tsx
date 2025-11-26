@@ -122,7 +122,7 @@ describe('MovementDetailModal', () => {
     );
     
     expect(screen.getByText(/desglose fiscal/i)).toBeInTheDocument();
-    expect(screen.getByText(/base gravable/i)).toBeInTheDocument();
+    expect(screen.getByText(/base calculada/i)).toBeInTheDocument();
     expect(screen.getByText(/iva/i)).toBeInTheDocument();
   });
 

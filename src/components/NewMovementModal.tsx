@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { XCircle, TrendingDown, TrendingUp, ArrowRight, Tag } from 'lucide-react';
 import './NewMovementModal.css';
 import { useCategories } from '../context/CategoryContext';
@@ -18,6 +18,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
   const [showNewCategoryForm, setShowNewCategoryForm] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
@@ -50,20 +51,33 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     
     return {
       type: 'expense' as 'income' | 'expense' | 'transfer',
-    date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString().split('T')[0],
       note: '',
       tag: '',
-    category: '',
+      category: '',
       originAccount: '',
       destinationAccount: '',
-    amount: '',
-    base: '',
+      amount: '',
+      base: '',
       taxRate: 0, // Por defecto sin IVA
     };
   };
 
   const [formData, setFormData] = useState(getInitialFormData());
-  const [calculationMode, setCalculationMode] = useState<'total' | 'base'>('total');
+  // Detectar modo inicial: si hay tax_percentage > 0 y total_amount > base_amount, usar modo "Total con IVA"
+  const getInitialMode = (): 'total' | 'base' => {
+    if (sourceTransaction) {
+      const taxRate = sourceTransaction.tax_percentage || 0;
+      const totalAmount = sourceTransaction.total_amount || 0;
+      const baseAmount = sourceTransaction.base_amount || 0;
+      // Si hay IVA y el total es mayor que la base, probablemente fue creado con modo "Total con IVA"
+      if (taxRate > 0 && totalAmount > baseAmount) {
+        return 'total';
+      }
+    }
+    return 'total'; // Por defecto, usar modo "Total con IVA" (HU-15)
+  };
+  const [calculationMode, setCalculationMode] = useState<'total' | 'base'>(getInitialMode()); // 'total' = Total con IVA (HU-15), 'base' = Base sin IVA (tradicional)
 
   useEffect(() => {
     loadAccounts();
@@ -77,6 +91,10 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       const baseAmount = sourceTransaction.base_amount || 0;
       const taxRate = sourceTransaction.tax_percentage || 0;
       const totalAmount = sourceTransaction.total_amount || baseAmount;
+      
+      // Detectar modo: si hay tax_percentage > 0 y total_amount > base_amount, usar modo "Total con IVA"
+      const shouldUseTotalMode = taxRate > 0 && totalAmount > baseAmount;
+      setCalculationMode(shouldUseTotalMode ? 'total' : 'base');
       
       setFormData({
         type: type as 'income' | 'expense' | 'transfer',
@@ -208,15 +226,67 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     return 3; // transfer
   };
 
+  // Calcular desglose en tiempo real (HU-15)
+  const calculateBreakdown = (total: number, taxPercent?: number, accountId?: string, transactionType?: 'income' | 'expense' | 'transfer') => {
+    if (!taxPercent || taxPercent === 0) {
+      return {
+        base: total,
+        tax: 0,
+        gmf: 0,
+        total: total,
+      };
+    }
+
+    const taxRate = taxPercent / 100;
+    const base = total / (1 + taxRate);
+    const tax = total - base;
+    
+    // Calcular GMF solo si aplica
+    let gmf = 0;
+    const accountIdToUse = accountId || formData.originAccount;
+    const transactionTypeToUse = transactionType || formData.type;
+    
+    if (accountIdToUse) {
+      const originAccount = accounts.find(acc => acc.id?.toString() === accountIdToUse);
+      if (originAccount) {
+        // GMF NO aplica a:
+        // - Tarjetas de crédito (liability o category === 'credit_card')
+        // - Cuentas exentas (gmf_exempt === true)
+        // - Ingresos (solo gastos y transferencias)
+        const isCreditCard = originAccount.account_type === 'liability' || originAccount.category === 'credit_card';
+        const isExempt = originAccount.gmf_exempt === true;
+        const isApplicableTransaction = transactionTypeToUse === 'expense' || transactionTypeToUse === 'transfer';
+        
+        if (isApplicableTransaction && !isCreditCard && !isExempt) {
+          // GMF: 0.4% sobre (base + tax)
+          gmf = (base + tax) * 0.004;
+        }
+      }
+    }
+    
+    const finalTotal = base + tax + gmf;
+
+    return {
+      base: Math.round(base),
+      tax: Math.round(tax),
+      gmf: Math.round(gmf),
+      total: Math.round(finalTotal),
+    };
+  };
+
   const handleAmountChange = (value: string, mode: 'total' | 'base') => {
     if (mode === 'total') {
+      // Modo HU-15: Total con IVA
       const total = parseFloat(value) || 0;
-      // Si no hay IVA, base = total
-      const base = formData.taxRate > 0 ? total / (1 + formData.taxRate / 100) : total;
-      setFormData({ ...formData, amount: value, base: base.toFixed(2) });
+      const breakdown = calculateBreakdown(total, formData.taxRate);
+      setFormData({ 
+        ...formData, 
+        amount: value, 
+        base: breakdown.base.toString() 
+      });
     } else {
+      // Modo tradicional: Base sin IVA
       const base = parseFloat(value) || 0;
-      // Si no hay IVA, total = base
       const iva = formData.taxRate > 0 ? base * (formData.taxRate / 100) : 0;
       const total = base + iva;
       setFormData({ ...formData, base: value, amount: total.toFixed(2) });
@@ -259,11 +329,22 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       }
     }
 
-    const baseAmount = parseFloat(formData.base) || parseFloat(formData.amount) || 0;
-    if (baseAmount <= 0) {
-      setError('El monto debe ser mayor a cero');
+    // Validar según el modo de cálculo
+    const totalAmount = parseFloat(formData.amount) || 0;
+    if (totalAmount <= 0) {
+      setError('El total debe ser mayor a cero');
       return;
     }
+
+    // Validar IVA si se proporciona
+    if (formData.taxRate !== undefined && formData.taxRate !== null && formData.taxRate !== 0) {
+      if (formData.taxRate < 0 || formData.taxRate > 30) {
+        setError('La tasa de IVA debe estar entre 0 y 30%');
+        return;
+      }
+    }
+
+    const baseAmount = parseFloat(formData.base) || totalAmount;
 
     // Validar categoría para ingresos y gastos
     if (formData.type !== 'transfer' && !formData.category) {
@@ -272,8 +353,12 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     }
 
     // Validación preventiva de saldos (el backend también validará)
+    // Usar el total final (con GMF estimado) para validar saldo
+    const breakdown = calculateBreakdown(totalAmount, formData.taxRate || undefined);
+    const finalTotal = breakdown.total;
+    
     if (formData.type === 'expense' && formData.originAccount) {
-      const balanceWarning = validateAccountBalance(formData.originAccount, baseAmount, true);
+      const balanceWarning = validateAccountBalance(formData.originAccount, finalTotal, true);
       if (balanceWarning) {
         // Mostrar advertencia pero permitir intentar (el backend validará definitivamente)
         if (!window.confirm(`${balanceWarning}\n\n¿Deseas continuar de todas formas? El backend validará el límite.`)) {
@@ -285,13 +370,32 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     try {
       setIsSubmitting(true);
       
-      // Construir el objeto de datos según lo que el backend espera
+      // Construir el objeto de datos según el modo de cálculo (HU-15)
       const transactionData: CreateTransactionData = {
         origin_account: Number(formData.originAccount),
         type: getTransactionType(),
-        base_amount: baseAmount,
         date: formData.date,
       };
+
+      // Modo HU-15: Enviar total_amount + tax_percentage (sin base_amount)
+      if (calculationMode === 'total') {
+        transactionData.total_amount = Math.round(totalAmount);
+        // Asegurar que NO se incluya base_amount en modo HU-15
+        // No asignar base_amount en absoluto
+        // Solo agregar tax_percentage si es mayor a 0
+        if (formData.taxRate > 0) {
+          transactionData.tax_percentage = formData.taxRate;
+        }
+      } else {
+        // Modo tradicional: Enviar base_amount + tax_percentage
+        transactionData.base_amount = Math.round(baseAmount);
+        // Asegurar que NO se incluya total_amount en modo tradicional
+        // (el backend lo calculará si es necesario)
+        // Solo agregar tax_percentage si es mayor a 0
+        if (formData.taxRate > 0) {
+          transactionData.tax_percentage = formData.taxRate;
+        }
+      }
 
       // Agregar categoría solo para ingresos y gastos (no para transferencias)
       if (formData.type !== 'transfer' && formData.category) {
@@ -303,11 +407,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
         transactionData.destination_account = Number(formData.destinationAccount);
       }
 
-      // Solo agregar tax_percentage si es mayor a 0
-      if (formData.taxRate > 0) {
-        transactionData.tax_percentage = formData.taxRate;
-      }
-
       // Agregar tag y note solo si tienen valor
       const tagValue = formData.tag.trim();
       const noteValue = formData.note.trim();
@@ -316,6 +415,17 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       }
       if (noteValue) {
         transactionData.note = noteValue;
+      }
+
+      // Limpieza final: asegurar que no se incluyan ambos campos simultáneamente
+      // Si estamos en modo "total", eliminar explícitamente base_amount
+      if (calculationMode === 'total' && 'base_amount' in transactionData) {
+        delete transactionData.base_amount;
+      }
+      // Si estamos en modo "base", eliminar explícitamente total_amount (a menos que el backend lo necesite)
+      // En modo tradicional, el backend calculará total_amount si es necesario
+      if (calculationMode === 'base' && 'total_amount' in transactionData && transactionData.total_amount === undefined) {
+        delete transactionData.total_amount;
       }
 
       if (isEdit && transactionToEdit) {
@@ -329,7 +439,12 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       }
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al guardar el movimiento');
+      const errorMessage = err instanceof Error ? err.message : 'Error al guardar el movimiento';
+      setError(errorMessage);
+      // Hacer scroll al error después de un pequeño delay para que el DOM se actualice
+      setTimeout(() => {
+        errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     } finally {
       setIsSubmitting(false);
     }
@@ -341,6 +456,11 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       currency: 'COP',
       minimumFractionDigits: 0
     }).format(Math.abs(amount));
+  };
+
+  // Prevenir cambio de valor con la rueda del mouse en inputs number
+  const handleWheel = (e: React.WheelEvent<HTMLInputElement>) => {
+    e.currentTarget.blur();
   };
 
   return (
@@ -368,8 +488,16 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
-              {error}
+            <div 
+              ref={errorRef}
+              className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm sticky top-0 z-10 shadow-sm"
+              role="alert"
+              aria-live="assertive"
+            >
+              <div className="flex items-start gap-2">
+                <span className="font-semibold">⚠️ Error:</span>
+                <span>{error}</span>
+              </div>
             </div>
           )}
 
@@ -609,7 +737,21 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                       <select
                         id="movement-account"
                         value={formData.originAccount}
-                        onChange={(e) => setFormData({ ...formData, originAccount: e.target.value })}
+                        onChange={(e) => {
+                          const newOriginAccount = e.target.value;
+                          // Recalcular desglose cuando cambia la cuenta (el GMF puede cambiar)
+                          if (formData.amount && formData.taxRate > 0) {
+                            const total = parseFloat(formData.amount) || 0;
+                            const breakdown = calculateBreakdown(total, formData.taxRate, newOriginAccount, formData.type);
+                            setFormData({ 
+                              ...formData,
+                              originAccount: newOriginAccount,
+                              base: breakdown.base.toString()
+                            });
+                          } else {
+                            setFormData({ ...formData, originAccount: newOriginAccount });
+                          }
+                        }}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         required
                         aria-required="true"
@@ -655,7 +797,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                     type="button"
                     onClick={() => {
                       setCalculationMode('total');
-                      // Si cambiamos a modo "sin IVA", resetear IVA a 0 y hacer base = amount
+                      // Resetear IVA cuando se cambia a modo Total
                       if (formData.amount) {
                         setFormData({ ...formData, taxRate: 0, base: formData.amount });
                       }
@@ -665,46 +807,114 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                     }`}
                     aria-pressed={calculationMode === 'total'}
                   >
-                    Sin IVA
+                    Total con IVA
                   </button>
                   <button
                     type="button"
-                    onClick={() => setCalculationMode('base')}
+                    onClick={() => {
+                      setCalculationMode('base');
+                      // Al cambiar a modo Base, calcular total desde base + IVA
+                      if (formData.base) {
+                        const base = parseFloat(formData.base) || 0;
+                        const iva = formData.taxRate > 0 ? base * (formData.taxRate / 100) : 0;
+                        setFormData({ ...formData, amount: (base + iva).toFixed(2) });
+                      }
+                    }}
                     className={`px-3 py-1 text-xs rounded ${
                       calculationMode === 'base' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
                     }`}
                     aria-pressed={calculationMode === 'base'}
                   >
-                    Con IVA
+                    Base sin IVA
                   </button>
                 </div>
               </div>
 
               {calculationMode === 'total' ? (
-                <>
-                  <label htmlFor="movement-amount-total" className="block text-xs text-gray-600 mb-1">Monto pagado (sin IVA)</label>
-                  <input
-                    id="movement-amount-total"
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    value={formData.amount}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      // En modo "sin IVA", el monto es el total y la base es igual
-                      setFormData({ ...formData, amount: value, base: value, taxRate: 0 });
-                    }}
-                    placeholder="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                    required
-                    aria-required="true"
-                    aria-describedby="amount-total-description"
-                  />
-                  <p id="amount-total-description" className="mt-2 text-xs text-gray-500">
-                    Ingresa el monto total que pagaste. No se aplicará IVA.
-                  </p>
-                </>
+                // Modo HU-15: Total con IVA
+                <div className="space-y-3">
+                  <div>
+                    <label htmlFor="movement-total-amount" className="block text-xs text-gray-600 mb-1">Total a pagar *</label>
+                    <input
+                      id="movement-total-amount"
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      value={formData.amount}
+                      onChange={(e) => handleAmountChange(e.target.value, 'total')}
+                      onWheel={handleWheel}
+                      placeholder="0"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                      required
+                      aria-required="true"
+                      aria-describedby="total-amount-description"
+                    />
+                    <p id="total-amount-description" className="mt-1 text-xs text-gray-500">
+                      Ingresa el monto total que pagaste (incluye IVA si aplica).
+                    </p>
+                  </div>
+                  <div>
+                    <label htmlFor="movement-tax-rate-total" className="block text-xs text-gray-600 mb-1">IVA (%) (opcional)</label>
+                    <input
+                      id="movement-tax-rate-total"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="30"
+                      value={formData.taxRate || ''}
+                      onChange={(e) => {
+                        const newRate = parseFloat(e.target.value) || 0;
+                        const total = parseFloat(formData.amount) || 0;
+                        // Recalcular desglose cuando cambia el IVA
+                        const breakdown = calculateBreakdown(total, newRate > 0 ? newRate : undefined);
+                        setFormData({ 
+                          ...formData, 
+                          taxRate: newRate,
+                          base: breakdown.base.toString()
+                        });
+                      }}
+                      onWheel={handleWheel}
+                      placeholder="0"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      aria-describedby="tax-rate-total-description"
+                    />
+                    <p id="tax-rate-total-description" className="mt-1 text-xs text-gray-500">
+                      Ingresa el porcentaje de IVA (0-30%). Si no aplica, déjalo vacío.
+                    </p>
+                  </div>
+                  {formData.taxRate > 0 && formData.amount && (
+                    <div className="pt-3 border-t border-gray-300 bg-white rounded-lg p-3">
+                      <p className="text-xs font-semibold text-gray-700 mb-2">Desglose calculado:</p>
+                      {(() => {
+                        const breakdown = calculateBreakdown(parseFloat(formData.amount) || 0, formData.taxRate);
+                        return (
+                          <div className="space-y-1 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Base calculada:</span>
+                              <span className="font-medium">{formatCurrency(breakdown.base)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">IVA ({formData.taxRate}%):</span>
+                              <span className="font-medium text-amber-600">{formatCurrency(breakdown.tax)}</span>
+                            </div>
+                            {(formData.type === 'expense' || formData.type === 'transfer') && breakdown.gmf > 0 && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">GMF (estimado):</span>
+                                <span className="font-medium text-blue-600">{formatCurrency(breakdown.gmf)}</span>
+                              </div>
+                            )}
+                            <div className="flex justify-between pt-2 border-t border-gray-200">
+                              <span className="font-semibold text-gray-900">Total final:</span>
+                              <span className="font-bold text-gray-900">{formatCurrency(breakdown.total)}</span>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
               ) : (
+                // Modo tradicional: Base sin IVA
                 <div className="space-y-3">
                   <div>
                     <label htmlFor="movement-base-amount" className="block text-xs text-gray-600 mb-1">Base gravable *</label>
@@ -715,6 +925,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                       min="0.01"
                       value={formData.base}
                       onChange={(e) => handleAmountChange(e.target.value, 'base')}
+                      onWheel={handleWheel}
                       placeholder="0"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
@@ -722,32 +933,28 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                     />
                   </div>
                   <div>
-                    <label htmlFor="movement-tax-rate" className="block text-xs text-gray-600 mb-1">IVA (%)</label>
+                    <label htmlFor="movement-tax-rate" className="block text-xs text-gray-600 mb-1">IVA (%) (opcional)</label>
                     <input
                       id="movement-tax-rate"
                       type="number"
                       step="0.01"
                       min="0"
-                      max="100"
-                      value={formData.taxRate}
+                      max="30"
+                      value={formData.taxRate || ''}
                       onChange={(e) => {
                         const newRate = parseFloat(e.target.value) || 0;
-                        const updatedFormData = { ...formData, taxRate: newRate };
-                        setFormData(updatedFormData);
-                        if (updatedFormData.base) {
-                          // Usar el nuevo taxRate para el cálculo
-                          const base = parseFloat(updatedFormData.base) || 0;
-                          const iva = newRate > 0 ? base * (newRate / 100) : 0;
-                          const total = base + iva;
-                          setFormData({ ...updatedFormData, amount: total.toFixed(2) });
-                        }
+                        const base = parseFloat(formData.base) || 0;
+                        const iva = newRate > 0 ? base * (newRate / 100) : 0;
+                        const total = base + iva;
+                        setFormData({ ...formData, taxRate: newRate, amount: total.toFixed(2) });
                       }}
+                      onWheel={handleWheel}
                       placeholder="0"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       aria-describedby="tax-rate-description"
                     />
                     <p id="tax-rate-description" className="mt-1 text-xs text-gray-500">
-                      Ingresa el porcentaje de IVA (ej: 0, 5, 19)
+                      Ingresa el porcentaje de IVA (0-30%). Si no aplica, déjalo vacío.
                     </p>
                   </div>
                   <div className="pt-2 border-t">
@@ -793,4 +1000,5 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
 };
 
 export default NewMovementModal;
+
 

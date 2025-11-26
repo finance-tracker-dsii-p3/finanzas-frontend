@@ -158,11 +158,11 @@ describe('NewMovementModal', () => {
     render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
     
     await waitFor(() => {
-      const amountInput = screen.getByPlaceholderText('0');
+      const amountInput = screen.getByLabelText(/total a pagar/i);
       expect(amountInput).toBeInTheDocument();
     });
 
-    const amountInput = screen.getByPlaceholderText('0');
+    const amountInput = screen.getByLabelText(/total a pagar/i);
     await user.type(amountInput, '50000');
     
     expect(amountInput).toHaveValue(50000);
@@ -429,13 +429,13 @@ describe('NewMovementModal', () => {
       await user.selectOptions(categorySelect as HTMLSelectElement, '1');
     }
 
-    // Ingresar monto
+    // Ingresar monto - usar el ID específico del campo de total
     await waitFor(() => {
-      const amountInput = screen.getByPlaceholderText('0');
+      const amountInput = screen.getByLabelText(/total a pagar/i);
       expect(amountInput).toBeInTheDocument();
     });
 
-    const amountInput = screen.getByPlaceholderText('0');
+    const amountInput = screen.getByLabelText(/total a pagar/i);
     await user.type(amountInput, '100000');
 
     // Guardar
@@ -469,15 +469,15 @@ describe('NewMovementModal', () => {
     const user = userEvent.setup();
     render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
     
-    // Cambiar a modo "Con IVA"
+    // Cambiar a modo "Base sin IVA" (el botón que no es "Total con IVA")
     await waitFor(() => {
-      const ivaModeButton = screen.getByText(/con iva/i).closest('button');
-      expect(ivaModeButton).toBeInTheDocument();
+      const baseModeButton = screen.getByText(/base sin iva/i).closest('button');
+      expect(baseModeButton).toBeInTheDocument();
     });
 
-    const ivaModeButton = screen.getByText(/con iva/i).closest('button');
-    if (ivaModeButton) {
-      await user.click(ivaModeButton);
+    const baseModeButton = screen.getByText(/base sin iva/i).closest('button');
+    if (baseModeButton) {
+      await user.click(baseModeButton);
     }
 
     // Esperar a que aparezca el input de base gravable

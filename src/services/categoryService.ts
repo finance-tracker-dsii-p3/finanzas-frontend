@@ -74,20 +74,98 @@ const buildQueryParams = (filters?: CategoryFilters) => {
 };
 
 const parseError = async (response: Response) => {
+  // Manejar errores del servidor (500, 502, 503, etc.)
+  if (response.status >= 500) {
+    const error = await response.json().catch(() => ({}));
+    const errorMessage = error.detail || error.message || error.error || 'Error interno del servidor';
+    throw new Error(`Error del servidor (${response.status}): ${errorMessage}. Por favor, intenta nuevamente más tarde o contacta al administrador.`);
+  }
+
   // Manejar errores de autenticación primero
   if (response.status === 401) {
     checkAndHandleAuthError(response);
+    throw new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
   }
 
+  // Manejar errores de permisos
+  if (response.status === 403) {
+    throw new Error('No tienes permisos para realizar esta operación.');
+  }
+
+  // Manejar errores de recurso no encontrado
+  if (response.status === 404) {
+    throw new Error('El recurso solicitado no fue encontrado.');
+  }
+
+  // Manejar otros errores del cliente (400, 422, etc.)
   const fallback = { message: 'Error en la operación de categorías' };
-  const error = await response.json().catch(() => fallback);
-  const detail =
-    error.message ||
-    error.detail ||
-    error.non_field_errors?.[0] ||
-    error.errors?.[0] ||
-    fallback.message;
-  throw new Error(detail);
+  let error;
+  try {
+    error = await response.json();
+  } catch {
+    error = fallback;
+  }
+
+  const errorMessages: string[] = [];
+
+  // Primero, mostrar el mensaje general si existe
+  if (error.message && !errorMessages.includes(error.message)) {
+    errorMessages.push(error.message);
+  }
+  if (error.detail && !errorMessages.includes(error.detail)) {
+    errorMessages.push(error.detail);
+  }
+
+  // Agregar errores de campos específicos
+  const fields = ['name', 'type', 'color', 'icon', 'is_active', 'order', 'reassign_to', 'target_category_id', 'categories'];
+
+  for (const field of fields) {
+    if (error[field]) {
+      const fieldError = Array.isArray(error[field]) ? error[field][0] : error[field];
+      const fieldLabel = {
+        name: 'Nombre',
+        type: 'Tipo',
+        color: 'Color',
+        icon: 'Icono',
+        is_active: 'Estado activo',
+        order: 'Orden',
+        reassign_to: 'Categoría de reasignación',
+        target_category_id: 'Categoría de reasignación',
+        categories: 'Lista de categorías',
+      }[field] || field;
+      errorMessages.push(`${fieldLabel}: ${fieldError}`);
+    }
+  }
+
+  // Errores no relacionados con campos específicos
+  if (error.non_field_errors) {
+    const nonFieldErrors = Array.isArray(error.non_field_errors) ? error.non_field_errors : [error.non_field_errors];
+    nonFieldErrors.forEach((err: string) => {
+      if (!errorMessages.includes(err)) {
+        errorMessages.push(err);
+      }
+    });
+  }
+
+  // Si hay otros campos de error, agregarlos
+  Object.keys(error).forEach(key => {
+    if (!fields.includes(key) && 
+        key !== 'message' && 
+        key !== 'detail' && 
+        key !== 'non_field_errors' &&
+        error[key]) {
+      const fieldError = Array.isArray(error[key]) ? error[key][0] : error[key];
+      if (typeof fieldError === 'string' && !errorMessages.includes(fieldError)) {
+        errorMessages.push(`${key}: ${fieldError}`);
+      }
+    }
+  });
+
+  if (errorMessages.length === 0) {
+    errorMessages.push('Error en la operación. Verifica que todos los campos obligatorios estén completos.');
+  }
+
+  throw new Error(errorMessages.join('. '));
 };
 
 export const categoryService = {

@@ -150,7 +150,7 @@ const MovementDetailModal: React.FC<MovementDetailModalProps> = ({ movement, onC
               </div>
             )}
 
-            {/* Desglose fiscal (IVA y GMF) */}
+            {/* Desglose fiscal (IVA y GMF) - HU-15 */}
             {((movement.tax_percentage && movement.tax_percentage > 0) || movement.gmf_amount) && (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-3">
@@ -158,10 +158,12 @@ const MovementDetailModal: React.FC<MovementDetailModalProps> = ({ movement, onC
                   <p className="font-semibold text-gray-900">Desglose fiscal</p>
                 </div>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Base gravable:</span>
-                    <span className="font-medium">{formatCurrency(movement.base_amount || movement.base || 0)}</span>
-                  </div>
+                  {movement.base_amount !== undefined && movement.base_amount > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Base calculada:</span>
+                      <span className="font-medium">{formatCurrency(movement.base_amount || movement.base || 0)}</span>
+                    </div>
+                  )}
                   {movement.tax_percentage && movement.tax_percentage > 0 && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">IVA ({movement.tax_percentage}%):</span>
@@ -180,7 +182,7 @@ const MovementDetailModal: React.FC<MovementDetailModalProps> = ({ movement, onC
                     </div>
                   )}
                   <div className="flex justify-between pt-2 border-t border-gray-300">
-                    <span className="font-semibold text-gray-900">Total:</span>
+                    <span className="font-semibold text-gray-900">Total final:</span>
                     <span className="font-bold">{formatCurrency(movement.total_amount || movement.amount || 0)}</span>
                   </div>
                 </div>
