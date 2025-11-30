@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { useCategories } from '../../context/CategoryContext';
+import ConfirmModal from '../../components/ConfirmModal';
 import { Category, CategoryDeletionValidation, CategoryPayload, CategoryType } from '../../services/categoryService';
 import './categories.css';
 
@@ -183,6 +184,20 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ onBack }) => {
   const [showInactive, setShowInactive] = useState(false);
   const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type?: 'warning' | 'danger' | 'info';
+    cancelText?: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    type: 'warning',
+  });
   const [deleteValidation, setDeleteValidation] = useState<CategoryDeletionValidation | null>(null);
   const [isLoadingDeleteValidation, setIsLoadingDeleteValidation] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -320,7 +335,14 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ onBack }) => {
       try {
         await toggleCategory(category.id);
       } catch (err) {
-        alert(err instanceof Error ? err.message : 'No se pudo actualizar el estado');
+        setConfirmModal({
+          isOpen: true,
+          title: 'Error',
+          message: err instanceof Error ? err.message : 'No se pudo actualizar el estado',
+          type: 'danger',
+          onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+          cancelText: undefined,
+        });
       }
     },
     [toggleCategory],
@@ -378,7 +400,14 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ onBack }) => {
     try {
       await createDefaultCategories();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'No se pudieron crear las categorías base');
+      setConfirmModal({
+        isOpen: true,
+        title: 'Error',
+        message: err instanceof Error ? err.message : 'No se pudieron crear las categorías base',
+        type: 'danger',
+        onConfirm: () => setConfirmModal({ ...confirmModal, isOpen: false }),
+        cancelText: undefined,
+      });
     }
   };
 
@@ -801,6 +830,17 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ onBack }) => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText="Aceptar"
+        cancelText={confirmModal.cancelText}
+        type={confirmModal.type || 'warning'}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 };

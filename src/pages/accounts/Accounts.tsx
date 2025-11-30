@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Edit2, Trash2, CreditCard, Wallet, Building2, Banknote, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import NewAccountModal from '../../components/NewAccountModal';
 import CardDetail from '../cards/CardDetail';
+import ConfirmModal from '../../components/ConfirmModal';
 import { accountService, Account, CreateAccountData } from '../../services/accountService';
 import './accounts.css';
 
@@ -17,6 +18,20 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showBalance, setShowBalance] = useState<{ [key: number]: boolean }>({});
   const [expandedCards, setExpandedCards] = useState<{ [key: number]: boolean }>({});
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type?: 'warning' | 'danger' | 'info';
+    cancelText?: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    type: 'warning',
+  });
 
   useEffect(() => {
     loadAccounts();
@@ -29,7 +44,14 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
       setAccounts(accountsData);
     } catch (error) {
       console.error('Error al cargar cuentas:', error);
-      alert(error instanceof Error ? error.message : 'Error al cargar las cuentas');
+      setConfirmModal({
+        isOpen: true,
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'Error al cargar las cuentas',
+        type: 'danger',
+        onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+        cancelText: undefined,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -96,22 +118,41 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
   const handleDeleteAccount = async (id: number) => {
     try {
       const validation = await accountService.validateDeletion(id);
-      
-      if (!validation.can_delete && validation.has_movements) {
-        const message = `Esta cuenta tiene ${validation.movement_count || 0} movimiento(s) asociado(s).\n\n¿Estás seguro de que deseas eliminar esta cuenta? Esta acción no se puede deshacer.`;
-        if (!window.confirm(message)) {
-          return;
-        }
-      } else {
-        if (!window.confirm('¿Estás seguro de que deseas eliminar esta cuenta?')) {
-          return;
-        }
-      }
+      const message = !validation.can_delete && validation.has_movements
+        ? `Esta cuenta tiene ${validation.movement_count || 0} movimiento(s) asociado(s).\n\n¿Estás seguro de que deseas eliminar esta cuenta? Esta acción no se puede deshacer.`
+        : '¿Estás seguro de que deseas eliminar esta cuenta? Esta acción no se puede deshacer.';
 
-      await accountService.deleteAccount(id);
-      await loadAccounts();
+      setConfirmModal({
+        isOpen: true,
+        title: 'Confirmar eliminación',
+        message,
+        type: 'danger',
+        onConfirm: async () => {
+          setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+          try {
+            await accountService.deleteAccount(id);
+            await loadAccounts();
+          } catch (error) {
+            setConfirmModal({
+              isOpen: true,
+              title: 'Error',
+              message: error instanceof Error ? error.message : 'Error al eliminar la cuenta',
+              type: 'danger',
+              onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+              cancelText: undefined,
+            });
+          }
+        },
+      });
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Error al eliminar la cuenta');
+      setConfirmModal({
+        isOpen: true,
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'Error al validar la eliminación',
+        type: 'danger',
+        onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+        cancelText: undefined,
+      });
     }
   };
 
@@ -120,7 +161,14 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
       await accountService.toggleActive(id);
       await loadAccounts();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Error al cambiar el estado de la cuenta');
+      setConfirmModal({
+        isOpen: true,
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'Error al cambiar el estado de la cuenta',
+        type: 'danger',
+        onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+        cancelText: undefined,
+      });
     }
   };
 
@@ -512,7 +560,14 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                              setShowNewAccountModal(true);
                            } catch (error) {
                              console.error('Error al cargar detalles de la cuenta:', error);
-                             alert('Error al cargar los detalles de la cuenta');
+                             setConfirmModal({
+                               isOpen: true,
+                               title: 'Error',
+                               message: 'Error al cargar los detalles de la cuenta',
+                               type: 'danger',
+                               onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+                               cancelText: undefined,
+                             });
                            }
                          }}
                          className="px-2.5 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-colors"
@@ -651,7 +706,14 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                           setShowNewAccountModal(true);
                         } catch (error) {
                           console.error('Error al cargar detalles de la cuenta:', error);
-                          alert('Error al cargar los detalles de la cuenta');
+                          setConfirmModal({
+                            isOpen: true,
+                            title: 'Error',
+                            message: 'Error al cargar los detalles de la cuenta',
+                            type: 'danger',
+                            onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+                            cancelText: undefined,
+                          });
                         }
                       }}
                       className="flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-xs transition-colors"
@@ -685,6 +747,16 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
         />
       )}
 
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText="Aceptar"
+        cancelText={confirmModal.cancelText}
+        type={confirmModal.type || 'warning'}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 };

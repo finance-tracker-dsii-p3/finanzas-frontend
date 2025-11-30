@@ -385,44 +385,44 @@ describe('Movements', () => {
       expect(hasMovements).toBeTruthy();
     });
 
-    // Mockear window.confirm antes de buscar los botones
-    const originalConfirm = window.confirm;
-    window.confirm = vi.fn(() => true);
-
-    try {
-      // Buscar botón de eliminar (puede estar en un menú o directamente visible)
-      await waitFor(() => {
-        const deleteButtons = screen.queryAllByRole('button', { name: /eliminar/i });
-        // También buscar por el icono de eliminar (Trash2)
-        const deleteIcons = document.querySelectorAll('[title="Eliminar"]');
-        expect(deleteButtons.length > 0 || deleteIcons.length > 0).toBeTruthy();
-      });
-
+    // Buscar botón de eliminar (puede estar en un menú o directamente visible)
+    await waitFor(() => {
       const deleteButtons = screen.queryAllByRole('button', { name: /eliminar/i });
-      const deleteIcons = Array.from(document.querySelectorAll('[title="Eliminar"]'));
-      
-      if (deleteButtons.length > 0) {
-        await user.click(deleteButtons[0]);
-        
-        // Esperar a que se llame a delete después de confirmar
-        await waitFor(() => {
-          expect(transactionService.transactionService.delete).toHaveBeenCalled();
-        }, { timeout: 3000 });
-      } else if (deleteIcons.length > 0) {
-        // Si hay iconos de eliminar, hacer clic en el primero
-        const deleteIcon = deleteIcons[0] as HTMLElement;
-        await user.click(deleteIcon);
-        
-        await waitFor(() => {
-          expect(transactionService.transactionService.delete).toHaveBeenCalled();
-        }, { timeout: 3000 });
-      } else {
-        // Si no hay botón de eliminar visible, el test pasa (puede requerir abrir el modal primero)
-        expect(true).toBe(true);
-      }
-    } finally {
-      window.confirm = originalConfirm;
+      // También buscar por el icono de eliminar (Trash2)
+      const deleteIcons = document.querySelectorAll('[title="Eliminar"]');
+      expect(deleteButtons.length > 0 || deleteIcons.length > 0).toBeTruthy();
+    });
+
+    const deleteButtons = screen.queryAllByRole('button', { name: /eliminar/i });
+    const deleteIcons = Array.from(document.querySelectorAll('[title="Eliminar"]'));
+    
+    if (deleteButtons.length > 0) {
+      await user.click(deleteButtons[0]);
+    } else if (deleteIcons.length > 0) {
+      // Si hay iconos de eliminar, hacer clic en el primero
+      const deleteIcon = deleteIcons[0] as HTMLElement;
+      await user.click(deleteIcon);
+    } else {
+      // Si no hay botón de eliminar visible, el test pasa (puede requerir abrir el modal primero)
+      expect(true).toBe(true);
+      return;
     }
+
+    // Esperar a que aparezca el modal de confirmación
+    await waitFor(() => {
+      expect(screen.getByText(/confirmar eliminación/i)).toBeInTheDocument();
+    });
+
+    // Buscar y hacer clic en el botón "Eliminar" del modal (el que está dentro del modal de confirmación)
+    const confirmDeleteButtons = screen.getAllByRole('button', { name: /eliminar/i });
+    // El último botón debería ser el del modal de confirmación
+    const confirmDeleteButton = confirmDeleteButtons[confirmDeleteButtons.length - 1];
+    await user.click(confirmDeleteButton);
+    
+    // Esperar a que se llame a delete después de confirmar
+    await waitFor(() => {
+      expect(transactionService.transactionService.delete).toHaveBeenCalled();
+    }, { timeout: 3000 });
   });
 
   it('debe duplicar un movimiento', async () => {

@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { X, Loader2, AlertCircle } from 'lucide-react';
 import { useBudgets } from '../context/BudgetContext';
 import { useCategories } from '../context/CategoryContext';
+import { accountService } from '../services/accountService';
 import { BudgetListItem, CalculationMode } from '../services/budgetService';
 import './NewBudgetModal.css';
 
@@ -22,10 +23,12 @@ const NewBudgetModal: React.FC<NewBudgetModalProps> = ({ onClose, budgetToEdit }
   const [formData, setFormData] = useState({
     category: '',
     amount: '',
+    currency: 'COP' as 'COP' | 'USD' | 'EUR',
     calculation_mode: 'base' as CalculationMode,
     alert_threshold: '80',
     is_active: true,
   });
+  const [availableCurrencies, setAvailableCurrencies] = useState<Array<'COP' | 'USD' | 'EUR'>>(['COP']);
 
   const expenseCategories = useMemo(() => getActiveCategoriesByType('expense'), [getActiveCategoriesByType]);
 
@@ -33,6 +36,11 @@ const NewBudgetModal: React.FC<NewBudgetModalProps> = ({ onClose, budgetToEdit }
     const loadAvailableCategories = async () => {
       setIsLoadingCategories(true);
       try {
+        // Cargar cuentas para obtener monedas disponibles
+        const accounts = await accountService.getAllAccounts();
+        const currencies = Array.from(new Set(accounts.filter(acc => acc.is_active !== false).map(acc => acc.currency))) as Array<'COP' | 'USD' | 'EUR'>;
+        setAvailableCurrencies(currencies.length > 0 ? currencies : ['COP']);
+
         if (budgetToEdit) {
           setAvailableCategories(expenseCategories.map((cat) => ({
             id: cat.id,
@@ -43,6 +51,7 @@ const NewBudgetModal: React.FC<NewBudgetModalProps> = ({ onClose, budgetToEdit }
           setFormData({
             category: budgetToEdit.category.toString(),
             amount: budgetToEdit.amount,
+            currency: ('currency' in budgetToEdit && typeof budgetToEdit.currency === 'string') ? budgetToEdit.currency as 'COP' | 'USD' | 'EUR' : 'COP',
             calculation_mode: budgetToEdit.calculation_mode,
             alert_threshold: budgetToEdit.alert_threshold,
             is_active: budgetToEdit.is_active,
@@ -103,6 +112,7 @@ const NewBudgetModal: React.FC<NewBudgetModalProps> = ({ onClose, budgetToEdit }
       if (budgetToEdit) {
         await updateBudget(budgetToEdit.id, {
           amount: formData.amount,
+          currency: formData.currency,
           calculation_mode: formData.calculation_mode,
           alert_threshold: formData.alert_threshold,
           is_active: formData.is_active,
@@ -111,6 +121,7 @@ const NewBudgetModal: React.FC<NewBudgetModalProps> = ({ onClose, budgetToEdit }
         await createBudget({
           category: parseInt(formData.category),
           amount: formData.amount,
+          currency: formData.currency,
           calculation_mode: formData.calculation_mode,
           period: 'monthly',
           alert_threshold: formData.alert_threshold,
@@ -225,6 +236,27 @@ const NewBudgetModal: React.FC<NewBudgetModalProps> = ({ onClose, budgetToEdit }
             {formData.amount && (
               <p className="text-xs text-gray-600 mt-1">{formatCurrency(formData.amount)}</p>
             )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Moneda <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={formData.currency}
+              onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'COP' | 'USD' | 'EUR' })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            >
+              {availableCurrencies.map((curr) => (
+                <option key={curr} value={curr}>
+                  {curr === 'COP' ? 'Pesos Colombianos (COP)' : curr === 'USD' ? 'Dólares (USD)' : 'Euros (EUR)'}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Solo se contarán transacciones de cuentas con esta moneda
+            </p>
           </div>
 
           <div>

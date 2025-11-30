@@ -2,8 +2,10 @@ import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { XCircle, TrendingDown, TrendingUp, ArrowRight, Tag } from 'lucide-react';
 import './NewMovementModal.css';
 import { useCategories } from '../context/CategoryContext';
+import { useBudgets } from '../context/BudgetContext';
 import { transactionService, CreateTransactionData, TransactionType, Transaction } from '../services/transactionService';
 import { accountService, Account } from '../services/accountService';
+import ConfirmModal from './ConfirmModal';
 
 interface NewMovementModalProps {
   onClose: () => void;
@@ -14,7 +16,18 @@ interface NewMovementModalProps {
 
 const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess, transactionToEdit, transactionToDuplicate }) => {
   const { getActiveCategoriesByType, createCategory, refreshCategories } = useCategories();
+  const { getBudgetByCategory, refreshBudgets } = useBudgets();
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [selectedBudget, setSelectedBudget] = useState<{
+    id: number;
+    category_name: string;
+    amount: string;
+    spent_amount: string;
+    calculation_mode: 'base' | 'total';
+    calculation_mode_display?: string;
+    alert_threshold: string;
+  } | null>(null);
+  const [isLoadingBudget, setIsLoadingBudget] = useState(false);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +35,17 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
   const [showNewCategoryForm, setShowNewCategoryForm] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   // Determinar si es edición o duplicación
   const isEdit = !!transactionToEdit;
@@ -51,14 +75,14 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     
     return {
       type: 'expense' as 'income' | 'expense' | 'transfer',
-      date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split('T')[0],
       note: '',
       tag: '',
-      category: '',
+    category: '',
       originAccount: '',
       destinationAccount: '',
-      amount: '',
-      base: '',
+    amount: '',
+    base: '',
       taxRate: 0, // Por defecto sin IVA
     };
   };
@@ -82,6 +106,34 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
   useEffect(() => {
     loadAccounts();
   }, []);
+
+  // Cargar presupuesto cuando se selecciona una categoría de gasto
+  useEffect(() => {
+    const loadBudget = async () => {
+      if (formData.type === 'expense' && formData.category) {
+        setIsLoadingBudget(true);
+        setSelectedBudget(null);
+        try {
+          const categoryId = parseInt(formData.category);
+          const response = await getBudgetByCategory(categoryId, true);
+          // Obtener el presupuesto mensual activo
+          const monthlyBudget = response.budgets.find(b => b.period === 'monthly' && b.is_active);
+          if (monthlyBudget) {
+            setSelectedBudget(monthlyBudget);
+          }
+        } catch {
+          // Si no hay presupuesto, simplemente no mostrar nada
+          setSelectedBudget(null);
+        } finally {
+          setIsLoadingBudget(false);
+        }
+      } else {
+        setSelectedBudget(null);
+      }
+    };
+
+    loadBudget();
+  }, [formData.category, formData.type, getBudgetByCategory]);
 
   useEffect(() => {
     // Actualizar formulario cuando cambien las props
@@ -361,12 +413,24 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       const balanceWarning = validateAccountBalance(formData.originAccount, finalTotal, true);
       if (balanceWarning) {
         // Mostrar advertencia pero permitir intentar (el backend validará definitivamente)
-        if (!window.confirm(`${balanceWarning}\n\n¿Deseas continuar de todas formas? El backend validará el límite.`)) {
-          return;
-        }
+        setConfirmModal({
+          isOpen: true,
+          title: 'Advertencia de límite',
+          message: `${balanceWarning}\n\n¿Deseas continuar de todas formas? El backend validará el límite.`,
+          onConfirm: () => {
+            setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+            // Continuar con el submit pasando los parámetros necesarios
+            submitTransaction(totalAmount, baseAmount);
+          },
+        });
+        return;
       }
     }
 
+    submitTransaction(totalAmount, baseAmount);
+  };
+
+  const submitTransaction = async (totalAmount: number, baseAmount: number) => {
     try {
       setIsSubmitting(true);
       
@@ -434,6 +498,34 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
         await transactionService.create(transactionData);
       }
 
+      // Disparar evento para que el contexto refresque automáticamente
+      const eventType = isEdit ? 'transactionUpdated' : 'transactionCreated';
+      window.dispatchEvent(new Event(eventType));
+
+      // Dar un delay más largo para que el backend procese y recalcule la transacción
+      // El backend necesita tiempo para actualizar el cálculo de spent_amount
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Refrescar presupuestos después de crear/editar un movimiento
+      // Esto asegura que los cálculos de gasto se actualicen
+      try {
+        await refreshBudgets({ active_only: true, period: 'monthly' });
+        console.log('✅ Presupuestos refrescados después del movimiento');
+      } catch (refreshError) {
+        // No bloquear el flujo si falla el refresh, solo loguear
+        console.warn('⚠️ No se pudieron refrescar los presupuestos después del movimiento:', refreshError);
+      }
+      
+      // Segundo refresh después de un delay adicional para asegurar que el backend haya recalculado
+      setTimeout(async () => {
+        try {
+          await refreshBudgets({ active_only: true, period: 'monthly' });
+          console.log('✅ Segundo refresh de presupuestos (verificación)');
+        } catch (refreshError) {
+          console.warn('⚠️ Error en segundo refresh:', refreshError);
+        }
+      }, 2000);
+
       if (onSuccess) {
         onSuccess();
       }
@@ -450,12 +542,131 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     }
   };
 
-  const formatCurrency = (amount: number): string => {
+  const formatCurrency = (amount: number | string): string => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) || 0 : amount;
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0
-    }).format(Math.abs(amount));
+    }).format(Math.abs(numAmount));
+  };
+
+  // Componente para mostrar información del presupuesto
+  const BudgetInfo: React.FC<{
+    budget: {
+      id: number;
+      category_name: string;
+      amount: string;
+      spent_amount: string;
+      calculation_mode: 'base' | 'total';
+      calculation_mode_display?: string;
+      alert_threshold: string;
+    };
+    transactionAmount: number;
+    breakdown: { base: number; tax: number; gmf: number; total: number };
+    formatCurrency: (amount: number | string) => string;
+  }> = ({ budget, transactionAmount, breakdown, formatCurrency }) => {
+    // Determinar qué monto usar según el modo de cálculo del presupuesto
+    const budgetCalculationMode = budget.calculation_mode || 'base';
+    const amountToUse = budgetCalculationMode === 'total' ? breakdown.total : breakdown.base;
+    
+    const currentSpent = parseFloat(budget.spent_amount || '0');
+    const budgetLimit = parseFloat(budget.amount || '0');
+    const newSpent = currentSpent + amountToUse;
+    const newPercentage = budgetLimit > 0 ? (newSpent / budgetLimit) * 100 : 0;
+    const currentPercentage = budgetLimit > 0 ? (currentSpent / budgetLimit) * 100 : 0;
+    const newRemaining = budgetLimit - newSpent;
+    
+    const willExceed = newSpent > budgetLimit;
+    const willReachWarning = newPercentage >= parseFloat(budget.alert_threshold || '80') && currentPercentage < parseFloat(budget.alert_threshold || '80');
+    const isWarning = currentPercentage >= parseFloat(budget.alert_threshold || '80') && currentPercentage < 100;
+    const isExceeded = currentPercentage >= 100;
+
+    const getStatusColor = () => {
+      if (willExceed || isExceeded) return 'bg-red-50 border-red-200 text-red-800';
+      if (willReachWarning || isWarning) return 'bg-amber-50 border-amber-200 text-amber-800';
+      return 'bg-blue-50 border-blue-200 text-blue-800';
+    };
+
+    const getStatusIcon = () => {
+      if (willExceed || isExceeded) return '🚨';
+      if (willReachWarning || isWarning) return '⚠️';
+      return '📊';
+    };
+
+    return (
+      <div className={`p-4 border rounded-lg ${getStatusColor()}`}>
+        <div className="flex items-start gap-2 mb-3">
+          <span className="text-lg">{getStatusIcon()}</span>
+          <div className="flex-1">
+            <p className="font-semibold text-sm mb-1">Presupuesto: {budget.category_name}</p>
+            <p className="text-xs opacity-90">
+              Modo: {budget.calculation_mode_display || (budgetCalculationMode === 'total' ? 'Total (con impuestos)' : 'Base (sin impuestos)')}
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between items-center">
+            <span className="text-xs opacity-90">Límite:</span>
+            <span className="font-semibold">{formatCurrency(budgetLimit)}</span>
+          </div>
+          
+          <div className="flex justify-between items-center">
+            <span className="text-xs opacity-90">Gastado actual:</span>
+            <span className="font-semibold">{formatCurrency(currentSpent)} ({currentPercentage.toFixed(1)}%)</span>
+          </div>
+
+          {transactionAmount > 0 && (
+            <>
+              <div className="flex justify-between items-center">
+                <span className="text-xs opacity-90">Este gasto:</span>
+                <span className="font-semibold">{formatCurrency(amountToUse)}</span>
+              </div>
+              
+              <div className="flex justify-between items-center pt-2 border-t border-current border-opacity-20">
+                <span className="text-xs opacity-90">Nuevo total:</span>
+                <span className={`font-bold ${willExceed ? 'text-red-900' : ''}`}>
+                  {formatCurrency(newSpent)} ({newPercentage.toFixed(1)}%)
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-xs opacity-90">Restante:</span>
+                <span className={`font-semibold ${newRemaining < 0 ? 'text-red-900' : ''}`}>
+                  {formatCurrency(newRemaining)}
+                </span>
+              </div>
+            </>
+          )}
+
+          <div className="mt-3 pt-2 border-t border-current border-opacity-20">
+            <div className="w-full bg-current bg-opacity-20 rounded-full h-2 mb-1">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  willExceed || isExceeded
+                    ? 'bg-red-600'
+                    : willReachWarning || isWarning
+                      ? 'bg-amber-500'
+                      : 'bg-blue-500'
+                }`}
+                style={{ width: `${Math.min(newPercentage, 100)}%` }}
+              ></div>
+            </div>
+            {willExceed && (
+              <p className="text-xs font-semibold mt-1">
+                ⚠️ Este gasto hará que excedas el presupuesto por {formatCurrency(Math.abs(newRemaining))}
+              </p>
+            )}
+            {willReachWarning && !willExceed && (
+              <p className="text-xs font-semibold mt-1">
+                ⚠️ Este gasto alcanzará el {budget.alert_threshold || 80}% del presupuesto
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   // Prevenir cambio de valor con la rueda del mouse en inputs number
@@ -683,13 +894,42 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                         // Validación adicional por si acaso
                         if (!cat || cat.id == null) return null;
                         return (
-                          <option key={cat.id} value={cat.id.toString()}>
+                        <option key={cat.id} value={cat.id.toString()}>
                             {cat.name || 'Sin nombre'}
-                          </option>
+                        </option>
                         );
                       })}
                     </select>
                   )}
+                  
+                  {/* Mostrar información del presupuesto si es un gasto y hay presupuesto */}
+                  {formData.type === 'expense' && formData.category && (
+                    <div className="mt-3">
+                      {isLoadingBudget ? (
+                        <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
+                          Cargando información del presupuesto...
+                        </div>
+                      ) : selectedBudget ? (
+                        <BudgetInfo 
+                          budget={selectedBudget} 
+                          transactionAmount={parseFloat(formData.amount) || 0}
+                          breakdown={calculateBreakdown(
+                            parseFloat(formData.amount) || 0,
+                            formData.taxRate || undefined,
+                            formData.originAccount,
+                            'expense'
+                          )}
+                          formatCurrency={formatCurrency}
+                        />
+                      ) : (
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                          <p className="font-medium">⚠️ No hay presupuesto asignado</p>
+                          <p className="text-xs mt-1">Esta categoría no tiene un presupuesto mensual activo. Los gastos no se contabilizarán en ningún presupuesto.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
                   {showNewCategoryForm && (
                     <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg" role="region" aria-label="Formulario de nueva categoría">
                       <label htmlFor="new-category-name" className="sr-only">Nombre de la categoría</label>
@@ -835,18 +1075,18 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                 <div className="space-y-3">
                   <div>
                     <label htmlFor="movement-total-amount" className="block text-xs text-gray-600 mb-1">Total a pagar *</label>
-                    <input
+                  <input
                       id="movement-total-amount"
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      value={formData.amount}
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    value={formData.amount}
                       onChange={(e) => handleAmountChange(e.target.value, 'total')}
                       onWheel={handleWheel}
-                      placeholder="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                      required
-                      aria-required="true"
+                    placeholder="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                    required
+                    aria-required="true"
                       aria-describedby="total-amount-description"
                     />
                     <p id="total-amount-description" className="mt-1 text-xs text-gray-500">
@@ -995,6 +1235,17 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
           </form>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText="Continuar"
+        cancelText="Cancelar"
+        type="warning"
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: () => {} })}
+      />
     </div>
   );
 };
