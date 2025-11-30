@@ -47,9 +47,6 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       try {
         const response = await budgetService.list(filters);
-        console.log('📊 Presupuestos cargados desde el backend:', response.results);
-        console.log('📊 Primer presupuesto - Gastado:', response.results[0]?.spent_amount);
-        // Crear una nueva referencia del array para forzar el re-render
         setBudgets([...response.results]);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'No se pudieron cargar los presupuestos';
@@ -69,12 +66,10 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [isAuthenticated, loadBudgets]);
 
-  // Escuchar eventos de actualización de transacciones para refrescar presupuestos
   useEffect(() => {
     if (!isAuthenticated) return;
 
     const handleTransactionUpdate = () => {
-      // Pequeño delay para dar tiempo al backend
       setTimeout(() => {
         loadBudgets({ active_only: true, period: 'monthly' });
       }, 500);

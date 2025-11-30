@@ -128,7 +128,6 @@ Proporciona un wrapper personalizado que incluye:
 ```typescript
 import { render } from '../../test/utils/test-utils';
 
-// Usa render en lugar de render de @testing-library/react
 render(<MiComponente />);
 ```
 
@@ -141,12 +140,10 @@ vi.mock('../../context/AuthContext', () => ({
   useAuth: vi.fn(),
 }));
 
-// En el test
 vi.mocked(authContext.useAuth).mockReturnValue({
   user: null,
   isAuthenticated: false,
   login: mockLogin,
-  // ...
 });
 ```
 

@@ -202,7 +202,6 @@ describe('NewMovementModal', () => {
     render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
     
     await waitFor(() => {
-      // Hay múltiples elementos con "cuenta", usar getAllByText
       const cuentaElements = screen.getAllByText(/cuenta/i);
       expect(cuentaElements.length).toBeGreaterThan(0);
     });
@@ -242,7 +241,6 @@ describe('NewMovementModal', () => {
 
   it('debe permitir crear una nueva categoría', async () => {
     const user = userEvent.setup();
-    // Mock para que no haya categorías disponibles
     mockGetActiveCategoriesByType.mockReturnValueOnce([]);
     
     render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
@@ -291,17 +289,11 @@ describe('NewMovementModal', () => {
     const submitButton = screen.getByRole('button', { name: /guardar/i });
     await user.click(submitButton);
 
-    // Esperar a que aparezca el mensaje de error (puede tardar un momento)
-    // El error puede aparecer como mensaje de error o como validación HTML5
-    // También puede que el formulario HTML5 prevenga el submit, en cuyo caso verificamos que no se llamó a create
     await waitFor(() => {
       const errorMessage = screen.queryByText(/debes seleccionar una cuenta origen/i) ||
                           screen.queryByText(/debes seleccionar/i) ||
-                          // También verificar si hay un elemento con aria-invalid
                           document.querySelector('[aria-invalid="true"]') ||
-                          // O verificar que el select de cuenta tiene el atributo required
                           document.querySelector('#movement-account[required]');
-      // Si no hay mensaje de error visible, al menos verificamos que no se creó la transacción
       if (!errorMessage) {
         expect(transactionService.transactionService.create).not.toHaveBeenCalled();
       } else {
@@ -319,7 +311,6 @@ describe('NewMovementModal', () => {
       expect(accountSelects.length).toBeGreaterThan(0);
     });
 
-    // Seleccionar cuenta
     const accountSelects = screen.getAllByRole('combobox');
     const accountSelect = accountSelects.find(select => {
       const htmlSelect = select as HTMLSelectElement;
@@ -330,7 +321,6 @@ describe('NewMovementModal', () => {
       await user.selectOptions(accountSelect as HTMLSelectElement, '1');
     }
 
-    // Seleccionar categoría si es necesario
     await waitFor(async () => {
       const categorySelects = screen.queryAllByRole('combobox');
       const categorySelect = categorySelects.find(select => {
@@ -342,7 +332,6 @@ describe('NewMovementModal', () => {
       }
     });
 
-    // Intentar guardar sin monto válido (el input tiene min="0.01" así que la validación HTML5 puede prevenir el submit)
     await waitFor(() => {
       const submitButton = screen.getByRole('button', { name: /guardar/i });
       expect(submitButton).toBeInTheDocument();
@@ -352,12 +341,9 @@ describe('NewMovementModal', () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      // El error puede ser sobre monto o sobre selección de cuenta/categoría
-      // También puede que la validación HTML5 prevenga el submit
       const errorMessage = screen.queryByText(/monto debe ser mayor/i) || 
                           screen.queryByText(/debes seleccionar/i) ||
                           screen.queryByText(/el monto debe ser mayor/i);
-      // Si no hay mensaje de error visible, verificar que no se creó la transacción (validación HTML5 previno el submit)
       if (!errorMessage) {
         expect(transactionService.transactionService.create).not.toHaveBeenCalled();
       } else {
@@ -387,13 +373,11 @@ describe('NewMovementModal', () => {
       expect(accountSelects.length).toBeGreaterThan(0);
     });
 
-    // Seleccionar tipo gasto
     const expenseButton = screen.getByText(/gasto/i).closest('button');
     if (expenseButton) {
       await user.click(expenseButton);
     }
 
-    // Seleccionar cuenta
     await waitFor(() => {
       const accountSelects = screen.getAllByRole('combobox');
       expect(accountSelects.length).toBeGreaterThan(0);
@@ -409,7 +393,6 @@ describe('NewMovementModal', () => {
       await user.selectOptions(accountSelect as HTMLSelectElement, '1');
     }
 
-    // Seleccionar categoría
     await waitFor(() => {
       const categorySelects = screen.getAllByRole('combobox');
       const categorySelect = categorySelects.find(select => {
@@ -429,7 +412,6 @@ describe('NewMovementModal', () => {
       await user.selectOptions(categorySelect as HTMLSelectElement, '1');
     }
 
-    // Ingresar monto - usar el ID específico del campo de total
     await waitFor(() => {
       const amountInput = screen.getByLabelText(/total a pagar/i);
       expect(amountInput).toBeInTheDocument();
@@ -438,7 +420,6 @@ describe('NewMovementModal', () => {
     const amountInput = screen.getByLabelText(/total a pagar/i);
     await user.type(amountInput, '100000');
 
-    // Guardar
     await waitFor(() => {
       const submitButton = screen.getByRole('button', { name: /guardar/i });
       expect(submitButton).toBeInTheDocument();
@@ -469,7 +450,6 @@ describe('NewMovementModal', () => {
     const user = userEvent.setup();
     render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
     
-    // Cambiar a modo "Base sin IVA" (el botón que no es "Total con IVA")
     await waitFor(() => {
       const baseModeButton = screen.getByText(/base sin iva/i).closest('button');
       expect(baseModeButton).toBeInTheDocument();
@@ -480,7 +460,6 @@ describe('NewMovementModal', () => {
       await user.click(baseModeButton);
     }
 
-    // Esperar a que aparezca el input de base gravable
     await waitFor(() => {
       const baseInput = screen.getByLabelText(/base gravable/i);
       expect(baseInput).toBeInTheDocument();
@@ -490,32 +469,22 @@ describe('NewMovementModal', () => {
     await user.clear(baseInput);
     await user.type(baseInput, '100000');
 
-    // Esperar a que aparezca el input de IVA
     await waitFor(() => {
       const taxInput = screen.getByLabelText(/iva/i);
       expect(taxInput).toBeInTheDocument();
     });
 
-    // Escribir el IVA - el onChange actualiza taxRate y luego llama a handleAmountChange
     const taxInput = screen.getByLabelText(/iva/i);
     await user.clear(taxInput);
     await user.type(taxInput, '19');
 
-    // El problema es que setFormData es asíncrono, así que necesitamos esperar a que React actualice el estado
-    // El onChange del IVA hace: setFormData({ ...formData, taxRate: newRate }) y luego handleAmountChange
-    // Pero handleAmountChange usa formData.taxRate que puede no estar actualizado aún
-    // Necesitamos esperar a que el cálculo se complete
     await waitFor(() => {
       const totalDisplay = screen.getByTestId('total-amount-display');
       expect(totalDisplay).toBeInTheDocument();
       const text = totalDisplay.textContent || '';
-      // El cálculo debería ser: base (100000) + IVA (19% = 19000) = 119000
-      // El formato puede ser $119.000, así que extraemos los números
       const numbersOnly = text.replace(/[^\d]/g, '');
       expect(numbersOnly.length).toBeGreaterThan(0);
       const totalValue = parseFloat(numbersOnly);
-      // Verificar que el total es mayor que la base (significa que el IVA se aplicó)
-      // O que es exactamente 119000
       expect(totalValue).toBeGreaterThan(100000);
     }, { timeout: 3000 });
   });

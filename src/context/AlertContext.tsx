@@ -38,7 +38,6 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       } catch (err) {
         const message = err instanceof Error ? err.message : 'No se pudieron cargar las alertas';
         setError(message);
-        console.error('Error al cargar alertas:', err);
       } finally {
         setIsLoading(false);
       }
@@ -66,7 +65,6 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setError(null);
       try {
         await alertService.markAsRead(id);
-        // Actualizar el estado local
         setAlerts((prev) =>
           prev.map((alert) => (alert.id === id ? { ...alert, is_read: true } : alert)),
         );
@@ -83,7 +81,6 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setError(null);
     try {
       await alertService.markAllAsRead();
-      // Actualizar el estado local
       setAlerts((prev) => prev.map((alert) => ({ ...alert, is_read: true })));
     } catch (err) {
       const message = err instanceof Error ? err.message : 'No se pudieron marcar todas las alertas como leídas';
@@ -97,7 +94,6 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setError(null);
       try {
         await alertService.delete(id);
-        // Remover del estado local
         setAlerts((prev) => prev.filter((alert) => alert.id !== id));
       } catch (err) {
         const message = err instanceof Error ? err.message : 'No se pudo eliminar la alerta';

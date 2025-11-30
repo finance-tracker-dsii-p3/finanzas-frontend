@@ -25,7 +25,6 @@ const AlertCenter: React.FC<AlertCenterProps> = ({ onViewBudget }) => {
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      // Cargar alertas cuando se abre
       refreshAlerts();
     }
 
@@ -64,7 +63,6 @@ const AlertCenter: React.FC<AlertCenterProps> = ({ onViewBudget }) => {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al marcar todas las alertas como leídas';
       setErrorMessage(message);
-      console.error('Error al marcar todas como leídas:', err);
     } finally {
       setIsMarkingAll(false);
     }
@@ -77,7 +75,6 @@ const AlertCenter: React.FC<AlertCenterProps> = ({ onViewBudget }) => {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al marcar la alerta como leída';
       setErrorMessage(message);
-      console.error('Error al marcar como leída:', err);
     }
   };
 
@@ -89,7 +86,6 @@ const AlertCenter: React.FC<AlertCenterProps> = ({ onViewBudget }) => {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al eliminar la alerta';
       setErrorMessage(message);
-      console.error('Error al eliminar alerta:', err);
     } finally {
       setIsDeleting(null);
     }
@@ -105,7 +101,6 @@ const AlertCenter: React.FC<AlertCenterProps> = ({ onViewBudget }) => {
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error al obtener el presupuesto';
         setErrorMessage(message);
-        console.error('Error al obtener presupuesto:', err);
       }
     }
   };

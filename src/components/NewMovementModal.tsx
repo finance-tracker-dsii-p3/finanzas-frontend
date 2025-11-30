@@ -1,10 +1,12 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { XCircle, TrendingDown, TrendingUp, ArrowRight, Tag } from 'lucide-react';
+import { XCircle, TrendingDown, TrendingUp, ArrowRight, Tag, Target, AlertCircle } from 'lucide-react';
 import './NewMovementModal.css';
 import { useCategories } from '../context/CategoryContext';
 import { useBudgets } from '../context/BudgetContext';
 import { transactionService, CreateTransactionData, TransactionType, Transaction } from '../services/transactionService';
 import { accountService, Account } from '../services/accountService';
+import { goalService, Goal } from '../services/goalService';
+import { formatMoney, getCurrencyDisplay, Currency, getExchangeRate, convertCurrency, pesosToCents } from '../utils/currencyUtils';
 import ConfirmModal from './ConfirmModal';
 
 interface NewMovementModalProps {
@@ -35,6 +37,15 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
   const [showNewCategoryForm, setShowNewCategoryForm] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [isLoadingGoals, setIsLoadingGoals] = useState(false);
+  const [selectedGoal, setSelectedGoal] = useState<number | null>(null);
+  const [goalAmount, setGoalAmount] = useState<string>('');
+  const [transactionCurrency, setTransactionCurrency] = useState<Currency | null>(null);
+  const [convertedAmount, setConvertedAmount] = useState<number | null>(null);
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
+  const [isLoadingConversion, setIsLoadingConversion] = useState(false);
+  const [currencyWarning, setCurrencyWarning] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -47,7 +58,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     onConfirm: () => {},
   });
 
-  // Determinar si es edición o duplicación
   const isEdit = !!transactionToEdit;
   const isDuplicate = !!transactionToDuplicate;
   const sourceTransaction = transactionToEdit || transactionToDuplicate;
@@ -88,26 +98,127 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
   };
 
   const [formData, setFormData] = useState(getInitialFormData());
-  // Detectar modo inicial: si hay tax_percentage > 0 y total_amount > base_amount, usar modo "Total con IVA"
   const getInitialMode = (): 'total' | 'base' => {
     if (sourceTransaction) {
       const taxRate = sourceTransaction.tax_percentage || 0;
       const totalAmount = sourceTransaction.total_amount || 0;
       const baseAmount = sourceTransaction.base_amount || 0;
-      // Si hay IVA y el total es mayor que la base, probablemente fue creado con modo "Total con IVA"
       if (taxRate > 0 && totalAmount > baseAmount) {
         return 'total';
       }
     }
-    return 'total'; // Por defecto, usar modo "Total con IVA" (HU-15)
+    return 'total';
   };
-  const [calculationMode, setCalculationMode] = useState<'total' | 'base'>(getInitialMode()); // 'total' = Total con IVA (HU-15), 'base' = Base sin IVA (tradicional)
+  const [calculationMode, setCalculationMode] = useState<'total' | 'base'>(getInitialMode());
 
   useEffect(() => {
     loadAccounts();
   }, []);
 
-  // Cargar presupuesto cuando se selecciona una categoría de gasto
+  useEffect(() => {
+    const loadGoals = async () => {
+      if (formData.type === 'income' && !isEdit) {
+        setIsLoadingGoals(true);
+        try {
+          const goalsData = await goalService.list();
+          const activeGoals = goalsData.filter(goal => !goal.is_completed);
+          setGoals(activeGoals);
+        } catch {
+          setGoals([]);
+        } finally {
+          setIsLoadingGoals(false);
+        }
+      } else {
+        setGoals([]);
+        setSelectedGoal(null);
+        setGoalAmount('');
+        setTransactionCurrency(null);
+        setConvertedAmount(null);
+        setExchangeRate(null);
+        setCurrencyWarning(null);
+      }
+    };
+
+    loadGoals();
+  }, [formData.type, isEdit]);
+
+  useEffect(() => {
+    if (formData.type === 'income' && formData.originAccount && selectedGoal) {
+      const account = accounts.find(acc => acc.id?.toString() === formData.originAccount);
+      const goal = goals.find(g => g.id === selectedGoal);
+      
+      if (account && goal) {
+        if (!transactionCurrency) {
+          setTransactionCurrency(account.currency);
+        }
+        
+        if (account.currency !== goal.currency) {
+          const accountCurrency = account.currency || 'COP';
+          const goalCurrency = goal.currency || 'COP';
+          setCurrencyWarning(
+            `⚠️ La cuenta está en ${getCurrencyDisplay(accountCurrency)} pero la meta está en ${getCurrencyDisplay(goalCurrency)}. ` +
+            `Las transacciones deben estar en la misma moneda que la meta. ` +
+            `Por favor, selecciona una cuenta en ${getCurrencyDisplay(goalCurrency)} o crea una nueva meta en ${getCurrencyDisplay(accountCurrency)}.`
+          );
+        } else {
+          setCurrencyWarning(null);
+        }
+      }
+    } else {
+      setCurrencyWarning(null);
+    }
+  }, [formData.originAccount, selectedGoal, accounts, goals, formData.type, transactionCurrency]);
+
+  useEffect(() => {
+    const handleConversion = async () => {
+      if (!formData.originAccount || !transactionCurrency || !goalAmount) {
+        setConvertedAmount(null);
+        setExchangeRate(null);
+        return;
+      }
+
+      const account = accounts.find(acc => acc.id?.toString() === formData.originAccount);
+      if (!account) {
+        setConvertedAmount(null);
+        setExchangeRate(null);
+        return;
+      }
+
+      if (transactionCurrency !== account.currency) {
+        setIsLoadingConversion(true);
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) return;
+
+          const goalAmountNum = parseFloat(goalAmount);
+          if (isNaN(goalAmountNum) || goalAmountNum <= 0) {
+            setConvertedAmount(null);
+            setExchangeRate(null);
+            return;
+          }
+
+          const amountInCents = pesosToCents(goalAmountNum);
+          
+          const rateData = await getExchangeRate(transactionCurrency, account.currency, token);
+          setExchangeRate(rateData.rate);
+
+          const conversionData = await convertCurrency(amountInCents, transactionCurrency, account.currency, token);
+          setConvertedAmount(conversionData.converted_amount);
+        } catch {
+          setConvertedAmount(null);
+          setExchangeRate(null);
+        } finally {
+          setIsLoadingConversion(false);
+        }
+      } else {
+        setConvertedAmount(null);
+        setExchangeRate(null);
+      }
+    };
+
+    handleConversion();
+  }, [transactionCurrency, goalAmount, formData.originAccount, accounts]);
+
   useEffect(() => {
     const loadBudget = async () => {
       if (formData.type === 'expense' && formData.category) {
@@ -116,13 +227,11 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
         try {
           const categoryId = parseInt(formData.category);
           const response = await getBudgetByCategory(categoryId, true);
-          // Obtener el presupuesto mensual activo
           const monthlyBudget = response.budgets.find(b => b.period === 'monthly' && b.is_active);
           if (monthlyBudget) {
             setSelectedBudget(monthlyBudget);
           }
         } catch {
-          // Si no hay presupuesto, simplemente no mostrar nada
           setSelectedBudget(null);
         } finally {
           setIsLoadingBudget(false);
@@ -136,7 +245,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
   }, [formData.category, formData.type, getBudgetByCategory]);
 
   useEffect(() => {
-    // Actualizar formulario cuando cambien las props
     const sourceTransaction = transactionToEdit || transactionToDuplicate;
     if (sourceTransaction) {
       const type = sourceTransaction.type === 1 ? 'income' : sourceTransaction.type === 2 ? 'expense' : sourceTransaction.type === 3 ? 'transfer' : 'expense';
@@ -144,7 +252,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       const taxRate = sourceTransaction.tax_percentage || 0;
       const totalAmount = sourceTransaction.total_amount || baseAmount;
       
-      // Detectar modo: si hay tax_percentage > 0 y total_amount > base_amount, usar modo "Total con IVA"
       const shouldUseTotalMode = taxRate > 0 && totalAmount > baseAmount;
       setCalculationMode(shouldUseTotalMode ? 'total' : 'base');
       
@@ -163,7 +270,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     }
   }, [transactionToEdit, transactionToDuplicate, isDuplicate]);
 
-  // Manejo de teclado: Escape para cerrar
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -181,7 +287,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     try {
       setIsLoadingAccounts(true);
       const accountsData = await accountService.getAllAccounts();
-      // Filtrar solo cuentas activas
       const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
       setAccounts(activeAccounts);
     } catch (err) {
@@ -196,13 +301,11 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     if (!account) return null;
 
     if (account.account_type === 'liability') {
-      // Para tarjetas de crédito: crédito disponible = límite - deuda actual
       const limit = account.credit_limit || 0;
       const debt = Math.abs(account.current_balance); // La deuda es negativa, tomamos el valor absoluto
       const available = limit - debt;
       return { available, isCredit: true, limit };
     } else {
-      // Para activos: saldo disponible = saldo actual
       return { available: account.current_balance, isCredit: false };
     }
   };
@@ -212,12 +315,10 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     if (!accountInfo) return null;
 
     if (accountInfo.isCredit) {
-      // Validación para tarjetas de crédito
       if (isExpense && amount > accountInfo.available) {
         return `El monto excede el crédito disponible. Crédito disponible: ${formatCurrency(accountInfo.available)}, Límite: ${formatCurrency(accountInfo.limit || 0)}`;
       }
     } else {
-      // Validación para cuentas de activo
       if (isExpense && amount > accountInfo.available) {
         return `El monto excede el saldo disponible. Saldo disponible: ${formatCurrency(accountInfo.available)}`;
       }
@@ -239,14 +340,12 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       };
       const newCategory = await createCategory(payload);
       
-      // Recargar categorías para asegurar sincronización
       try {
         await refreshCategories({ active_only: false });
-      } catch (refreshError) {
-        console.warn('No se pudieron recargar las categorías, pero la categoría fue creada:', refreshError);
+      } catch {
+        // Intentionally empty
       }
       
-      // Seleccionar automáticamente la nueva categoría creada
       if (newCategory?.id) {
         setFormData({ ...formData, category: newCategory.id.toString() });
       }
@@ -255,8 +354,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al crear categoría';
       setError(errorMessage);
-      console.error('Error al crear categoría:', err);
-      // No cerrar el formulario si hay error, para que el usuario pueda intentar de nuevo
     } finally {
       setIsCreatingCategory(false);
     }
@@ -268,7 +365,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     }
     const type = formData.type === 'income' ? 'income' : 'expense';
     const categories = getActiveCategoriesByType(type);
-    // Filtrar categorías que no tengan id válido
     return categories.filter((cat) => cat && cat.id != null);
   }, [formData.type, getActiveCategoriesByType]);
 
@@ -278,7 +374,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     return 3; // transfer
   };
 
-  // Calcular desglose en tiempo real (HU-15)
   const calculateBreakdown = (total: number, taxPercent?: number, accountId?: string, transactionType?: 'income' | 'expense' | 'transfer') => {
     if (!taxPercent || taxPercent === 0) {
       return {
@@ -293,7 +388,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     const base = total / (1 + taxRate);
     const tax = total - base;
     
-    // Calcular GMF solo si aplica
     let gmf = 0;
     const accountIdToUse = accountId || formData.originAccount;
     const transactionTypeToUse = transactionType || formData.type;
@@ -301,16 +395,11 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     if (accountIdToUse) {
       const originAccount = accounts.find(acc => acc.id?.toString() === accountIdToUse);
       if (originAccount) {
-        // GMF NO aplica a:
-        // - Tarjetas de crédito (liability o category === 'credit_card')
-        // - Cuentas exentas (gmf_exempt === true)
-        // - Ingresos (solo gastos y transferencias)
         const isCreditCard = originAccount.account_type === 'liability' || originAccount.category === 'credit_card';
         const isExempt = originAccount.gmf_exempt === true;
         const isApplicableTransaction = transactionTypeToUse === 'expense' || transactionTypeToUse === 'transfer';
         
         if (isApplicableTransaction && !isCreditCard && !isExempt) {
-          // GMF: 0.4% sobre (base + tax)
           gmf = (base + tax) * 0.004;
         }
       }
@@ -328,7 +417,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
 
   const handleAmountChange = (value: string, mode: 'total' | 'base') => {
     if (mode === 'total') {
-      // Modo HU-15: Total con IVA
       const total = parseFloat(value) || 0;
       const breakdown = calculateBreakdown(total, formData.taxRate);
       setFormData({ 
@@ -337,7 +425,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
         base: breakdown.base.toString() 
       });
     } else {
-      // Modo tradicional: Base sin IVA
       const base = parseFloat(value) || 0;
       const iva = formData.taxRate > 0 ? base * (formData.taxRate / 100) : 0;
       const total = base + iva;
@@ -349,13 +436,11 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     e.preventDefault();
     setError(null);
 
-    // Validaciones
     if (!formData.originAccount) {
       setError('Debes seleccionar una cuenta origen');
       return;
     }
 
-    // Validar que la cuenta origen esté activa
     const originAccount = accounts.find(acc => acc.id?.toString() === formData.originAccount);
     if (!originAccount || originAccount.is_active === false) {
       setError('La cuenta origen seleccionada no está activa');
@@ -368,7 +453,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
         return;
       }
 
-      // Validar que la cuenta destino esté activa
       const destinationAccount = accounts.find(acc => acc.id?.toString() === formData.destinationAccount);
       if (!destinationAccount || destinationAccount.is_active === false) {
         setError('La cuenta destino seleccionada no está activa');
@@ -381,14 +465,12 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       }
     }
 
-    // Validar según el modo de cálculo
     const totalAmount = parseFloat(formData.amount) || 0;
     if (totalAmount <= 0) {
       setError('El total debe ser mayor a cero');
       return;
     }
 
-    // Validar IVA si se proporciona
     if (formData.taxRate !== undefined && formData.taxRate !== null && formData.taxRate !== 0) {
       if (formData.taxRate < 0 || formData.taxRate > 30) {
         setError('La tasa de IVA debe estar entre 0 y 30%');
@@ -398,28 +480,45 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
 
     const baseAmount = parseFloat(formData.base) || totalAmount;
 
-    // Validar categoría para ingresos y gastos
     if (formData.type !== 'transfer' && !formData.category) {
       setError('Debes seleccionar una categoría para ingresos y gastos');
       return;
     }
 
-    // Validación preventiva de saldos (el backend también validará)
-    // Usar el total final (con GMF estimado) para validar saldo
+    if (formData.type === 'income' && selectedGoal) {
+      if (!goalAmount || parseFloat(goalAmount) <= 0) {
+        setError('Debes ingresar un monto válido para asignar a la meta');
+        return;
+      }
+      const goalAmountNum = parseFloat(goalAmount);
+      if (goalAmountNum > totalAmount) {
+        setError('El monto a asignar no puede ser mayor al total del ingreso');
+        return;
+      }
+      const selectedGoalData = goals.find(g => g.id === selectedGoal);
+      if (selectedGoalData) {
+        const goalCurrency = selectedGoalData.currency || 'COP';
+        const remainingInPesos = selectedGoalData.remaining_amount / 100;
+        const finalAmount = convertedAmount ? convertedAmount / 100 : goalAmountNum;
+        if (finalAmount > remainingInPesos) {
+          setError(`El monto excede lo que falta para alcanzar la meta (${formatMoney(selectedGoalData.remaining_amount, goalCurrency)})`);
+          return;
+        }
+      }
+    }
+
     const breakdown = calculateBreakdown(totalAmount, formData.taxRate || undefined);
     const finalTotal = breakdown.total;
     
     if (formData.type === 'expense' && formData.originAccount) {
       const balanceWarning = validateAccountBalance(formData.originAccount, finalTotal, true);
       if (balanceWarning) {
-        // Mostrar advertencia pero permitir intentar (el backend validará definitivamente)
         setConfirmModal({
           isOpen: true,
           title: 'Advertencia de límite',
           message: `${balanceWarning}\n\n¿Deseas continuar de todas formas? El backend validará el límite.`,
           onConfirm: () => {
             setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: () => {} });
-            // Continuar con el submit pasando los parámetros necesarios
             submitTransaction(totalAmount, baseAmount);
           },
         });
@@ -434,44 +533,36 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     try {
       setIsSubmitting(true);
       
-      // Construir el objeto de datos según el modo de cálculo (HU-15)
       const transactionData: CreateTransactionData = {
         origin_account: Number(formData.originAccount),
         type: getTransactionType(),
         date: formData.date,
       };
 
-      // Modo HU-15: Enviar total_amount + tax_percentage (sin base_amount)
+      const convertToCents = (amount: number): number => {
+        return Math.round(amount * 100);
+      };
+
       if (calculationMode === 'total') {
-        transactionData.total_amount = Math.round(totalAmount);
-        // Asegurar que NO se incluya base_amount en modo HU-15
-        // No asignar base_amount en absoluto
-        // Solo agregar tax_percentage si es mayor a 0
+        transactionData.total_amount = convertToCents(totalAmount);
         if (formData.taxRate > 0) {
           transactionData.tax_percentage = formData.taxRate;
         }
       } else {
-        // Modo tradicional: Enviar base_amount + tax_percentage
-        transactionData.base_amount = Math.round(baseAmount);
-        // Asegurar que NO se incluya total_amount en modo tradicional
-        // (el backend lo calculará si es necesario)
-        // Solo agregar tax_percentage si es mayor a 0
+        transactionData.base_amount = convertToCents(baseAmount);
         if (formData.taxRate > 0) {
           transactionData.tax_percentage = formData.taxRate;
         }
       }
 
-      // Agregar categoría solo para ingresos y gastos (no para transferencias)
       if (formData.type !== 'transfer' && formData.category) {
         transactionData.category = Number(formData.category);
       }
 
-      // Solo agregar destination_account si es una transferencia
       if (formData.type === 'transfer' && formData.destinationAccount) {
         transactionData.destination_account = Number(formData.destinationAccount);
       }
 
-      // Agregar tag y note solo si tienen valor
       const tagValue = formData.tag.trim();
       const noteValue = formData.note.trim();
       if (tagValue) {
@@ -481,13 +572,9 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
         transactionData.note = noteValue;
       }
 
-      // Limpieza final: asegurar que no se incluyan ambos campos simultáneamente
-      // Si estamos en modo "total", eliminar explícitamente base_amount
       if (calculationMode === 'total' && 'base_amount' in transactionData) {
         delete transactionData.base_amount;
       }
-      // Si estamos en modo "base", eliminar explícitamente total_amount (a menos que el backend lo necesite)
-      // En modo tradicional, el backend calculará total_amount si es necesario
       if (calculationMode === 'base' && 'total_amount' in transactionData && transactionData.total_amount === undefined) {
         delete transactionData.total_amount;
       }
@@ -496,33 +583,59 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
         await transactionService.update(transactionToEdit.id, transactionData);
       } else {
         await transactionService.create(transactionData);
+        
+        if (formData.type === 'income' && selectedGoal && goalAmount) {
+            const goalAmountNum = parseFloat(goalAmount);
+            if (goalAmountNum > 0 && goalAmountNum <= totalAmount) {
+              try {
+                const originAccount = accounts.find(acc => acc.id?.toString() === formData.originAccount);
+              const goal = goals.find(g => g.id === selectedGoal);
+              
+              if (!originAccount || !goal) {
+                  throw new Error('Cuenta o meta no encontrada');
+                }
+
+                const finalAmount = convertedAmount || pesosToCents(goalAmountNum);
+              
+                const savingTransactionData: CreateTransactionData = {
+                  origin_account: Number(formData.originAccount),
+                  type: 4,
+                  date: formData.date,
+                  base_amount: finalAmount,
+                  goal: selectedGoal,
+                  note: `Ahorro asignado desde ingreso${formData.note ? `: ${formData.note}` : ''}`,
+                };
+
+                if (transactionCurrency && transactionCurrency !== originAccount.currency && exchangeRate) {
+                  savingTransactionData.transaction_currency = transactionCurrency;
+                  savingTransactionData.exchange_rate = exchangeRate;
+                  savingTransactionData.original_amount = pesosToCents(goalAmountNum);
+                }
+
+                await transactionService.create(savingTransactionData);
+              } catch {
+                // Intentionally empty
+              }
+          }
+        }
       }
 
-      // Disparar evento para que el contexto refresque automáticamente
       const eventType = isEdit ? 'transactionUpdated' : 'transactionCreated';
       window.dispatchEvent(new Event(eventType));
 
-      // Dar un delay más largo para que el backend procese y recalcule la transacción
-      // El backend necesita tiempo para actualizar el cálculo de spent_amount
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Refrescar presupuestos después de crear/editar un movimiento
-      // Esto asegura que los cálculos de gasto se actualicen
       try {
         await refreshBudgets({ active_only: true, period: 'monthly' });
-        console.log('✅ Presupuestos refrescados después del movimiento');
-      } catch (refreshError) {
-        // No bloquear el flujo si falla el refresh, solo loguear
-        console.warn('⚠️ No se pudieron refrescar los presupuestos después del movimiento:', refreshError);
+      } catch {
+        // Intentionally empty
       }
       
-      // Segundo refresh después de un delay adicional para asegurar que el backend haya recalculado
       setTimeout(async () => {
         try {
           await refreshBudgets({ active_only: true, period: 'monthly' });
-          console.log('✅ Segundo refresh de presupuestos (verificación)');
-        } catch (refreshError) {
-          console.warn('⚠️ Error en segundo refresh:', refreshError);
+        } catch {
+          // Intentionally empty
         }
       }, 2000);
 
@@ -533,7 +646,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al guardar el movimiento';
       setError(errorMessage);
-      // Hacer scroll al error después de un pequeño delay para que el DOM se actualice
       setTimeout(() => {
         errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
@@ -551,7 +663,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     }).format(Math.abs(numAmount));
   };
 
-  // Componente para mostrar información del presupuesto
   const BudgetInfo: React.FC<{
     budget: {
       id: number;
@@ -566,7 +677,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     breakdown: { base: number; tax: number; gmf: number; total: number };
     formatCurrency: (amount: number | string) => string;
   }> = ({ budget, transactionAmount, breakdown, formatCurrency }) => {
-    // Determinar qué monto usar según el modo de cálculo del presupuesto
     const budgetCalculationMode = budget.calculation_mode || 'base';
     const amountToUse = budgetCalculationMode === 'total' ? breakdown.total : breakdown.base;
     
@@ -669,7 +779,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     );
   };
 
-  // Prevenir cambio de valor con la rueda del mouse en inputs number
   const handleWheel = (e: React.WheelEvent<HTMLInputElement>) => {
     e.currentTarget.blur();
   };
@@ -891,7 +1000,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                     >
                       <option value="">Seleccionar...</option>
                       {availableCategories.map((cat) => {
-                        // Validación adicional por si acaso
                         if (!cat || cat.id == null) return null;
                         return (
                         <option key={cat.id} value={cat.id.toString()}>
@@ -902,7 +1010,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                     </select>
                   )}
                   
-                  {/* Mostrar información del presupuesto si es un gasto y hay presupuesto */}
                   {formData.type === 'expense' && formData.category && (
                     <div className="mt-3">
                       {isLoadingBudget ? (
@@ -979,7 +1086,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                         value={formData.originAccount}
                         onChange={(e) => {
                           const newOriginAccount = e.target.value;
-                          // Recalcular desglose cuando cambia la cuenta (el GMF puede cambiar)
                           if (formData.amount && formData.taxRate > 0) {
                             const total = parseFloat(formData.amount) || 0;
                             const breakdown = calculateBreakdown(total, formData.taxRate, newOriginAccount, formData.type);
@@ -1037,7 +1143,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                     type="button"
                     onClick={() => {
                       setCalculationMode('total');
-                      // Resetear IVA cuando se cambia a modo Total
                       if (formData.amount) {
                         setFormData({ ...formData, taxRate: 0, base: formData.amount });
                       }
@@ -1053,7 +1158,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                     type="button"
                     onClick={() => {
                       setCalculationMode('base');
-                      // Al cambiar a modo Base, calcular total desde base + IVA
                       if (formData.base) {
                         const base = parseFloat(formData.base) || 0;
                         const iva = formData.taxRate > 0 ? base * (formData.taxRate / 100) : 0;
@@ -1071,7 +1175,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
               </div>
 
               {calculationMode === 'total' ? (
-                // Modo HU-15: Total con IVA
                 <div className="space-y-3">
                   <div>
                     <label htmlFor="movement-total-amount" className="block text-xs text-gray-600 mb-1">Total a pagar *</label>
@@ -1105,7 +1208,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                       onChange={(e) => {
                         const newRate = parseFloat(e.target.value) || 0;
                         const total = parseFloat(formData.amount) || 0;
-                        // Recalcular desglose cuando cambia el IVA
                         const breakdown = calculateBreakdown(total, newRate > 0 ? newRate : undefined);
                         setFormData({ 
                           ...formData, 
@@ -1154,7 +1256,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                   )}
                 </div>
               ) : (
-                // Modo tradicional: Base sin IVA
                 <div className="space-y-3">
                   <div>
                     <label htmlFor="movement-base-amount" className="block text-xs text-gray-600 mb-1">Base gravable *</label>
@@ -1211,6 +1312,207 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                 </div>
               )}
             </div>
+
+            {formData.type === 'income' && !isEdit && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Target className="w-5 h-5 text-blue-600" />
+                  <label className="text-sm font-medium text-gray-700">
+                    ¿Asignar parte a una meta de ahorro?
+                  </label>
+                </div>
+                
+                {isLoadingGoals ? (
+                  <p className="text-sm text-gray-600">Cargando metas...</p>
+                ) : goals.length === 0 ? (
+                  <p className="text-sm text-gray-600">
+                    No tienes metas activas. Puedes crear una desde la sección de Metas.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    <div>
+                      <label htmlFor="goal-select" className="block text-xs text-gray-600 mb-1">
+                        Seleccionar meta (opcional)
+                      </label>
+                      <select
+                        id="goal-select"
+                        value={selectedGoal || ''}
+                        onChange={(e) => {
+                          const goalId = e.target.value ? parseInt(e.target.value) : null;
+                          setSelectedGoal(goalId);
+                          if (!goalId) {
+                            setGoalAmount('');
+                            setTransactionCurrency(null);
+                            setConvertedAmount(null);
+                            setExchangeRate(null);
+                            setCurrencyWarning(null);
+                          } else {
+                            const account = accounts.find(acc => acc.id?.toString() === formData.originAccount);
+                            if (account) {
+                              setTransactionCurrency(account.currency);
+                            }
+                          }
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">No asignar a meta</option>
+                        {goals.map(goal => {
+                          const goalCurrency = goal.currency || 'COP';
+                          return (
+                            <option key={goal.id} value={goal.id}>
+                              {goal.name} ({goal.currency_display || goalCurrency}) - Faltan: {formatMoney(goal.remaining_amount, goalCurrency)}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+
+                    {currencyWarning && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                        <div className="flex items-start gap-2">
+                          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-amber-900 mb-1">⚠️ Advertencia de Moneda</p>
+                            <p className="text-xs text-amber-800">{currencyWarning}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {selectedGoal && formData.originAccount && !currencyWarning && (
+                      <>
+                        <div>
+                          <label htmlFor="transaction-currency" className="block text-xs text-gray-600 mb-1">
+                            Moneda de la transacción
+                          </label>
+                          <select
+                            id="transaction-currency"
+                            value={transactionCurrency || ''}
+                            onChange={(e) => {
+                              setTransactionCurrency(e.target.value as Currency);
+                              setConvertedAmount(null);
+                              setExchangeRate(null);
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          >
+                            <option value="COP">Pesos Colombianos (COP)</option>
+                            <option value="USD">Dólares (USD)</option>
+                            <option value="EUR">Euros (EUR)</option>
+                          </select>
+                        </div>
+
+                        {transactionCurrency && formData.originAccount && (() => {
+                          const account = accounts.find(acc => acc.id?.toString() === formData.originAccount);
+                          const goal = goals.find(g => g.id === selectedGoal);
+                          
+                          if (!account || !goal) return null;
+                          
+                          if (transactionCurrency !== account.currency) {
+                            return (
+                              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                <p className="text-xs font-semibold text-blue-900 mb-2">ℹ️ Conversión de Moneda</p>
+                                <p className="text-xs text-blue-800 mb-2">
+                                  La cuenta está en <strong>{getCurrencyDisplay(account.currency)}</strong>.
+                                  El monto se convertirá automáticamente.
+                                </p>
+                                {isLoadingConversion ? (
+                                  <p className="text-xs text-blue-700">Cargando tasa de cambio...</p>
+                                ) : exchangeRate && convertedAmount && goalAmount ? (
+                                  <div className="bg-white rounded p-2 mt-2">
+                                    <p className="text-xs text-gray-700">
+                                      <strong>{formatMoney(pesosToCents(parseFloat(goalAmount) || 0), transactionCurrency)}</strong> = 
+                                      <strong className="ml-1">{formatMoney(convertedAmount, account.currency)}</strong>
+                                    </p>
+                                    <p className="text-xs text-gray-600 mt-1 italic">
+                                      Tasa: 1 {transactionCurrency} = {exchangeRate.toFixed(4)} {account.currency}
+                                    </p>
+                                  </div>
+                                ) : goalAmount ? (
+                                  <p className="text-xs text-blue-700">Ingresa un monto para ver la conversión</p>
+                                ) : null}
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </>
+                    )}
+                    
+                    {selectedGoal && (
+                      <div>
+                        <label htmlFor="goal-amount" className="block text-xs text-gray-600 mb-1">
+                          Monto a asignar a la meta * (en {transactionCurrency || 'COP'})
+                        </label>
+                        <input
+                          id="goal-amount"
+                          type="number"
+                          step="0.01"
+                          min="0.01"
+                          max={formData.amount ? parseFloat(formData.amount) : undefined}
+                          value={goalAmount}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            const numValue = parseFloat(value) || 0;
+                            const totalAmount = parseFloat(formData.amount) || 0;
+                            
+                            if (numValue > totalAmount) {
+                              setError(`El monto a asignar no puede ser mayor al total del ingreso (${formatCurrency(totalAmount)})`);
+                            } else {
+                              setError(null);
+                            }
+                            
+                            const selectedGoalData = goals.find(g => g.id === selectedGoal);
+                            if (selectedGoalData) {
+                              const goalCurrency = selectedGoalData.currency || 'COP';
+                              const remainingInPesos = selectedGoalData.remaining_amount / 100;
+                              if (numValue > remainingInPesos) {
+                                setError(`El monto excede lo que falta para alcanzar la meta (${formatMoney(selectedGoalData.remaining_amount, goalCurrency)})`);
+                              }
+                            }
+                            
+                            setGoalAmount(value);
+                          }}
+                          onWheel={handleWheel}
+                          placeholder="0"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          required={!!selectedGoal}
+                          disabled={!!currencyWarning}
+                        />
+                        {goalAmount && transactionCurrency && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            {formatMoney(pesosToCents(parseFloat(goalAmount) || 0), transactionCurrency)}
+                          </p>
+                        )}
+                        {selectedGoal && (() => {
+                          const selectedGoalData = goals.find(g => g.id === selectedGoal);
+                          if (selectedGoalData) {
+                            const goalCurrency = selectedGoalData.currency || 'COP';
+                            const remainingInCents = selectedGoalData.remaining_amount;
+                            const goalAmountNum = parseFloat(goalAmount) || 0;
+                            
+                            const finalAmountInCents = convertedAmount || pesosToCents(goalAmountNum);
+                            
+                            const newRemainingInCents = Math.max(0, remainingInCents - finalAmountInCents);
+                            
+                            return (
+                              <p className="text-xs text-blue-600 mt-1">
+                                Restante en la meta: {formatMoney(remainingInCents, goalCurrency)}
+                                {goalAmountNum > 0 && (
+                                  <span className="ml-2">
+                                    → Nuevo restante: {formatMoney(newRemainingInCents, goalCurrency)}
+                                  </span>
+                                )}
+                              </p>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="flex gap-3 pt-4">
               <button

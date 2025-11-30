@@ -36,7 +36,6 @@ const NewBudgetModal: React.FC<NewBudgetModalProps> = ({ onClose, budgetToEdit }
     const loadAvailableCategories = async () => {
       setIsLoadingCategories(true);
       try {
-        // Cargar cuentas para obtener monedas disponibles
         const accounts = await accountService.getAllAccounts();
         const currencies = Array.from(new Set(accounts.filter(acc => acc.is_active !== false).map(acc => acc.currency))) as Array<'COP' | 'USD' | 'EUR'>;
         setAvailableCurrencies(currencies.length > 0 ? currencies : ['COP']);
@@ -60,8 +59,7 @@ const NewBudgetModal: React.FC<NewBudgetModalProps> = ({ onClose, budgetToEdit }
           const response = await getCategoriesWithoutBudget('monthly');
           setAvailableCategories(response.categories);
         }
-      } catch (err) {
-        console.error('Error al cargar categorías:', err);
+      } catch {
         setAvailableCategories(expenseCategories.map((cat) => ({
           id: cat.id,
           name: cat.name,

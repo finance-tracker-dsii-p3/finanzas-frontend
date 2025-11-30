@@ -21,10 +21,10 @@ interface Movement {
   tax_percentage?: number | null;
   total_amount?: number;
   amount?: number;
-  capital_amount?: number | null; // Capital pagado (reduce deuda en tarjetas de crédito)
-  interest_amount?: number | null; // Intereses pagados (no reduce deuda)
-  gmf_amount?: number | null; // GMF calculado
-  taxed_amount?: number | null; // IVA calculado
+  capital_amount?: number | null;
+  interest_amount?: number | null;
+  gmf_amount?: number | null;
+  taxed_amount?: number | null;
 }
 
 interface MovementDetailModalProps {

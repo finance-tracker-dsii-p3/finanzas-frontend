@@ -45,30 +45,25 @@ const getAuthHeaders = () => {
 };
 
 const parseError = async (response: Response) => {
-  // Manejar errores del servidor (500, 502, 503, etc.)
   if (response.status >= 500) {
     const error = await response.json().catch(() => ({}));
     const errorMessage = error.detail || error.message || error.error || 'Error interno del servidor';
     throw new Error(`Error del servidor (${response.status}): ${errorMessage}. Por favor, intenta nuevamente más tarde o contacta al administrador.`);
   }
 
-  // Manejar errores de autenticación primero
   if (response.status === 401) {
     checkAndHandleAuthError(response);
     throw new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
   }
 
-  // Manejar errores de permisos
   if (response.status === 403) {
     throw new Error('No tienes permisos para realizar esta operación.');
   }
 
-  // Manejar errores de recurso no encontrado
   if (response.status === 404) {
     throw new Error('La alerta que buscas no existe o fue eliminada.');
   }
 
-  // Manejar otros errores del cliente (400, 422, etc.)
   const fallback = { message: 'Error en la operación de alertas' };
   let error;
   try {
@@ -79,7 +74,6 @@ const parseError = async (response: Response) => {
 
   const errorMessages: string[] = [];
 
-  // Primero, mostrar el mensaje general si existe
   if (error.message && !errorMessages.includes(error.message)) {
     errorMessages.push(error.message);
   }
@@ -87,7 +81,6 @@ const parseError = async (response: Response) => {
     errorMessages.push(error.detail);
   }
 
-  // Agregar errores de campos específicos
   const fields = ['is_read', 'alert_type', 'budget'];
 
   for (const field of fields) {
@@ -102,7 +95,6 @@ const parseError = async (response: Response) => {
     }
   }
 
-  // Errores no relacionados con campos específicos
   if (error.non_field_errors) {
     const nonFieldErrors = Array.isArray(error.non_field_errors) ? error.non_field_errors : [error.non_field_errors];
     nonFieldErrors.forEach((err: string) => {
@@ -112,7 +104,6 @@ const parseError = async (response: Response) => {
     });
   }
 
-  // Si hay otros campos de error, agregarlos
   Object.keys(error).forEach(key => {
     if (!fields.includes(key) && 
         key !== 'message' && 
