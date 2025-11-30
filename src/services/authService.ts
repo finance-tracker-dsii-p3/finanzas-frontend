@@ -127,10 +127,8 @@ export const authService = {
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Error al registrar usuario' }));
       
-      // Manejar errores de campos específicos
       const errorMessages: string[] = [];
       
-      // Campos comunes de registro
       const fields = ['username', 'email', 'password', 'password_confirm', 'first_name', 'last_name', 'identification', 'phone'];
       
       for (const field of fields) {
@@ -150,7 +148,6 @@ export const authService = {
         }
       }
       
-      // Errores generales
       if (error.message && !errorMessages.includes(error.message)) {
         errorMessages.push(error.message);
       }
@@ -232,8 +229,8 @@ export const authService = {
             'Authorization': `Token ${token}`,
           },
         });
-      } catch (error) {
-        console.error('Error al cerrar sesión:', error);
+      } catch {
+        // Intentionally empty
       }
     }
 

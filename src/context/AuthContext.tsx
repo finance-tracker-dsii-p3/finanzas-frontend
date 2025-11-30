@@ -108,8 +108,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = async () => {
     try {
       await authService.logout();
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+    } catch {
+      // Intentionally empty
     } finally {
       setUser(null);
       localStorage.removeItem('token');

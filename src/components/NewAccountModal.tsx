@@ -138,7 +138,6 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
     const loadOptions = async () => {
       try {
         const options = await accountService.getAccountOptions();
-        // Solo actualizar si los arrays existen y tienen elementos
         if (options.banks && Array.isArray(options.banks) && options.banks.length > 0) {
           setBanks(options.banks);
         }
@@ -150,9 +149,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
         }
       } catch (error) {
         if (error instanceof Error && error.message.includes('no implementado')) {
-          console.info('El endpoint de opciones aún no está implementado en el backend. Usando valores por defecto.');
-        } else {
-          console.warn('No se pudieron cargar las opciones desde el backend, usando valores por defecto:', error);
+          // Intentionally empty
         }
       }
     };

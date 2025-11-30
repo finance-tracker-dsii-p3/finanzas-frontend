@@ -159,7 +159,6 @@ describe('MovementDetailModal', () => {
       />
     );
     
-    // Buscar el backdrop (el div con onClick que envuelve todo)
     const backdrop = document.querySelector('.fixed');
     if (backdrop) {
       await user.click(backdrop as HTMLElement);
@@ -176,7 +175,6 @@ describe('MovementDetailModal', () => {
       />
     );
     
-    // El botón de cerrar puede no tener aria-label, buscar por el icono o por el elemento
     const closeButton = screen.queryByRole('button', { name: /cerrar/i }) ||
                        document.querySelector('button[aria-label*="cerrar" i]') ||
                        document.querySelector('button:has(svg)');
@@ -240,7 +238,6 @@ describe('MovementDetailModal', () => {
       />
     );
     
-    // La fecha debería estar formateada
     const dateText = screen.getByText(/2025/i);
     expect(dateText).toBeInTheDocument();
   });
@@ -253,7 +250,6 @@ describe('MovementDetailModal', () => {
       />
     );
     
-    // Debería mostrar montos formateados
     expect(screen.getByText(/\$.*100.*000/i)).toBeInTheDocument();
   });
 });

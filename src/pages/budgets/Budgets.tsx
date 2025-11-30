@@ -34,12 +34,7 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
     getBudgetDetail,
   } = useBudgets();
 
-  // Log para verificar cuando cambia el estado de budgets
   useEffect(() => {
-    console.log('📊 Estado de budgets actualizado en componente Budgets:', budgets.length, 'presupuestos');
-    if (budgets.length > 0) {
-      console.log('📊 Primer presupuesto - Gastado:', budgets[0]?.spent_amount, 'Límite:', budgets[0]?.amount);
-    }
   }, [budgets]);
 
   const [budgetToEdit, setBudgetToEdit] = useState<BudgetListItem | null>(null);
@@ -51,22 +46,17 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
   const [isToggling, setIsToggling] = useState<number | null>(null);
   const [activeOnly, setActiveOnly] = useState(true);
 
-  // Refrescar presupuestos al montar el componente y cuando cambie activeOnly
   useEffect(() => {
     refreshBudgets({ active_only: activeOnly, period: 'monthly' });
-  }, [activeOnly, refreshBudgets]); // Refrescar cuando cambie activeOnly o al montar
+  }, [activeOnly, refreshBudgets]);
 
-  // Escuchar eventos de actualización de transacciones para refrescar presupuestos
   useEffect(() => {
     const handleTransactionUpdate = async () => {
-      console.log('🔄 Evento de transacción detectado en página Presupuestos, refrescando...');
-      // Pequeño delay para dar tiempo al backend
       await new Promise(resolve => setTimeout(resolve, 500));
       try {
         await refreshBudgets({ active_only: activeOnly, period: 'monthly' });
-        console.log('✅ Presupuestos refrescados desde la página Presupuestos');
-      } catch (error) {
-        console.error('❌ Error al refrescar presupuestos desde la página:', error);
+      } catch {
+        // Intentionally empty
       }
     };
 
@@ -81,14 +71,11 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
     };
   }, [activeOnly, refreshBudgets]);
 
-  // Función para refrescar manualmente
   const handleManualRefresh = useCallback(async () => {
-    console.log('🔄 Refresco manual de presupuestos...');
     try {
       await refreshBudgets({ active_only: activeOnly, period: 'monthly' });
-      console.log('✅ Presupuestos refrescados manualmente');
-    } catch (error) {
-      console.error('❌ Error al refrescar presupuestos manualmente:', error);
+    } catch {
+      // Intentionally empty
     }
   }, [activeOnly, refreshBudgets]);
 
@@ -137,8 +124,8 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
         const detail = await getBudgetDetail(budget.id);
         setBudgetDetail(detail);
         setShowDetailModal(true);
-      } catch (err) {
-        console.error('Error al obtener detalle:', err);
+      } catch {
+        // Intentionally empty
       }
     },
     [getBudgetDetail],
@@ -156,8 +143,8 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
     try {
       await deleteBudget(budgetToDelete.id);
       setBudgetToDelete(null);
-    } catch (err) {
-      console.error('Error al eliminar:', err);
+    } catch {
+      // Intentionally empty
     } finally {
       setIsDeleting(false);
     }
@@ -168,8 +155,8 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
       setIsToggling(budget.id);
       try {
         await toggleBudget(budget.id);
-      } catch (err) {
-        console.error('Error al cambiar estado:', err);
+      } catch {
+        // Intentionally empty
       } finally {
         setIsToggling(null);
       }
@@ -187,10 +174,6 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
   );
 
   const filteredBudgets = useMemo(() => {
-    console.log('🔄 filteredBudgets recalculado. Total budgets:', budgets.length);
-    if (budgets.length > 0) {
-      console.log('🔄 Primer presupuesto en filteredBudgets - Gastado:', budgets[0]?.spent_amount);
-    }
     if (activeOnly) {
       return budgets.filter((b) => b.is_active);
     }

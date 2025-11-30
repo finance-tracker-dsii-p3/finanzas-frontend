@@ -18,4 +18,7 @@ export default defineConfig({
     resolve: {
         preserveSymlinks: true,
     },
+    build: {
+        chunkSizeWarningLimit: 1000, // Aumentar límite a 1MB para evitar warnings
+    },
 });

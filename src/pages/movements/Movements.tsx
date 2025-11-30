@@ -17,15 +17,15 @@ interface Movement {
   origin_account_name?: string;
   destination_account: number | null;
   destination_account_name?: string;
-  type: 1 | 2 | 3 | 4; // 1=Income, 2=Expense, 3=Transfer, 4=Saving
+  type: 1 | 2 | 3 | 4;
   type_display?: string;
   base_amount: number;
   tax_percentage: number | null;
   total_amount: number;
-  capital_amount?: number | null; // Capital pagado (reduce deuda en tarjetas de crédito)
-  interest_amount?: number | null; // Intereses pagados (no reduce deuda)
-  gmf_amount?: number | null; // GMF calculado
-  taxed_amount?: number | null; // IVA calculado
+  capital_amount?: number | null;
+  interest_amount?: number | null;
+  gmf_amount?: number | null;
+  taxed_amount?: number | null;
 }
 
 interface MovementsProps {
@@ -46,6 +46,10 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<1 | 2 | 3 | 4 | 'all'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 10;
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -65,48 +69,55 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   });
 
   useEffect(() => {
+    setCurrentPage(1);
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterType]);
+  }, [filterType]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    loadData();
+  }, [currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadData = async () => {
     try {
       setIsLoading(true);
       setError(null);
       
-      // Intentar primero con ordering, si falla intentar sin ordering
-      let transactionsData: Transaction[] = [];
+      let paginatedResponse;
       try {
-        transactionsData = await transactionService.list({ 
+        paginatedResponse = await transactionService.listPaginated({ 
           ordering: '-date',
+          page: currentPage,
+          page_size: pageSize,
           ...(filterType !== 'all' && { type: filterType as 1 | 2 | 3 | 4 })
         });
-      } catch (orderingError) {
-        // Si falla con ordering, intentar sin ordering
-        console.warn('Error al ordenar transacciones, intentando sin ordenamiento:', orderingError);
-        transactionsData = await transactionService.list({ 
+      } catch {
+        paginatedResponse = await transactionService.listPaginated({ 
+          page: currentPage,
+          page_size: pageSize,
           ...(filterType !== 'all' && { type: filterType as 1 | 2 | 3 | 4 })
         });
-        // Ordenar manualmente por fecha (más reciente primero)
-        if (Array.isArray(transactionsData)) {
-          transactionsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        if (Array.isArray(paginatedResponse.results)) {
+          paginatedResponse.results.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         }
       }
       
-      // Asegurarse de que transactionsData es un array
-      if (!Array.isArray(transactionsData)) {
-        console.warn('transactionsData no es un array:', transactionsData);
-        transactionsData = [];
+      if (!Array.isArray(paginatedResponse.results)) {
+        paginatedResponse.results = [];
       }
+      
+      const transactionsData = paginatedResponse.results;
+      
+      const total = paginatedResponse.count || 0;
+      const pages = Math.ceil(total / pageSize);
+      setTotalPages(pages);
+      setTotalCount(total);
       
       const accountsData = await accountService.getAllAccounts();
       
       setMovements(transactionsData);
-      // Filtrar solo cuentas activas para mostrar
       const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
       setAccounts(activeAccounts);
       
-      // Calcular resumen
       const income = transactionsData
         .filter(t => t && t.type === 1 && typeof t.total_amount === 'number')
         .reduce((sum, t) => sum + t.total_amount, 0);
@@ -122,7 +133,6 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar movimientos';
       setError(errorMessage);
-      console.error('Error al cargar datos:', err);
     } finally {
       setIsLoading(false);
     }
@@ -144,39 +154,34 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
     try {
       await transactionService.delete(id);
       
-      // Disparar evento para que el contexto refresque automáticamente
       window.dispatchEvent(new Event('transactionDeleted'));
       
-      await loadData();
+      if (movements.length === 1 && currentPage > 1) {
+        setCurrentPage(prev => prev - 1);
+      } else {
+        await loadData();
+      }
       
-      // Dar un delay más largo para que el backend procese y recalcule después de eliminar
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Recargar cuentas para actualizar saldos después de eliminar
       try {
         const accountsData = await accountService.getAllAccounts();
         const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
         setAccounts(activeAccounts);
-      } catch (accountError) {
-        console.warn('Error al recargar cuentas:', accountError);
+      } catch {
+        // Intentionally empty
       }
-      // Refrescar presupuestos después de eliminar un movimiento
-      // Esto asegura que los cálculos de gasto se actualicen
       try {
         await refreshBudgets({ active_only: true, period: 'monthly' });
-        console.log('✅ Presupuestos refrescados después de eliminar movimiento');
-      } catch (refreshError) {
-        // No bloquear el flujo si falla el refresh, solo loguear
-        console.warn('⚠️ No se pudieron refrescar los presupuestos después de eliminar el movimiento:', refreshError);
+      } catch {
+        // Intentionally empty
       }
       
-      // Segundo refresh después de un delay adicional para asegurar que el backend haya recalculado
       setTimeout(async () => {
         try {
           await refreshBudgets({ active_only: true, period: 'monthly' });
-          console.log('✅ Segundo refresh de presupuestos después de eliminar (verificación)');
-        } catch (refreshError) {
-          console.warn('⚠️ Error en segundo refresh:', refreshError);
+        } catch {
+          // Intentionally empty
         }
       }, 2000);
     } catch (err) {
@@ -201,37 +206,28 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   };
 
   const handleModalSuccess = async () => {
-    // Recargar movimientos y cuentas para actualizar saldos
     await loadData();
     
-    // Dar un delay más largo para que el backend procese y recalcule la transacción
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // También recargar cuentas explícitamente para asegurar que los saldos estén actualizados
     try {
       const accountsData = await accountService.getAllAccounts();
       const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
       setAccounts(activeAccounts);
-    } catch (err) {
-      console.error('Error al recargar cuentas:', err);
+    } catch {
+      // Intentionally empty
     }
-    // Refrescar presupuestos después de crear/editar un movimiento
-    // Esto asegura que los cálculos de gasto se actualicen
     try {
       await refreshBudgets({ active_only: true, period: 'monthly' });
-      console.log('✅ Presupuestos refrescados después del movimiento');
-    } catch (refreshError) {
-      // No bloquear el flujo si falla el refresh, solo loguear
-      console.warn('⚠️ No se pudieron refrescar los presupuestos después del movimiento:', refreshError);
+    } catch {
+      // Intentionally empty
     }
     
-    // Segundo refresh después de un delay adicional para asegurar que el backend haya recalculado
     setTimeout(async () => {
       try {
         await refreshBudgets({ active_only: true, period: 'monthly' });
-        console.log('✅ Segundo refresh de presupuestos (verificación)');
-      } catch (refreshError) {
-        console.warn('⚠️ Error en segundo refresh:', refreshError);
+      } catch {
+        // Intentionally empty
       }
     }, 2000);
   };
@@ -273,6 +269,12 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
     }
     return true;
   }) : [];
+  
+  useEffect(() => {
+    if (searchTerm && currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [searchTerm, currentPage]);
 
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('es-CO', {
@@ -622,7 +624,6 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
               </p>
             </div>
             
-            {/* Desglose de pago a tarjeta de crédito */}
             {mov.type === 3 && mov.destination_account && (mov.capital_amount || mov.interest_amount) && (
               <div className="text-xs mb-2 space-y-1">
                 {mov.capital_amount && mov.capital_amount > 0 && (
@@ -701,13 +702,71 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
         )}
       </div>
 
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">
-          Mostrando <span className="font-medium">{filteredMovements.length}</span> de <span className="font-medium">{movements.length}</span> movimientos
-        </p>
-        <div className="flex gap-2">
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-gray-200">
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-gray-600">
+              Mostrando <span className="font-medium">
+                {movements.length > 0 ? ((currentPage - 1) * pageSize + 1) : 0}
+              </span> - <span className="font-medium">
+                {Math.min(currentPage * pageSize, totalCount)}
+              </span> de <span className="font-medium">{totalCount}</span> movimientos
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1 || isLoading}
+              className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors text-sm font-medium"
+            >
+              Anterior
+            </button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    disabled={isLoading}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage === pageNum
+                        ? 'bg-blue-600 text-white'
+                        : 'border border-gray-300 hover:bg-gray-50'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages || isLoading}
+              className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors text-sm font-medium"
+            >
+              Siguiente
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+      
+      {totalPages <= 1 && totalCount > 0 && (
+        <div className="flex items-center justify-center">
+          <p className="text-sm text-gray-600">
+            Mostrando <span className="font-medium">{totalCount}</span> movimiento{totalCount !== 1 ? 's' : ''}
+          </p>
+        </div>
+      )}
 
       {selectedMovement && (
         <MovementDetailModal 

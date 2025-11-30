@@ -9,6 +9,7 @@ import Budgets from '../budgets/Budgets';
 import Reports from '../reports/Reports';
 import Accounts from '../accounts/Accounts';
 import CategoriesPage from '../categories/Categories';
+import Goals from '../goals/Goals';
 import AlertCenter from '../../components/AlertCenter';
 import './dashboard.css';
 
@@ -34,7 +35,7 @@ interface CategoryData {
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'categories'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'categories' | 'goals'>('dashboard');
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [includePending, setIncludePending] = useState(false);
   const [showTaxes, setShowTaxes] = useState(true);
@@ -145,6 +146,16 @@ const Dashboard: React.FC = () => {
                 >
                   Categorías
                 </button>
+                <button
+                  onClick={() => setCurrentView('goals')}
+                  className={`text-sm font-medium transition-colors ${
+                    currentView === 'goals'
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Metas
+                </button>
               </nav>
             </div>
             <div className="flex items-center gap-4">
@@ -214,6 +225,7 @@ const Dashboard: React.FC = () => {
         {currentView === 'reports' && <Reports showTaxes={showTaxes} setShowTaxes={setShowTaxes} onBack={() => setCurrentView('dashboard')} />}
         {currentView === 'accounts' && <Accounts key="accounts" onBack={() => setCurrentView('dashboard')} />}
         {currentView === 'categories' && <CategoriesPage onBack={() => setCurrentView('dashboard')} />}
+        {currentView === 'goals' && <Goals onBack={() => setCurrentView('dashboard')} />}
       </main>
     </div>
   );
@@ -229,7 +241,7 @@ interface DashboardViewProps {
   setSelectedMonth: (month: string) => void;
   setIncludePending: (value: boolean) => void;
   setShowTaxes: (value: boolean) => void;
-  setCurrentView: (view: 'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts') => void;
+  setCurrentView: (view: 'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'goals') => void;
 }
 
 const DashboardView: React.FC<DashboardViewProps> = ({
@@ -252,8 +264,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       try {
         const summary = await getMonthlySummary();
         setBudgetSummary(summary);
-      } catch (err) {
-        console.error('Error al cargar resumen de presupuestos:', err);
+      } catch {
+        // Intentionally empty
       }
     };
     loadBudgetSummary();
@@ -696,6 +708,20 @@ const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <h4 className="font-semibold text-gray-900 mb-1">Presupuestos</h4>
           <p className="text-sm text-gray-600">Gestiona tus límites mensuales</p>
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <button 
+          onClick={() => setCurrentView('goals')}
+          className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all text-left group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <Target className="w-6 h-6 text-purple-600" />
+            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
+          </div>
+          <h4 className="font-semibold text-gray-900 mb-1">Metas de Ahorro</h4>
+          <p className="text-sm text-gray-600">Define y alcanza tus objetivos financieros</p>
         </button>
       </div>
     </div>
