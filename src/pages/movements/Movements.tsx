@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Download, Plus, Edit2, Trash2, Copy, FileText, ArrowLeft, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Search, Download, Plus, Edit2, Trash2, Copy, FileText, ArrowLeft, TrendingUp, TrendingDown, DollarSign, Calendar, X } from 'lucide-react';
 import MovementDetailModal from '../../components/MovementDetailModal';
 import NewMovementModal from '../../components/NewMovementModal';
 import ConfirmModal from '../../components/ConfirmModal';
 import { transactionService, Transaction } from '../../services/transactionService';
 import { accountService, Account } from '../../services/accountService';
 import { useBudgets } from '../../context/BudgetContext';
+import { useCategories } from '../../context/CategoryContext';
 import './movements.css';
 
 interface Movement {
@@ -36,6 +37,7 @@ interface MovementsProps {
 
 const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }) => {
   const { refreshBudgets } = useBudgets();
+  const { categories } = useCategories();
   const [selectedMovement, setSelectedMovement] = useState<Movement | null>(null);
   const [showNewMovementModal, setShowNewMovementModal] = useState(false);
   const [movementToEdit, setMovementToEdit] = useState<Transaction | null>(null);
@@ -45,7 +47,13 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<1 | 2 | 3 | 4 | 'all'>('all');
+  const [filterCategory, setFilterCategory] = useState<number | ''>('');
+  const [filterAccount, setFilterAccount] = useState<number | ''>('');
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -69,33 +77,62 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   });
 
   useEffect(() => {
-    setCurrentPage(1);
-    loadData();
-  }, [filterType]); // eslint-disable-line react-hooks/exhaustive-deps
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   useEffect(() => {
-    loadData();
-  }, [currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
+    setCurrentPage(1);
+    setSelectedIds([]);
+  }, [filterType, filterCategory, filterAccount, filterStartDate, filterEndDate, debouncedSearchTerm]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
       
+      const filters: {
+        ordering: string;
+        page: number;
+        page_size: number;
+        type?: 1 | 2 | 3 | 4;
+        search?: string;
+        category?: number;
+        origin_account?: number;
+        start_date?: string;
+        end_date?: string;
+      } = {
+        ordering: '-date',
+        page: currentPage,
+        page_size: pageSize,
+      };
+
+      if (filterType !== 'all') {
+        filters.type = filterType as 1 | 2 | 3 | 4;
+      }
+      if (debouncedSearchTerm.trim()) {
+        filters.search = debouncedSearchTerm.trim();
+      }
+      if (filterCategory) {
+        filters.category = filterCategory;
+      }
+      if (filterAccount) {
+        filters.origin_account = filterAccount;
+      }
+      if (filterStartDate) {
+        filters.start_date = filterStartDate;
+      }
+      if (filterEndDate) {
+        filters.end_date = filterEndDate;
+      }
+      
       let paginatedResponse;
       try {
-        paginatedResponse = await transactionService.listPaginated({ 
-          ordering: '-date',
-          page: currentPage,
-          page_size: pageSize,
-          ...(filterType !== 'all' && { type: filterType as 1 | 2 | 3 | 4 })
-        });
+        paginatedResponse = await transactionService.listPaginated(filters);
       } catch {
-        paginatedResponse = await transactionService.listPaginated({ 
-          page: currentPage,
-          page_size: pageSize,
-          ...(filterType !== 'all' && { type: filterType as 1 | 2 | 3 | 4 })
-        });
+        paginatedResponse = await transactionService.listPaginated(filters);
         if (Array.isArray(paginatedResponse.results)) {
           paginatedResponse.results.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         }
@@ -136,7 +173,11 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, filterType, filterCategory, filterAccount, filterStartDate, filterEndDate, debouncedSearchTerm, pageSize]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleDelete = async (id: number) => {
     setConfirmModal({
@@ -188,6 +229,99 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
       alert(err instanceof Error ? err.message : 'Error al eliminar el movimiento');
     }
   };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(movements.map(m => m.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectTransaction = (id: number, checked: boolean) => {
+    if (checked) {
+      setSelectedIds([...selectedIds, id]);
+    } else {
+      setSelectedIds(selectedIds.filter(selectedId => selectedId !== id));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+
+    setConfirmModal({
+      isOpen: true,
+      title: 'Confirmar eliminación múltiple',
+      message: `¿Estás seguro de que deseas eliminar ${selectedIds.length} movimiento(s)? Esta acción no se puede deshacer.`,
+      onConfirm: async () => {
+        setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+        await performBulkDelete();
+      },
+    });
+  };
+
+  const performBulkDelete = async () => {
+    try {
+      const result = await transactionService.bulkDelete(selectedIds);
+      
+      window.dispatchEvent(new Event('transactionDeleted'));
+      
+      setSelectedIds([]);
+      
+      if (movements.length <= selectedIds.length && currentPage > 1) {
+        setCurrentPage(prev => prev - 1);
+      } else {
+        await loadData();
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      try {
+        const accountsData = await accountService.getAllAccounts();
+        const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
+        setAccounts(activeAccounts);
+      } catch {
+        // Intentionally empty
+      }
+      try {
+        await refreshBudgets({ active_only: true, period: 'monthly' });
+      } catch {
+        // Intentionally empty
+      }
+      
+      setTimeout(async () => {
+        try {
+          await refreshBudgets({ active_only: true, period: 'monthly' });
+        } catch {
+          // Intentionally empty
+        }
+      }, 2000);
+
+      if (result.errors && result.errors.length > 0) {
+        alert(`Se eliminaron ${result.deleted_count} movimiento(s), pero hubo ${result.errors.length} error(es).`);
+      } else {
+        alert(`Se eliminaron ${result.deleted_count} movimiento(s) exitosamente.`);
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error al eliminar los movimientos');
+    }
+  };
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setDebouncedSearchTerm('');
+    setFilterType('all');
+    setFilterCategory('');
+    setFilterAccount('');
+    setFilterStartDate('');
+    setFilterEndDate('');
+    setSelectedIds([]);
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = searchTerm || filterType !== 'all' || filterCategory || filterAccount || filterStartDate || filterEndDate;
 
   const handleDuplicate = (transaction: Transaction) => {
     setMovementToDuplicate(transaction);
@@ -258,23 +392,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
     }
   };
 
-  const filteredMovements = Array.isArray(movements) ? movements.filter(mov => {
-    if (!mov) return false;
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      const note = mov.note?.toLowerCase() || '';
-      const tag = mov.tag?.toLowerCase() || '';
-      const accountName = getAccountName(mov.origin_account).toLowerCase();
-      return note.includes(searchLower) || tag.includes(searchLower) || accountName.includes(searchLower);
-    }
-    return true;
-  }) : [];
-  
-  useEffect(() => {
-    if (searchTerm && currentPage !== 1) {
-      setCurrentPage(1);
-    }
-  }, [searchTerm, currentPage]);
+  const filteredMovements = movements;
 
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('es-CO', {
@@ -294,41 +412,120 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
         <span className="font-medium">Volver al Dashboard</span>
       </button>
 
-      <div className="flex flex-wrap gap-4 items-center justify-between">
-        <div className="flex-1 max-w-md relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Buscar por nota, etiqueta o cuenta..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-4">
+        <div className="flex flex-wrap gap-4 items-center justify-between">
+          <div className="flex-1 max-w-md relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Buscar (tag, descripción, nota, categoría)..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div className="flex gap-2">
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <Download className="w-4 h-4" />
+              Exportar
+            </button>
+            <button 
+              onClick={() => setShowNewMovementModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Nuevo movimiento
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as 1 | 2 | 3 | 4 | 'all')}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="all">Todos</option>
+            <option value="all">Todos los tipos</option>
             <option value={1}>Ingresos</option>
             <option value={2}>Gastos</option>
             <option value={3}>Transferencias</option>
             <option value={4}>Ahorros</option>
           </select>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <Download className="w-4 h-4" />
-            Exportar
-          </button>
-          <button 
-            onClick={() => setShowNewMovementModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value ? Number(e.target.value) : '')}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <Plus className="w-4 h-4" />
-            Nuevo movimiento
-          </button>
+            <option value="">Todas las categorías</option>
+            {categories.filter(cat => cat.is_active !== false).map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+
+          <select
+            value={filterAccount}
+            onChange={(e) => setFilterAccount(e.target.value ? Number(e.target.value) : '')}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">Todas las cuentas</option>
+            {accounts.map(acc => (
+              <option key={acc.id} value={acc.id}>{acc.name}</option>
+            ))}
+          </select>
+
+          <div className="relative">
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="date"
+              value={filterStartDate}
+              onChange={(e) => setFilterStartDate(e.target.value)}
+              placeholder="Fecha desde"
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div className="relative">
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="date"
+              value={filterEndDate}
+              onChange={(e) => setFilterEndDate(e.target.value)}
+              placeholder="Fecha hasta"
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
         </div>
+
+        {hasActiveFilters && (
+          <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+            <span className="text-sm text-gray-600">
+              {totalCount} movimiento(s) encontrado(s)
+            </span>
+            <button
+              onClick={clearFilters}
+              className="flex items-center gap-2 px-3 py-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X className="w-4 h-4" />
+              Limpiar filtros
+            </button>
+          </div>
+        )}
+
+        {selectedIds.length > 0 && (
+          <div className="flex items-center justify-between pt-2 border-t border-gray-200 bg-blue-50 p-3 rounded-lg">
+            <span className="text-sm font-medium text-blue-900">
+              {selectedIds.length} movimiento(s) seleccionado(s)
+            </span>
+            <button
+              onClick={handleBulkDelete}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+            >
+              <Trash2 className="w-4 h-4" />
+              Eliminar seleccionados
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -390,29 +587,38 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
       </div>
 
       <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <table className="w-full">
+        <div className="overflow-x-auto movements-table-container">
+          <table className="w-full min-w-[1000px]">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nota</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoría</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cuenta</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-12 sticky left-0 bg-gray-50 z-10 border-r border-gray-200">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.length === filteredMovements.length && filteredMovements.length > 0}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Fecha</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase min-w-[150px]">Nota</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Categoría</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase min-w-[150px]">Cuenta</th>
               {showTaxes && (
                 <>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Base</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">IVA</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">GMF</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Base</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">IVA</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">GMF</th>
                 </>
               )}
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Estado</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Total</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Estado</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap sticky right-0 bg-gray-50 z-10 border-l border-gray-200">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {isLoading ? (
               <tr>
-                <td colSpan={showTaxes ? 10 : 7} className="px-6 py-12">
+                <td colSpan={showTaxes ? 11 : 8} className="px-4 py-12">
                   <div className="text-center">
                     <p className="text-gray-600">Cargando movimientos...</p>
                   </div>
@@ -420,7 +626,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={showTaxes ? 10 : 7} className="px-6 py-12">
+                <td colSpan={showTaxes ? 11 : 8} className="px-4 py-12">
                   <div className="text-center">
                     <p className="text-red-600">{error}</p>
                     <button
@@ -434,16 +640,16 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
               </tr>
             ) : filteredMovements.length === 0 ? (
               <tr>
-                <td colSpan={showTaxes ? 10 : 7} className="px-6 py-12">
+                <td colSpan={showTaxes ? 11 : 8} className="px-4 py-12">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
                       <FileText className="w-8 h-8 text-white" />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      {searchTerm || filterType !== 'all' ? 'No se encontraron movimientos' : '¡Comencemos a registrar tus movimientos!'}
+                      {hasActiveFilters ? 'No se encontraron movimientos' : '¡Comencemos a registrar tus movimientos!'}
                     </h3>
                     <p className="text-gray-600 mb-4">
-                      {searchTerm || filterType !== 'all' ? 'Intenta con otros filtros de búsqueda' : 'No hay movimientos registrados aún'}
+                      {hasActiveFilters ? 'Intenta con otros filtros de búsqueda' : 'No hay movimientos registrados aún'}
                     </p>
                     {!searchTerm && filterType === 'all' && (
                     <button
@@ -460,10 +666,19 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
             ) : (
               filteredMovements.map((mov) => (
               <tr key={mov.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-4 py-4 text-center sticky left-0 bg-white z-10 border-r border-gray-200 hover:bg-gray-50">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(mov.id)}
+                    onChange={(e) => handleSelectTransaction(mov.id, e.target.checked)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                </td>
+                <td className="px-4 py-4 text-sm text-gray-600 whitespace-nowrap">
                   {new Date(mov.date).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-4">
                   <div className="text-sm font-medium text-gray-900">
                     {mov.note || getTypeLabel(mov.type)}
                     </div>
@@ -473,7 +688,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-4 whitespace-nowrap">
                   {mov.category_name ? (
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                       {mov.category_name}
@@ -484,7 +699,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-4 py-4 text-sm text-gray-600">
                   {mov.type === 3 ? (
                     <span>{getAccountName(mov.origin_account)} → {getAccountName(mov.destination_account)}</span>
                   ) : (
@@ -493,40 +708,30 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
                 </td>
                 {showTaxes && (
                   <>
-                    <td className="px-6 py-4 text-sm text-gray-600 text-right">
+                    <td className="px-4 py-4 text-sm text-gray-600 text-right whitespace-nowrap">
                       {formatCurrency(mov.base_amount)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-amber-600 text-right">
+                    <td className="px-4 py-4 text-sm text-amber-600 text-right whitespace-nowrap">
                       {mov.tax_percentage && mov.tax_percentage > 0 
                         ? formatCurrency(mov.taxed_amount ?? (mov.total_amount - mov.base_amount - (mov.gmf_amount || 0)))
                         : '-'
                       }
                     </td>
-                    <td className="px-6 py-4 text-sm text-blue-600 text-right">
+                    <td className="px-4 py-4 text-sm text-blue-600 text-right whitespace-nowrap">
                       {mov.gmf_amount && mov.gmf_amount > 0 ? formatCurrency(mov.gmf_amount) : '-'}
                     </td>
                   </>
                 )}
-                <td className={`px-6 py-4 text-sm font-semibold text-right ${getTypeColor(mov.type)}`}>
+                <td className={`px-4 py-4 text-sm font-semibold text-right whitespace-nowrap ${getTypeColor(mov.type)}`}>
                   {mov.type === 1 ? '+' : mov.type === 2 ? '-' : ''}{formatCurrency(mov.total_amount)}
                 </td>
-                <td className="px-6 py-4 text-center">
+                <td className="px-4 py-4 text-center whitespace-nowrap">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                     Confirmado
                   </span>
                 </td>
-                <td className="px-6 py-4 text-right">
+                <td className="px-4 py-4 text-right sticky right-0 bg-white z-10 border-l border-gray-200 hover:bg-gray-50">
                   <div className="flex items-center justify-end gap-2">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedMovement(mov);
-                      }}
-                      className="p-2 hover:bg-blue-50 rounded transition-colors border border-gray-200 hover:border-blue-300"
-                      title="Ver detalle"
-                    >
-                      <FileText className="w-4 h-4 text-blue-600" />
-                    </button>
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
@@ -564,6 +769,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       <div className="md:hidden space-y-3">
@@ -606,22 +812,34 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
           filteredMovements.map((mov) => (
           <div 
             key={mov.id} 
-            className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => setSelectedMovement(mov)}
+            className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
           >
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex-1">
-                <h4 className="font-medium text-gray-900">{mov.note || getTypeLabel(mov.type)}</h4>
-                <p className="text-sm text-gray-600">{new Date(mov.date).toLocaleDateString('es-CO')}</p>
-                {mov.tag && (
-                  <span className="inline-flex items-center gap-1 mt-1 text-xs text-blue-600">
-                    {mov.tag}
-                  </span>
-                )}
+            <div className="flex items-start gap-3 mb-2">
+              <input
+                type="checkbox"
+                checked={selectedIds.includes(mov.id)}
+                onChange={(e) => handleSelectTransaction(mov.id, e.target.checked)}
+                className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+              />
+              <div 
+                className="flex-1 cursor-pointer"
+                onClick={() => setSelectedMovement(mov)}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900">{mov.note || getTypeLabel(mov.type)}</h4>
+                    <p className="text-sm text-gray-600">{new Date(mov.date).toLocaleDateString('es-CO')}</p>
+                    {mov.tag && (
+                      <span className="inline-flex items-center gap-1 mt-1 text-xs text-blue-600">
+                        {mov.tag}
+                      </span>
+                    )}
+                  </div>
+                  <p className={`text-lg font-semibold ${getTypeColor(mov.type)}`}>
+                    {mov.type === 1 ? '+' : mov.type === 2 ? '-' : ''}{formatCurrency(mov.total_amount)}
+                  </p>
+                </div>
               </div>
-              <p className={`text-lg font-semibold ${getTypeColor(mov.type)}`}>
-                {mov.type === 1 ? '+' : mov.type === 2 ? '-' : ''}{formatCurrency(mov.total_amount)}
-              </p>
             </div>
             
             {mov.type === 3 && mov.destination_account && (mov.capital_amount || mov.interest_amount) && (
