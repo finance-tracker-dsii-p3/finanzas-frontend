@@ -26,6 +26,8 @@ export interface Transaction {
   category_icon?: string;
   tag?: string | null;
   note?: string | null;
+  applied_rule?: number | null;
+  applied_rule_name?: string | null;
   created_at?: string;
   updated_at?: string;
   created_by?: number;

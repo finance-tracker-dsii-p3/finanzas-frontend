@@ -1,0 +1,130 @@
+.analytics-indicators {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.indicator-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.indicator-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.income-card {
+  border-left: 4px solid #10b981;
+}
+
+.expenses-card {
+  border-left: 4px solid #ef4444;
+}
+
+.balance-card {
+  border-left: 4px solid #3b82f6;
+}
+
+.balance-card.positive {
+  border-left-color: #3b82f6;
+}
+
+.balance-card.negative {
+  border-left-color: #f97316;
+}
+
+.indicator-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.indicator-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.indicator-amount {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.income-amount {
+  color: #10b981;
+}
+
+.expenses-amount {
+  color: #ef4444;
+}
+
+.balance-positive {
+  color: #3b82f6;
+}
+
+.balance-negative {
+  color: #f97316;
+}
+
+.indicator-count {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.analytics-indicators-loading,
+.analytics-indicators-error,
+.analytics-indicators-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.analytics-indicators-loading {
+  gap: 1rem;
+}
+
+.analytics-indicators-error {
+  gap: 1rem;
+}
+
+.retry-button {
+  padding: 0.5rem 1rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.retry-button:hover {
+  background: #2563eb;
+}
+
+@media (max-width: 768px) {
+  .analytics-indicators {
+    grid-template-columns: 1fr;
+  }
+
+  .indicator-amount {
+    font-size: 1.5rem;
+  }
+}
+

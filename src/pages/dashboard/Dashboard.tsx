@@ -10,6 +10,8 @@ import Reports from '../reports/Reports';
 import Accounts from '../accounts/Accounts';
 import CategoriesPage from '../categories/Categories';
 import Goals from '../goals/Goals';
+import Rules from '../rules/Rules';
+import Analytics from '../analytics/Analytics';
 import AlertCenter from '../../components/AlertCenter';
 import './dashboard.css';
 
@@ -35,7 +37,7 @@ interface CategoryData {
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'categories' | 'goals'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'categories' | 'goals' | 'rules' | 'analytics'>('dashboard');
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [includePending, setIncludePending] = useState(false);
   const [showTaxes, setShowTaxes] = useState(true);
@@ -156,6 +158,26 @@ const Dashboard: React.FC = () => {
                 >
                   Metas
                 </button>
+                <button
+                  onClick={() => setCurrentView('rules')}
+                  className={`text-sm font-medium transition-colors ${
+                    currentView === 'rules'
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Reglas
+                </button>
+                <button
+                  onClick={() => setCurrentView('analytics')}
+                  className={`text-sm font-medium transition-colors ${
+                    currentView === 'analytics'
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Analytics
+                </button>
               </nav>
             </div>
             <div className="flex items-center gap-4">
@@ -226,6 +248,8 @@ const Dashboard: React.FC = () => {
         {currentView === 'accounts' && <Accounts key="accounts" onBack={() => setCurrentView('dashboard')} />}
         {currentView === 'categories' && <CategoriesPage onBack={() => setCurrentView('dashboard')} />}
         {currentView === 'goals' && <Goals onBack={() => setCurrentView('dashboard')} />}
+        {currentView === 'rules' && <Rules onBack={() => setCurrentView('dashboard')} />}
+        {currentView === 'analytics' && <Analytics onBack={() => setCurrentView('dashboard')} />}
       </main>
     </div>
   );
@@ -241,7 +265,7 @@ interface DashboardViewProps {
   setSelectedMonth: (month: string) => void;
   setIncludePending: (value: boolean) => void;
   setShowTaxes: (value: boolean) => void;
-  setCurrentView: (view: 'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'goals') => void;
+  setCurrentView: (view: 'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'goals' | 'rules' | 'analytics') => void;
 }
 
 const DashboardView: React.FC<DashboardViewProps> = ({
