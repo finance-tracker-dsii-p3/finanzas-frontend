@@ -3,7 +3,7 @@ import { XCircle, TrendingDown, TrendingUp, ArrowRight, Tag, Target, AlertCircle
 import './NewMovementModal.css';
 import { useCategories } from '../context/CategoryContext';
 import { useBudgets } from '../context/BudgetContext';
-import { transactionService, CreateTransactionData, TransactionType, Transaction } from '../services/transactionService';
+import { transactionService, CreateTransactionData, UpdateTransactionData, TransactionType, Transaction } from '../services/transactionService';
 import { accountService, Account } from '../services/accountService';
 import { goalService, Goal } from '../services/goalService';
 import { formatMoney, getCurrencyDisplay, Currency, getExchangeRate, convertCurrency, pesosToCents } from '../utils/currencyUtils';
@@ -575,12 +575,46 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       if (calculationMode === 'total' && 'base_amount' in transactionData) {
         delete transactionData.base_amount;
       }
-      if (calculationMode === 'base' && 'total_amount' in transactionData && transactionData.total_amount === undefined) {
-        delete transactionData.total_amount;
+      if (calculationMode === 'base' && 'total_amount' in transactionData) {
+        if (transactionData.total_amount === undefined || transactionData.total_amount === null) {
+          delete transactionData.total_amount;
+        }
       }
 
       if (isEdit && transactionToEdit) {
-        await transactionService.update(transactionToEdit.id, transactionData);
+        const updateData: UpdateTransactionData = {
+          origin_account: transactionData.origin_account,
+          type: transactionData.type,
+          date: transactionData.date,
+        };
+        
+        if (transactionData.total_amount !== undefined) {
+          updateData.total_amount = transactionData.total_amount;
+        } else if (transactionData.base_amount !== undefined) {
+          updateData.base_amount = transactionData.base_amount;
+        }
+        
+        if (transactionData.tax_percentage !== undefined && transactionData.tax_percentage !== null) {
+          updateData.tax_percentage = transactionData.tax_percentage;
+        }
+        
+        if (transactionData.destination_account !== undefined) {
+          updateData.destination_account = transactionData.destination_account;
+        }
+        
+        if (transactionData.category !== undefined) {
+          updateData.category = transactionData.category;
+        }
+        
+        if (transactionData.tag !== undefined) {
+          updateData.tag = transactionData.tag;
+        }
+        
+        if (transactionData.note !== undefined) {
+          updateData.note = transactionData.note;
+        }
+        
+        await transactionService.update(transactionToEdit.id, updateData);
       } else {
         await transactionService.create(transactionData);
         

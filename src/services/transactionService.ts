@@ -26,6 +26,8 @@ export interface Transaction {
   category_icon?: string;
   tag?: string | null;
   note?: string | null;
+  applied_rule?: number | null;
+  applied_rule_name?: string | null;
   created_at?: string;
   updated_at?: string;
   created_by?: number;
@@ -67,13 +69,17 @@ export interface UpdateTransactionData {
 }
 
 export interface TransactionFilters {
+  search?: string;
   type?: TransactionType;
   origin_account?: number;
   destination_account?: number;
+  category?: number;
   tag?: string;
   date?: string;
   date_from?: string;
   date_to?: string;
+  start_date?: string;
+  end_date?: string;
   ordering?: string; // 'date', '-date', 'total_amount', '-total_amount'
   page?: number;
   page_size?: number;
@@ -96,6 +102,9 @@ const getAuthHeaders = () => {
 
 const buildQueryParams = (filters?: TransactionFilters) => {
   const params = new URLSearchParams();
+  if (filters?.search) {
+    params.append('search', filters.search);
+  }
   if (filters?.type) {
     params.append('type', String(filters.type));
   }
@@ -104,6 +113,9 @@ const buildQueryParams = (filters?: TransactionFilters) => {
   }
   if (filters?.destination_account) {
     params.append('destination_account', String(filters.destination_account));
+  }
+  if (filters?.category) {
+    params.append('category', String(filters.category));
   }
   if (filters?.tag) {
     params.append('tag', filters.tag);
@@ -116,6 +128,12 @@ const buildQueryParams = (filters?: TransactionFilters) => {
   }
   if (filters?.date_to) {
     params.append('date_to', filters.date_to);
+  }
+  if (filters?.start_date) {
+    params.append('start_date', filters.start_date);
+  }
+  if (filters?.end_date) {
+    params.append('end_date', filters.end_date);
   }
   if (filters?.ordering) {
     params.append('ordering', filters.ordering);
@@ -451,22 +469,24 @@ export const transactionService = {
       if (data.type !== undefined) {
         cleanData.type = data.type;
       }
-      if (data.total_amount !== undefined) {
+      
+      if (data.total_amount !== undefined && data.total_amount > 0) {
         cleanData.total_amount = Math.round(data.total_amount);
-      } else if (data.base_amount !== undefined) {
+      } else if (data.base_amount !== undefined && data.base_amount > 0) {
         cleanData.base_amount = Math.round(data.base_amount);
         if (data.tax_percentage !== undefined && data.tax_percentage !== null && data.tax_percentage > 0) {
           const baseAmount = cleanData.base_amount as number;
           cleanData.total_amount = Math.round(baseAmount * (1 + data.tax_percentage / 100));
-        } else if (data.total_amount === undefined) {
+        } else {
           cleanData.total_amount = cleanData.base_amount;
         }
       }
+      
       if (data.date !== undefined) {
         cleanData.date = data.date;
       }
 
-      if (data.destination_account !== undefined && data.destination_account !== null) {
+      if (data.destination_account !== undefined) {
         cleanData.destination_account = data.destination_account;
       }
 
@@ -476,19 +496,31 @@ export const transactionService = {
 
       if (data.tax_percentage !== undefined && data.tax_percentage !== null && data.tax_percentage > 0) {
         cleanData.tax_percentage = data.tax_percentage;
-        if (data.base_amount !== undefined && cleanData.base_amount !== undefined) {
+        if (cleanData.base_amount !== undefined && !cleanData.total_amount) {
           const baseAmount = cleanData.base_amount as number;
-          const taxPercentage = data.tax_percentage || 0;
+          const taxPercentage = data.tax_percentage;
           cleanData.total_amount = Math.round(baseAmount * (1 + taxPercentage / 100));
         }
+      }
+      
+      if (cleanData.total_amount && cleanData.base_amount) {
+        delete cleanData.base_amount;
       }
 
       if (data.tag !== undefined && data.tag !== null && data.tag.trim() !== '') {
         cleanData.tag = data.tag.trim();
+      } else if (data.tag === null || data.tag === '') {
+        cleanData.tag = null;
       }
 
       if (data.note !== undefined && data.note !== null && data.note.trim() !== '') {
         cleanData.note = data.note.trim();
+      } else if (data.note === null || data.note === '') {
+        cleanData.note = null;
+      }
+
+      if (Object.keys(cleanData).length === 0) {
+        throw new Error('No se proporcionaron datos para actualizar');
       }
 
       const response = await fetch(`${API_BASE_URL}/api/transactions/${id}/`, {
@@ -518,6 +550,25 @@ export const transactionService = {
       if (!response.ok) {
         await parseError(response);
       }
+    } catch (error) {
+      handleFetchError(error);
+      throw error;
+    }
+  },
+
+  async bulkDelete(ids: number[]): Promise<{ message: string; deleted_count: number; errors?: Array<{ transaction_id: number; error: string }> }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/transactions/bulk_delete/`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ ids }),
+      });
+
+      if (!response.ok) {
+        await parseError(response);
+      }
+
+      return response.json();
     } catch (error) {
       handleFetchError(error);
       throw error;

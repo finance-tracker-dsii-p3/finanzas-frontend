@@ -1,5 +1,5 @@
 import React from 'react';
-import { XCircle, Edit2, Trash2, CreditCard, Receipt } from 'lucide-react';
+import { XCircle, Edit2, Trash2, CreditCard, Receipt, Sparkles } from 'lucide-react';
 import './MovementDetailModal.css';
 
 interface Movement {
@@ -25,6 +25,8 @@ interface Movement {
   interest_amount?: number | null;
   gmf_amount?: number | null;
   taxed_amount?: number | null;
+  applied_rule?: number | null;
+  applied_rule_name?: string | null;
 }
 
 interface MovementDetailModalProps {
@@ -111,6 +113,36 @@ const MovementDetailModal: React.FC<MovementDetailModalProps> = ({ movement, onC
                 </div>
               )}
             </div>
+
+            {movement.applied_rule_name && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="w-5 h-5 text-blue-600" />
+                  <p className="font-semibold text-blue-900">Regla automática aplicada</p>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <p className="text-blue-700 font-medium">Regla: {movement.applied_rule_name}</p>
+                  </div>
+                  {movement.category_name && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-blue-700">✅ Categoría asignada automáticamente:</span>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        {movement.category_name}
+                      </span>
+                    </div>
+                  )}
+                  {movement.tag && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-blue-700">✅ Etiqueta asignada automáticamente:</span>
+                      <span className="inline-flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                        {movement.tag}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
 
             {/* Desglose de pago a tarjeta de crédito (capital e intereses) */}
