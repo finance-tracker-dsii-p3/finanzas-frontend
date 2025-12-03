@@ -93,11 +93,17 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
 
   const totalBalance = accounts
     .filter(acc => acc.is_active === true && acc.account_type === 'asset')
-    .reduce((sum, acc) => sum + acc.current_balance, 0);
+    .reduce((sum, acc) => {
+      const balance = Number(acc.current_balance) || 0;
+      return sum + (isNaN(balance) || !isFinite(balance) ? 0 : balance);
+    }, 0);
   
   const totalDebts = accounts
     .filter(acc => acc.is_active === true && acc.account_type === 'liability')
-    .reduce((sum, acc) => sum + acc.current_balance, 0);
+    .reduce((sum, acc) => {
+      const balance = Number(acc.current_balance) || 0;
+      return sum + (isNaN(balance) || !isFinite(balance) ? 0 : balance);
+    }, 0);
 
   const handleSaveAccount = async (accountData: CreateAccountData, accountId?: number) => {
     if (accountId) {
@@ -649,10 +655,10 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                   <div className="mb-3">
                     <p className="text-xs text-gray-600 mb-0.5">Balance</p>
                     <p className={`text-xl font-bold ${
-                      account.current_balance >= 0 ? 'text-green-600' : 'text-red-600'
+                      (account.current_balance ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'
                     }`}>
                       {isBalanceVisible 
-                        ? formatCurrency(account.current_balance, account.currency)
+                        ? formatCurrency(Number(account.current_balance) || 0, account.currency)
                         : '••••••'
                       }
                     </p>
