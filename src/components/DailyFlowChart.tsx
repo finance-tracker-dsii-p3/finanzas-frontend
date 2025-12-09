@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Loader2 } from 'lucide-react';
 import { analyticsService, DailyFlowChartResponse } from '../services/analyticsService';
+import { formatMoney, Currency } from '../utils/currencyUtils';
 import './DailyFlowChart.css';
 
 interface DailyFlowChartProps {
@@ -52,13 +53,8 @@ const DailyFlowChart: React.FC<DailyFlowChartProps> = ({ period, mode }) => {
     loadChartData();
   }, [loadChartData]);
 
-  const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
+  const formatCurrency = (value: number, currency: Currency = 'COP'): string => {
+    return formatMoney(value, currency);
   };
 
   const CustomTooltip = ({ active, payload, label }: TooltipProps) => {

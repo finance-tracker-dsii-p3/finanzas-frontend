@@ -109,7 +109,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       await authService.logout();
     } catch {
-      // Intentionally empty
+      void 0;
     } finally {
       setUser(null);
       localStorage.removeItem('token');

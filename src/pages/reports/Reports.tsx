@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Download, FileText, Target, Activity, PieChart } from 'lucide-react';
+import { formatMoney, Currency } from '../../utils/currencyUtils';
 import './reports.css';
 
 interface ReportsProps {
@@ -33,12 +34,9 @@ const Reports: React.FC<ReportsProps> = ({ showTaxes, setShowTaxes, onBack }) =>
   });
   const [cashFlow] = useState<number[]>([]);
 
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0
-    }).format(Math.abs(amount));
+  const formatCurrency = (amount: number, currency: Currency = 'COP'): string => {
+    if (isNaN(amount)) return formatMoney(0, currency);
+    return formatMoney(Math.abs(amount), currency);
   };
 
   return (

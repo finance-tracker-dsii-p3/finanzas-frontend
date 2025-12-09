@@ -48,9 +48,11 @@ export type UpdateAccountData = Partial<CreateAccountData>;
 
 export interface ValidateDeletionResponse {
   can_delete: boolean;
+  requires_confirmation?: boolean;
   has_movements: boolean;
   movement_count?: number;
   warnings?: string[];
+  errors?: string[];
 }
 
 export interface AccountOptions {

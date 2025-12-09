@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
-import { ArrowLeft, CreditCard, TrendingUp, TrendingDown, Calendar, DollarSign, Percent, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, CreditCard, TrendingUp, TrendingDown, Calendar, DollarSign, Percent, Clock, Loader2, Edit2 } from 'lucide-react';
 import InstallmentCalendar from '../../components/InstallmentCalendar';
+import EditInstallmentPlanModal from '../../components/EditInstallmentPlanModal';
+import { creditCardPlanService, InstallmentPlan } from '../../services/creditCardPlanService';
+import { formatMoneyFromPesos, Currency } from '../../utils/currencyUtils';
 import './card-detail.css';
 
 interface CardAccount {
@@ -18,38 +21,77 @@ interface CardAccount {
   color: string;
 }
 
-interface InstallmentPlan {
-  id: number;
-  purchaseId: number;
-  purchaseDescription: string;
-  purchaseDate: string;
-  totalAmount: number;
-  totalInstallments: number;
-  paidInstallments: number;
-  monthlyAmount: number;
-  interestRate: number;
-  principalAmount: number;
-  interestAmount: number;
-  status: 'active' | 'completed' | 'cancelled';
-}
-
 interface CardDetailProps {
   card: CardAccount;
   onBack: () => void;
 }
 
 const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
-  const [installmentPlans] = useState<InstallmentPlan[]>([]);
-  const [currentMonthInterest] = useState(0);
-  const [pendingPayments] = useState(0);
+  const [installmentPlans, setInstallmentPlans] = useState<InstallmentPlan[]>([]);
+  const [isLoadingPlans, setIsLoadingPlans] = useState(true);
+  const [currentMonthInterest, setCurrentMonthInterest] = useState(0);
+  const [pendingPayments, setPendingPayments] = useState(0);
   const [selectedPlan, setSelectedPlan] = useState<InstallmentPlan | null>(null);
+  const [planToEdit, setPlanToEdit] = useState<InstallmentPlan | null>(null);
 
-  const formatCurrency = (amount: number, currency: string = 'COP'): string => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 0
-    }).format(Math.abs(amount));
+  useEffect(() => {
+    loadPlans();
+    
+    const handleUpdate = () => {
+      loadPlans();
+    };
+    
+    window.addEventListener('installmentPlanCreated', handleUpdate);
+    window.addEventListener('installmentPlanUpdated', handleUpdate);
+    window.addEventListener('installmentPaymentRecorded', handleUpdate);
+    
+    return () => {
+      window.removeEventListener('installmentPlanCreated', handleUpdate);
+      window.removeEventListener('installmentPlanUpdated', handleUpdate);
+      window.removeEventListener('installmentPaymentRecorded', handleUpdate);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [card.id]);
+
+  const loadPlans = async () => {
+    try {
+      setIsLoadingPlans(true);
+      const allPlans = await creditCardPlanService.listPlans();
+      // Filtrar planes de esta tarjeta
+      const cardPlans = allPlans.filter(plan => plan.credit_card_account === card.id);
+      setInstallmentPlans(cardPlans);
+      
+      // Calcular intereses del mes actual
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      
+      let monthInterest = 0;
+      let pendingCount = 0;
+      
+      cardPlans.forEach(plan => {
+        plan.payments.forEach(payment => {
+          const dueDate = new Date(payment.due_date);
+          if (dueDate.getMonth() === currentMonth && dueDate.getFullYear() === currentYear) {
+            if (payment.status === 'pending' || payment.status === 'overdue') {
+              monthInterest += payment.interest_amount;
+              pendingCount++;
+            }
+          }
+        });
+      });
+      
+      setCurrentMonthInterest(monthInterest / 100); // Convertir de centavos a pesos
+      setPendingPayments(pendingCount);
+    } catch (error) {
+      console.error('Error al cargar planes:', error);
+    } finally {
+      setIsLoadingPlans(false);
+    }
+  };
+
+  const formatCurrency = (amount: number, currency: Currency = 'COP'): string => {
+    return formatMoneyFromPesos(amount, currency);
   };
 
   const usagePercentage = card.utilizationPercentage ?? (card.limit > 0 ? (card.used / card.limit) * 100 : 0);
@@ -101,7 +143,7 @@ const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
               <TrendingUp className="w-5 h-5 text-blue-600" />
               <p className="text-sm font-medium text-blue-900">Límite de crédito</p>
             </div>
-            <p className="text-2xl font-bold text-blue-900">{formatCurrency(card.limit, card.currency)}</p>
+            <p className="text-2xl font-bold text-blue-900">{formatCurrency(card.limit, card.currency as Currency)}</p>
           </div>
 
           <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-4">
@@ -109,7 +151,7 @@ const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
               <DollarSign className="w-5 h-5 text-green-600" />
               <p className="text-sm font-medium text-green-900">Disponible</p>
             </div>
-            <p className="text-2xl font-bold text-green-900">{formatCurrency(card.available, card.currency)}</p>
+            <p className="text-2xl font-bold text-green-900">{formatCurrency(card.available, card.currency as Currency)}</p>
             <p className="text-xs text-green-700 mt-1">{availablePercentage.toFixed(1)}% del límite</p>
           </div>
 
@@ -118,7 +160,7 @@ const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
               <TrendingDown className="w-5 h-5 text-red-600" />
               <p className="text-sm font-medium text-red-900">Utilizado</p>
             </div>
-            <p className="text-2xl font-bold text-red-900">{formatCurrency(card.used, card.currency)}</p>
+            <p className="text-2xl font-bold text-red-900">{formatCurrency(card.used, card.currency as Currency)}</p>
             <p className="text-xs text-red-700 mt-1">{usagePercentage.toFixed(1)}% del límite</p>
           </div>
         </div>
@@ -131,7 +173,7 @@ const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
                 <TrendingDown className="w-5 h-5 text-amber-600" />
                 <p className="text-sm font-medium text-amber-900">Lo que se debe</p>
               </div>
-              <p className="text-2xl font-bold text-amber-900">{formatCurrency(Math.abs(currentDebt), card.currency)}</p>
+              <p className="text-2xl font-bold text-amber-900">{formatCurrency(Math.abs(currentDebt), card.currency as Currency)}</p>
               <p className="text-xs text-amber-700 mt-1">Deuda actual</p>
             </div>
 
@@ -141,7 +183,7 @@ const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
                 <p className="text-sm font-medium text-purple-900">Total pagado</p>
               </div>
               <p className="text-2xl font-bold text-purple-900">
-                {formatCurrency(totalPaid, card.currency)}
+                {formatCurrency(totalPaid, card.currency as Currency)}
                 {totalPaid > card.limit && (
                   <span className="ml-2 text-xs text-purple-600">(incluye intereses)</span>
                 )}
@@ -181,7 +223,7 @@ const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
             <h3 className="text-lg font-semibold text-gray-900">Intereses del mes</h3>
           </div>
           <p className="text-3xl font-bold text-amber-900 mb-2">
-            {formatCurrency(currentMonthInterest, card.currency)}
+            {formatCurrency(currentMonthInterest, card.currency as Currency)}
           </p>
           <p className="text-sm text-gray-600">Intereses acumulados en el período actual</p>
         </div>
@@ -207,7 +249,12 @@ const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
           <span className="text-sm text-gray-600">{installmentPlans.length} planes</span>
         </div>
 
-        {installmentPlans.length === 0 ? (
+        {isLoadingPlans ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <span className="ml-3 text-gray-600">Cargando planes...</span>
+          </div>
+        ) : installmentPlans.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <CreditCard className="w-8 h-8 text-white" />
@@ -217,57 +264,73 @@ const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
           </div>
         ) : (
           <div className="space-y-4">
-            {installmentPlans.map((plan) => (
-              <div 
-                key={plan.id}
-                className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors cursor-pointer"
-                onClick={() => setSelectedPlan(plan)}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900 mb-1">{plan.purchaseDescription}</h4>
-                    <p className="text-sm text-gray-600">
-                      {new Date(plan.purchaseDate).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })}
-                    </p>
+            {installmentPlans.map((plan) => {
+              const paidInstallments = plan.payments.filter(p => p.status === 'completed').length;
+              const progressPercentage = (paidInstallments / plan.number_of_installments) * 100;
+              
+              return (
+                <div 
+                  key={plan.id}
+                  className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1 cursor-pointer" onClick={() => setSelectedPlan(plan)}>
+                      <h4 className="font-semibold text-gray-900 mb-1">{plan.description || `Plan #${plan.id}`}</h4>
+                      <p className="text-sm text-gray-600">
+                        {new Date(plan.start_date).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPlanToEdit(plan);
+                        }}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Editar plan"
+                      >
+                        <Edit2 className="w-4 h-4 text-gray-600" />
+                      </button>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        plan.status === 'active' ? 'bg-blue-100 text-blue-800' :
+                        plan.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {plan.status === 'active' ? 'Activo' : plan.status === 'completed' ? 'Completado' : 'Cancelado'}
+                      </div>
+                    </div>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    plan.status === 'active' ? 'bg-blue-100 text-blue-800' :
-                    plan.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {plan.status === 'active' ? 'Activo' : plan.status === 'completed' ? 'Completado' : 'Cancelado'}
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Total</p>
-                    <p className="font-semibold text-gray-900">{formatCurrency(plan.totalAmount, card.currency)}</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">Total</p>
+                      <p className="font-semibold text-gray-900">{formatCurrency(plan.total_amount / 100, card.currency as Currency)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">Cuota mensual</p>
+                      <p className="font-semibold text-gray-900">{formatCurrency(plan.installment_amount / 100, card.currency as Currency)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">Progreso</p>
+                      <p className="font-semibold text-gray-900">
+                        {paidInstallments} / {plan.number_of_installments}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">Interés</p>
+                      <p className="font-semibold text-amber-600">{plan.interest_rate}%</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Cuota mensual</p>
-                    <p className="font-semibold text-gray-900">{formatCurrency(plan.monthlyAmount, card.currency)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Progreso</p>
-                    <p className="font-semibold text-gray-900">
-                      {plan.paidInstallments} / {plan.totalInstallments}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Interés</p>
-                    <p className="font-semibold text-amber-600">{plan.interestRate}%</p>
-                  </div>
-                </div>
 
-                <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                  <div 
-                    className="bg-blue-500 h-full rounded-full transition-all"
-                    style={{ width: `${(plan.paidInstallments / plan.totalInstallments) * 100}%` }}
-                  ></div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div 
+                      className="bg-blue-500 h-full rounded-full transition-all"
+                      style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+                    ></div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -276,7 +339,19 @@ const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
         <InstallmentCalendar
           plan={selectedPlan}
           onClose={() => setSelectedPlan(null)}
-          currency={card.currency}
+          currency={card.currency as Currency}
+          onPaymentRecorded={loadPlans}
+        />
+      )}
+
+      {planToEdit && (
+        <EditInstallmentPlanModal
+          plan={planToEdit}
+          onClose={() => setPlanToEdit(null)}
+          onSuccess={() => {
+            setPlanToEdit(null);
+            loadPlans();
+          }}
         />
       )}
     </div>
