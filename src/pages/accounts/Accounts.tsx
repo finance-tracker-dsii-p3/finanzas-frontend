@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Edit2, Trash2, CreditCard, Wallet, Building2, Banknote, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import NewAccountModal from '../../components/NewAccountModal';
 import CardDetail from '../cards/CardDetail';
+import ConfirmModal from '../../components/ConfirmModal';
 import { accountService, Account, CreateAccountData } from '../../services/accountService';
+import { formatMoneyFromPesos, Currency } from '../../utils/currencyUtils';
 import './accounts.css';
 
 interface AccountsProps {
@@ -17,6 +19,20 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showBalance, setShowBalance] = useState<{ [key: number]: boolean }>({});
   const [expandedCards, setExpandedCards] = useState<{ [key: number]: boolean }>({});
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type?: 'warning' | 'danger' | 'info';
+    cancelText?: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    type: 'warning',
+  });
 
   useEffect(() => {
     loadAccounts();
@@ -28,20 +44,22 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
       const accountsData = await accountService.getAllAccounts();
       setAccounts(accountsData);
     } catch (error) {
-      console.error('Error al cargar cuentas:', error);
-      alert(error instanceof Error ? error.message : 'Error al cargar las cuentas');
+      setConfirmModal({
+        isOpen: true,
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'Error al cargar las cuentas',
+        type: 'danger',
+        onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+        cancelText: undefined,
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
 
-  const formatCurrency = (amount: number, currency: string = 'COP'): string => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 0
-    }).format(Math.abs(amount));
+  const formatCurrency = (amount: number, currency: Currency = 'COP'): string => {
+    return formatMoneyFromPesos(amount, currency);
   };
 
   const getAccountIcon = (category: Account['category']) => {
@@ -73,16 +91,19 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
     }
   };
 
-  // Balance total solo de activos (dinero disponible)
-  // No incluir tarjetas de crédito u otros pasivos
   const totalBalance = accounts
     .filter(acc => acc.is_active === true && acc.account_type === 'asset')
-    .reduce((sum, acc) => sum + acc.current_balance, 0);
+    .reduce((sum, acc) => {
+      const balance = Number(acc.current_balance) || 0;
+      return sum + (isNaN(balance) || !isFinite(balance) ? 0 : balance);
+    }, 0);
   
-  // Deudas totales (solo para referencia, no se incluyen en el balance)
   const totalDebts = accounts
     .filter(acc => acc.is_active === true && acc.account_type === 'liability')
-    .reduce((sum, acc) => sum + acc.current_balance, 0);
+    .reduce((sum, acc) => {
+      const balance = Number(acc.current_balance) || 0;
+      return sum + (isNaN(balance) || !isFinite(balance) ? 0 : balance);
+    }, 0);
 
   const handleSaveAccount = async (accountData: CreateAccountData, accountId?: number) => {
     if (accountId) {
@@ -96,22 +117,41 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
   const handleDeleteAccount = async (id: number) => {
     try {
       const validation = await accountService.validateDeletion(id);
-      
-      if (!validation.can_delete && validation.has_movements) {
-        const message = `Esta cuenta tiene ${validation.movement_count || 0} movimiento(s) asociado(s).\n\n¿Estás seguro de que deseas eliminar esta cuenta? Esta acción no se puede deshacer.`;
-        if (!window.confirm(message)) {
-          return;
-        }
-      } else {
-        if (!window.confirm('¿Estás seguro de que deseas eliminar esta cuenta?')) {
-          return;
-        }
-      }
+      const message = !validation.can_delete && validation.has_movements
+        ? `Esta cuenta tiene ${validation.movement_count || 0} movimiento(s) asociado(s).\n\n¿Estás seguro de que deseas eliminar esta cuenta? Esta acción no se puede deshacer.`
+        : '¿Estás seguro de que deseas eliminar esta cuenta? Esta acción no se puede deshacer.';
 
-      await accountService.deleteAccount(id);
-      await loadAccounts();
+      setConfirmModal({
+        isOpen: true,
+        title: 'Confirmar eliminación',
+        message,
+        type: 'danger',
+        onConfirm: async () => {
+          setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+          try {
+            await accountService.deleteAccount(id);
+            await loadAccounts();
+          } catch (error) {
+            setConfirmModal({
+              isOpen: true,
+              title: 'Error',
+              message: error instanceof Error ? error.message : 'Error al eliminar la cuenta',
+              type: 'danger',
+              onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+              cancelText: undefined,
+            });
+          }
+        },
+      });
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Error al eliminar la cuenta');
+      setConfirmModal({
+        isOpen: true,
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'Error al validar la eliminación',
+        type: 'danger',
+        onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+        cancelText: undefined,
+      });
     }
   };
 
@@ -120,7 +160,14 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
       await accountService.toggleActive(id);
       await loadAccounts();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Error al cambiar el estado de la cuenta');
+      setConfirmModal({
+        isOpen: true,
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'Error al cambiar el estado de la cuenta',
+        type: 'danger',
+        onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+        cancelText: undefined,
+      });
     }
   };
 
@@ -143,7 +190,6 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
     const creditLimit = creditDetails?.credit_limit ?? selectedCard.credit_limit ?? 0;
     const currentBalance = selectedCard.current_balance ?? 0;
     
-    // Calcular disponible de forma segura
     let available = 0;
     if (creditDetails?.available_credit !== undefined && creditDetails.available_credit !== null) {
       available = creditDetails.available_credit;
@@ -274,27 +320,21 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                 return cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
               };
 
-              // Usar datos del backend si están disponibles, sino calcular localmente
               const creditDetails = account.credit_card_details;
               const creditLimit = creditDetails?.credit_limit ?? account.credit_limit ?? 0;
               const currentBalance = account.current_balance ?? 0;
               
-              // Calcular valores de forma segura
               const usedCredit = creditDetails?.used_credit ?? Math.abs(currentBalance);
               const currentDebt = creditDetails?.current_debt ?? currentBalance;
               const totalPaid = creditDetails?.total_paid ?? 0;
               
-              // Calcular disponible de forma segura
               let available = 0;
               if (creditDetails?.available_credit !== undefined && creditDetails.available_credit !== null) {
                 available = creditDetails.available_credit;
               } else if (creditLimit > 0) {
-                // Para tarjetas de crédito: disponible = límite - deuda actual
-                // current_balance es negativo para pasivos, así que lo sumamos
                 available = Math.max(0, creditLimit + currentBalance);
               }
               
-              // Asegurar que available sea un número válido
               available = isNaN(available) || !isFinite(available) ? 0 : available;
               
               const usagePercentage = creditDetails?.utilization_percentage ?? 
@@ -319,7 +359,14 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                            <CreditCard className="w-5 h-5" />
                          </div>
                          <div>
-                           <h3 className="font-bold text-base">{account.name}</h3>
+                           <div className="flex items-center gap-2">
+                             <h3 className="font-bold text-base">{account.name}</h3>
+                             {account.currency && (
+                               <span className="inline-block px-1.5 py-0.5 bg-white/20 text-white rounded text-xs font-semibold">
+                                 {account.currency_display || account.currency}
+                               </span>
+                             )}
+                           </div>
                            {account.bank_name ? (
                              <p className="text-xs text-white/80">{account.bank_name}</p>
                            ) : (
@@ -510,9 +557,15 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                              const fullAccount = await accountService.getAccountById(account.id!);
                              setEditingAccount(fullAccount);
                              setShowNewAccountModal(true);
-                           } catch (error) {
-                             console.error('Error al cargar detalles de la cuenta:', error);
-                             alert('Error al cargar los detalles de la cuenta');
+                           } catch {
+                             setConfirmModal({
+                               isOpen: true,
+                               title: 'Error',
+                               message: 'Error al cargar los detalles de la cuenta',
+                               type: 'danger',
+                               onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+                               cancelText: undefined,
+                             });
                            }
                          }}
                          className="px-2.5 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-colors"
@@ -552,7 +605,14 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                         {getAccountIcon(account.category)}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-sm text-gray-900">{account.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-sm text-gray-900">{account.name}</h3>
+                          {account.currency && (
+                            <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-semibold">
+                              {account.currency_display || account.currency}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-gray-500">
                           {getAccountTypeLabel(account.category)} • {account.account_type === 'asset' ? 'Activo' : 'Pasivo'}
                           {account.is_active !== true && (
@@ -595,10 +655,10 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                   <div className="mb-3">
                     <p className="text-xs text-gray-600 mb-0.5">Balance</p>
                     <p className={`text-xl font-bold ${
-                      account.current_balance >= 0 ? 'text-green-600' : 'text-red-600'
+                      (account.current_balance ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'
                     }`}>
                       {isBalanceVisible 
-                        ? formatCurrency(account.current_balance, account.currency)
+                        ? formatCurrency(Number(account.current_balance) || 0, account.currency)
                         : '••••••'
                       }
                     </p>
@@ -649,9 +709,15 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                           const fullAccount = await accountService.getAccountById(account.id!);
                           setEditingAccount(fullAccount);
                           setShowNewAccountModal(true);
-                        } catch (error) {
-                          console.error('Error al cargar detalles de la cuenta:', error);
-                          alert('Error al cargar los detalles de la cuenta');
+                        } catch {
+                          setConfirmModal({
+                            isOpen: true,
+                            title: 'Error',
+                            message: 'Error al cargar los detalles de la cuenta',
+                            type: 'danger',
+                            onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+                            cancelText: undefined,
+                          });
                         }
                       }}
                       className="flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-xs transition-colors"
@@ -685,6 +751,16 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
         />
       )}
 
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText="Aceptar"
+        cancelText={confirmModal.cancelText}
+        type={confirmModal.type || 'warning'}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 };

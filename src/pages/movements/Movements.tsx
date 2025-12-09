@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Download, Plus, Edit2, Trash2, Copy, FileText, ArrowLeft, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Search, Download, Plus, Edit2, Trash2, Copy, FileText, ArrowLeft, TrendingUp, TrendingDown, DollarSign, Calendar, X } from 'lucide-react';
 import MovementDetailModal from '../../components/MovementDetailModal';
 import NewMovementModal from '../../components/NewMovementModal';
+import ConfirmModal from '../../components/ConfirmModal';
 import { transactionService, Transaction } from '../../services/transactionService';
 import { accountService, Account } from '../../services/accountService';
+import { useBudgets } from '../../context/BudgetContext';
+import { useCategories } from '../../context/CategoryContext';
 import './movements.css';
 
 interface Movement {
@@ -15,15 +18,15 @@ interface Movement {
   origin_account_name?: string;
   destination_account: number | null;
   destination_account_name?: string;
-  type: 1 | 2 | 3 | 4; // 1=Income, 2=Expense, 3=Transfer, 4=Saving
+  type: 1 | 2 | 3 | 4;
   type_display?: string;
   base_amount: number;
   tax_percentage: number | null;
   total_amount: number;
-  capital_amount?: number | null; // Capital pagado (reduce deuda en tarjetas de crédito)
-  interest_amount?: number | null; // Intereses pagados (no reduce deuda)
-  gmf_amount?: number | null; // GMF calculado
-  taxed_amount?: number | null; // IVA calculado
+  capital_amount?: number | null;
+  interest_amount?: number | null;
+  gmf_amount?: number | null;
+  taxed_amount?: number | null;
 }
 
 interface MovementsProps {
@@ -33,6 +36,8 @@ interface MovementsProps {
 }
 
 const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }) => {
+  const { refreshBudgets } = useBudgets();
+  const { categories } = useCategories();
   const [selectedMovement, setSelectedMovement] = useState<Movement | null>(null);
   const [showNewMovementModal, setShowNewMovementModal] = useState(false);
   const [movementToEdit, setMovementToEdit] = useState<Transaction | null>(null);
@@ -42,7 +47,28 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<1 | 2 | 3 | 4 | 'all'>('all');
+  const [filterCategory, setFilterCategory] = useState<number | ''>('');
+  const [filterAccount, setFilterAccount] = useState<number | ''>('');
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 10;
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
   
   const [summary, setSummary] = useState({
     income: 0,
@@ -51,48 +77,84 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   });
 
   useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterType]);
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
-  const loadData = async () => {
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedIds([]);
+  }, [filterType, filterCategory, filterAccount, filterStartDate, filterEndDate, debouncedSearchTerm]);
+
+  const loadData = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
       
-      // Intentar primero con ordering, si falla intentar sin ordering
-      let transactionsData: Transaction[] = [];
+      const filters: {
+        ordering: string;
+        page: number;
+        page_size: number;
+        type?: 1 | 2 | 3 | 4;
+        search?: string;
+        category?: number;
+        origin_account?: number;
+        start_date?: string;
+        end_date?: string;
+      } = {
+        ordering: '-date',
+        page: currentPage,
+        page_size: pageSize,
+      };
+
+      if (filterType !== 'all') {
+        filters.type = filterType as 1 | 2 | 3 | 4;
+      }
+      if (debouncedSearchTerm.trim()) {
+        filters.search = debouncedSearchTerm.trim();
+      }
+      if (filterCategory) {
+        filters.category = filterCategory;
+      }
+      if (filterAccount) {
+        filters.origin_account = filterAccount;
+      }
+      if (filterStartDate) {
+        filters.start_date = filterStartDate;
+      }
+      if (filterEndDate) {
+        filters.end_date = filterEndDate;
+      }
+      
+      let paginatedResponse;
       try {
-        transactionsData = await transactionService.list({ 
-          ordering: '-date',
-          ...(filterType !== 'all' && { type: filterType as 1 | 2 | 3 | 4 })
-        });
-      } catch (orderingError) {
-        // Si falla con ordering, intentar sin ordering
-        console.warn('Error al ordenar transacciones, intentando sin ordenamiento:', orderingError);
-        transactionsData = await transactionService.list({ 
-          ...(filterType !== 'all' && { type: filterType as 1 | 2 | 3 | 4 })
-        });
-        // Ordenar manualmente por fecha (más reciente primero)
-        if (Array.isArray(transactionsData)) {
-          transactionsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        paginatedResponse = await transactionService.listPaginated(filters);
+      } catch {
+        paginatedResponse = await transactionService.listPaginated(filters);
+        if (Array.isArray(paginatedResponse.results)) {
+          paginatedResponse.results.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         }
       }
       
-      // Asegurarse de que transactionsData es un array
-      if (!Array.isArray(transactionsData)) {
-        console.warn('transactionsData no es un array:', transactionsData);
-        transactionsData = [];
+      if (!Array.isArray(paginatedResponse.results)) {
+        paginatedResponse.results = [];
       }
+      
+      const transactionsData = paginatedResponse.results;
+      
+      const total = paginatedResponse.count || 0;
+      const pages = Math.ceil(total / pageSize);
+      setTotalPages(pages);
+      setTotalCount(total);
       
       const accountsData = await accountService.getAllAccounts();
       
       setMovements(transactionsData);
-      // Filtrar solo cuentas activas para mostrar
       const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
       setAccounts(activeAccounts);
       
-      // Calcular resumen
       const income = transactionsData
         .filter(t => t && t.type === 1 && typeof t.total_amount === 'number')
         .reduce((sum, t) => sum + t.total_amount, 0);
@@ -108,32 +170,158 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar movimientos';
       setError(errorMessage);
-      console.error('Error al cargar datos:', err);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, filterType, filterCategory, filterAccount, filterStartDate, filterEndDate, debouncedSearchTerm, pageSize]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este movimiento?')) {
-      return;
-    }
-    
+    setConfirmModal({
+      isOpen: true,
+      title: 'Confirmar eliminación',
+      message: '¿Estás seguro de que deseas eliminar este movimiento? Esta acción no se puede deshacer.',
+      onConfirm: async () => {
+        setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+        await performDelete(id);
+      },
+    });
+  };
+
+  const performDelete = async (id: number) => {
     try {
       await transactionService.delete(id);
-      await loadData();
-      // Recargar cuentas para actualizar saldos después de eliminar
+      
+      window.dispatchEvent(new Event('transactionDeleted'));
+      
+      if (movements.length === 1 && currentPage > 1) {
+        setCurrentPage(prev => prev - 1);
+      } else {
+        await loadData();
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       try {
         const accountsData = await accountService.getAllAccounts();
         const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
         setAccounts(activeAccounts);
-      } catch (err) {
-        console.error('Error al recargar cuentas:', err);
+      } catch {
+        // Intentionally empty
       }
+      try {
+        await refreshBudgets({ active_only: true, period: 'monthly' });
+      } catch {
+        // Intentionally empty
+      }
+      
+      setTimeout(async () => {
+        try {
+          await refreshBudgets({ active_only: true, period: 'monthly' });
+        } catch {
+          // Intentionally empty
+        }
+      }, 2000);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Error al eliminar el movimiento');
     }
   };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(movements.map(m => m.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectTransaction = (id: number, checked: boolean) => {
+    if (checked) {
+      setSelectedIds([...selectedIds, id]);
+    } else {
+      setSelectedIds(selectedIds.filter(selectedId => selectedId !== id));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+
+    setConfirmModal({
+      isOpen: true,
+      title: 'Confirmar eliminación múltiple',
+      message: `¿Estás seguro de que deseas eliminar ${selectedIds.length} movimiento(s)? Esta acción no se puede deshacer.`,
+      onConfirm: async () => {
+        setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+        await performBulkDelete();
+      },
+    });
+  };
+
+  const performBulkDelete = async () => {
+    try {
+      const result = await transactionService.bulkDelete(selectedIds);
+      
+      window.dispatchEvent(new Event('transactionDeleted'));
+      
+      setSelectedIds([]);
+      
+      if (movements.length <= selectedIds.length && currentPage > 1) {
+        setCurrentPage(prev => prev - 1);
+      } else {
+        await loadData();
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      try {
+        const accountsData = await accountService.getAllAccounts();
+        const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
+        setAccounts(activeAccounts);
+      } catch {
+        // Intentionally empty
+      }
+      try {
+        await refreshBudgets({ active_only: true, period: 'monthly' });
+      } catch {
+        // Intentionally empty
+      }
+      
+      setTimeout(async () => {
+        try {
+          await refreshBudgets({ active_only: true, period: 'monthly' });
+        } catch {
+          // Intentionally empty
+        }
+      }, 2000);
+
+      if (result.errors && result.errors.length > 0) {
+        alert(`Se eliminaron ${result.deleted_count} movimiento(s), pero hubo ${result.errors.length} error(es).`);
+      } else {
+        alert(`Se eliminaron ${result.deleted_count} movimiento(s) exitosamente.`);
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error al eliminar los movimientos');
+    }
+  };
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setDebouncedSearchTerm('');
+    setFilterType('all');
+    setFilterCategory('');
+    setFilterAccount('');
+    setFilterStartDate('');
+    setFilterEndDate('');
+    setSelectedIds([]);
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = searchTerm || filterType !== 'all' || filterCategory || filterAccount || filterStartDate || filterEndDate;
 
   const handleDuplicate = (transaction: Transaction) => {
     setMovementToDuplicate(transaction);
@@ -152,16 +340,30 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   };
 
   const handleModalSuccess = async () => {
-    // Recargar movimientos y cuentas para actualizar saldos
     await loadData();
-    // También recargar cuentas explícitamente para asegurar que los saldos estén actualizados
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     try {
       const accountsData = await accountService.getAllAccounts();
       const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
       setAccounts(activeAccounts);
-    } catch (err) {
-      console.error('Error al recargar cuentas:', err);
+    } catch {
+      // Intentionally empty
     }
+    try {
+      await refreshBudgets({ active_only: true, period: 'monthly' });
+    } catch {
+      // Intentionally empty
+    }
+    
+    setTimeout(async () => {
+      try {
+        await refreshBudgets({ active_only: true, period: 'monthly' });
+      } catch {
+        // Intentionally empty
+      }
+    }, 2000);
   };
 
   const getAccountName = (accountId: number | null): string => {
@@ -190,17 +392,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
     }
   };
 
-  const filteredMovements = Array.isArray(movements) ? movements.filter(mov => {
-    if (!mov) return false;
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      const note = mov.note?.toLowerCase() || '';
-      const tag = mov.tag?.toLowerCase() || '';
-      const accountName = getAccountName(mov.origin_account).toLowerCase();
-      return note.includes(searchLower) || tag.includes(searchLower) || accountName.includes(searchLower);
-    }
-    return true;
-  }) : [];
+  const filteredMovements = movements;
 
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('es-CO', {
@@ -220,41 +412,120 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
         <span className="font-medium">Volver al Dashboard</span>
       </button>
 
-      <div className="flex flex-wrap gap-4 items-center justify-between">
-        <div className="flex-1 max-w-md relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Buscar por nota, etiqueta o cuenta..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-4">
+        <div className="flex flex-wrap gap-4 items-center justify-between">
+          <div className="flex-1 max-w-md relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Buscar (tag, descripción, nota, categoría)..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div className="flex gap-2">
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <Download className="w-4 h-4" />
+              Exportar
+            </button>
+            <button 
+              onClick={() => setShowNewMovementModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Nuevo movimiento
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as 1 | 2 | 3 | 4 | 'all')}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="all">Todos</option>
+            <option value="all">Todos los tipos</option>
             <option value={1}>Ingresos</option>
             <option value={2}>Gastos</option>
             <option value={3}>Transferencias</option>
             <option value={4}>Ahorros</option>
           </select>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <Download className="w-4 h-4" />
-            Exportar
-          </button>
-          <button 
-            onClick={() => setShowNewMovementModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value ? Number(e.target.value) : '')}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <Plus className="w-4 h-4" />
-            Nuevo movimiento
-          </button>
+            <option value="">Todas las categorías</option>
+            {categories.filter(cat => cat.is_active !== false).map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+
+          <select
+            value={filterAccount}
+            onChange={(e) => setFilterAccount(e.target.value ? Number(e.target.value) : '')}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">Todas las cuentas</option>
+            {accounts.map(acc => (
+              <option key={acc.id} value={acc.id}>{acc.name}</option>
+            ))}
+          </select>
+
+          <div className="relative">
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="date"
+              value={filterStartDate}
+              onChange={(e) => setFilterStartDate(e.target.value)}
+              placeholder="Fecha desde"
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div className="relative">
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="date"
+              value={filterEndDate}
+              onChange={(e) => setFilterEndDate(e.target.value)}
+              placeholder="Fecha hasta"
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
         </div>
+
+        {hasActiveFilters && (
+          <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+            <span className="text-sm text-gray-600">
+              {totalCount} movimiento(s) encontrado(s)
+            </span>
+            <button
+              onClick={clearFilters}
+              className="flex items-center gap-2 px-3 py-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X className="w-4 h-4" />
+              Limpiar filtros
+            </button>
+          </div>
+        )}
+
+        {selectedIds.length > 0 && (
+          <div className="flex items-center justify-between pt-2 border-t border-gray-200 bg-blue-50 p-3 rounded-lg">
+            <span className="text-sm font-medium text-blue-900">
+              {selectedIds.length} movimiento(s) seleccionado(s)
+            </span>
+            <button
+              onClick={handleBulkDelete}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+            >
+              <Trash2 className="w-4 h-4" />
+              Eliminar seleccionados
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -316,29 +587,38 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
       </div>
 
       <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <table className="w-full">
+        <div className="overflow-x-auto movements-table-container">
+          <table className="w-full min-w-[1000px]">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nota</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoría</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cuenta</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-12 sticky left-0 bg-gray-50 z-10 border-r border-gray-200">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.length === filteredMovements.length && filteredMovements.length > 0}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Fecha</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase min-w-[150px]">Nota</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Categoría</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase min-w-[150px]">Cuenta</th>
               {showTaxes && (
                 <>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Base</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">IVA</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">GMF</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Base</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">IVA</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">GMF</th>
                 </>
               )}
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Estado</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Total</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Estado</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap sticky right-0 bg-gray-50 z-10 border-l border-gray-200">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {isLoading ? (
               <tr>
-                <td colSpan={showTaxes ? 10 : 7} className="px-6 py-12">
+                <td colSpan={showTaxes ? 11 : 8} className="px-4 py-12">
                   <div className="text-center">
                     <p className="text-gray-600">Cargando movimientos...</p>
                   </div>
@@ -346,7 +626,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={showTaxes ? 10 : 7} className="px-6 py-12">
+                <td colSpan={showTaxes ? 11 : 8} className="px-4 py-12">
                   <div className="text-center">
                     <p className="text-red-600">{error}</p>
                     <button
@@ -360,16 +640,16 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
               </tr>
             ) : filteredMovements.length === 0 ? (
               <tr>
-                <td colSpan={showTaxes ? 10 : 7} className="px-6 py-12">
+                <td colSpan={showTaxes ? 11 : 8} className="px-4 py-12">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
                       <FileText className="w-8 h-8 text-white" />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      {searchTerm || filterType !== 'all' ? 'No se encontraron movimientos' : '¡Comencemos a registrar tus movimientos!'}
+                      {hasActiveFilters ? 'No se encontraron movimientos' : '¡Comencemos a registrar tus movimientos!'}
                     </h3>
                     <p className="text-gray-600 mb-4">
-                      {searchTerm || filterType !== 'all' ? 'Intenta con otros filtros de búsqueda' : 'No hay movimientos registrados aún'}
+                      {hasActiveFilters ? 'Intenta con otros filtros de búsqueda' : 'No hay movimientos registrados aún'}
                     </p>
                     {!searchTerm && filterType === 'all' && (
                     <button
@@ -386,10 +666,19 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
             ) : (
               filteredMovements.map((mov) => (
               <tr key={mov.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-4 py-4 text-center sticky left-0 bg-white z-10 border-r border-gray-200 hover:bg-gray-50">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(mov.id)}
+                    onChange={(e) => handleSelectTransaction(mov.id, e.target.checked)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                </td>
+                <td className="px-4 py-4 text-sm text-gray-600 whitespace-nowrap">
                   {new Date(mov.date).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-4">
                   <div className="text-sm font-medium text-gray-900">
                     {mov.note || getTypeLabel(mov.type)}
                     </div>
@@ -399,7 +688,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-4 whitespace-nowrap">
                   {mov.category_name ? (
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                       {mov.category_name}
@@ -410,7 +699,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-4 py-4 text-sm text-gray-600">
                   {mov.type === 3 ? (
                     <span>{getAccountName(mov.origin_account)} → {getAccountName(mov.destination_account)}</span>
                   ) : (
@@ -419,40 +708,30 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
                 </td>
                 {showTaxes && (
                   <>
-                    <td className="px-6 py-4 text-sm text-gray-600 text-right">
+                    <td className="px-4 py-4 text-sm text-gray-600 text-right whitespace-nowrap">
                       {formatCurrency(mov.base_amount)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-amber-600 text-right">
+                    <td className="px-4 py-4 text-sm text-amber-600 text-right whitespace-nowrap">
                       {mov.tax_percentage && mov.tax_percentage > 0 
                         ? formatCurrency(mov.taxed_amount ?? (mov.total_amount - mov.base_amount - (mov.gmf_amount || 0)))
                         : '-'
                       }
                     </td>
-                    <td className="px-6 py-4 text-sm text-blue-600 text-right">
+                    <td className="px-4 py-4 text-sm text-blue-600 text-right whitespace-nowrap">
                       {mov.gmf_amount && mov.gmf_amount > 0 ? formatCurrency(mov.gmf_amount) : '-'}
                     </td>
                   </>
                 )}
-                <td className={`px-6 py-4 text-sm font-semibold text-right ${getTypeColor(mov.type)}`}>
+                <td className={`px-4 py-4 text-sm font-semibold text-right whitespace-nowrap ${getTypeColor(mov.type)}`}>
                   {mov.type === 1 ? '+' : mov.type === 2 ? '-' : ''}{formatCurrency(mov.total_amount)}
                 </td>
-                <td className="px-6 py-4 text-center">
+                <td className="px-4 py-4 text-center whitespace-nowrap">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                     Confirmado
                   </span>
                 </td>
-                <td className="px-6 py-4 text-right">
+                <td className="px-4 py-4 text-right sticky right-0 bg-white z-10 border-l border-gray-200 hover:bg-gray-50">
                   <div className="flex items-center justify-end gap-2">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedMovement(mov);
-                      }}
-                      className="p-2 hover:bg-blue-50 rounded transition-colors border border-gray-200 hover:border-blue-300"
-                      title="Ver detalle"
-                    >
-                      <FileText className="w-4 h-4 text-blue-600" />
-                    </button>
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
@@ -490,6 +769,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       <div className="md:hidden space-y-3">
@@ -532,25 +812,36 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
           filteredMovements.map((mov) => (
           <div 
             key={mov.id} 
-            className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => setSelectedMovement(mov)}
+            className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
           >
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex-1">
-                <h4 className="font-medium text-gray-900">{mov.note || getTypeLabel(mov.type)}</h4>
-                <p className="text-sm text-gray-600">{new Date(mov.date).toLocaleDateString('es-CO')}</p>
-                {mov.tag && (
-                  <span className="inline-flex items-center gap-1 mt-1 text-xs text-blue-600">
-                    {mov.tag}
-                  </span>
-                )}
+            <div className="flex items-start gap-3 mb-2">
+              <input
+                type="checkbox"
+                checked={selectedIds.includes(mov.id)}
+                onChange={(e) => handleSelectTransaction(mov.id, e.target.checked)}
+                className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+              />
+              <div 
+                className="flex-1 cursor-pointer"
+                onClick={() => setSelectedMovement(mov)}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900">{mov.note || getTypeLabel(mov.type)}</h4>
+                    <p className="text-sm text-gray-600">{new Date(mov.date).toLocaleDateString('es-CO')}</p>
+                    {mov.tag && (
+                      <span className="inline-flex items-center gap-1 mt-1 text-xs text-blue-600">
+                        {mov.tag}
+                      </span>
+                    )}
+                  </div>
+                  <p className={`text-lg font-semibold ${getTypeColor(mov.type)}`}>
+                    {mov.type === 1 ? '+' : mov.type === 2 ? '-' : ''}{formatCurrency(mov.total_amount)}
+                  </p>
+                </div>
               </div>
-              <p className={`text-lg font-semibold ${getTypeColor(mov.type)}`}>
-                {mov.type === 1 ? '+' : mov.type === 2 ? '-' : ''}{formatCurrency(mov.total_amount)}
-              </p>
             </div>
             
-            {/* Desglose de pago a tarjeta de crédito */}
             {mov.type === 3 && mov.destination_account && (mov.capital_amount || mov.interest_amount) && (
               <div className="text-xs mb-2 space-y-1">
                 {mov.capital_amount && mov.capital_amount > 0 && (
@@ -629,13 +920,71 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
         )}
       </div>
 
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">
-          Mostrando <span className="font-medium">{filteredMovements.length}</span> de <span className="font-medium">{movements.length}</span> movimientos
-        </p>
-        <div className="flex gap-2">
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-gray-200">
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-gray-600">
+              Mostrando <span className="font-medium">
+                {movements.length > 0 ? ((currentPage - 1) * pageSize + 1) : 0}
+              </span> - <span className="font-medium">
+                {Math.min(currentPage * pageSize, totalCount)}
+              </span> de <span className="font-medium">{totalCount}</span> movimientos
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1 || isLoading}
+              className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors text-sm font-medium"
+            >
+              Anterior
+            </button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    disabled={isLoading}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage === pageNum
+                        ? 'bg-blue-600 text-white'
+                        : 'border border-gray-300 hover:bg-gray-50'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages || isLoading}
+              className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors text-sm font-medium"
+            >
+              Siguiente
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+      
+      {totalPages <= 1 && totalCount > 0 && (
+        <div className="flex items-center justify-center">
+          <p className="text-sm text-gray-600">
+            Mostrando <span className="font-medium">{totalCount}</span> movimiento{totalCount !== 1 ? 's' : ''}
+          </p>
+        </div>
+      )}
 
       {selectedMovement && (
         <MovementDetailModal 
@@ -665,6 +1014,17 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
           transactionToDuplicate={movementToDuplicate || undefined}
         />
       )}
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.title === 'Error' ? 'Aceptar' : 'Eliminar'}
+        cancelText={confirmModal.title === 'Error' ? undefined : 'Cancelar'}
+        type={confirmModal.title === 'Error' ? 'danger' : 'warning'}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: () => {} })}
+      />
     </div>
   );
 };

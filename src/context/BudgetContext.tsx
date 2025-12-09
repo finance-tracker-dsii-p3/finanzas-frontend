@@ -8,6 +8,7 @@ import {
   Period,
   MonthlySummaryResponse,
   CategoriesWithoutBudgetResponse,
+  BudgetByCategoryResponse,
 } from '../services/budgetService';
 import { useAuth } from './AuthContext';
 
@@ -23,6 +24,7 @@ interface BudgetContextValue {
   getBudgetDetail: (id: number) => Promise<BudgetDetail>;
   getMonthlySummary: () => Promise<MonthlySummaryResponse>;
   getCategoriesWithoutBudget: (period?: Period) => Promise<CategoriesWithoutBudgetResponse>;
+  getBudgetByCategory: (categoryId: number, activeOnly?: boolean) => Promise<BudgetByCategoryResponse>;
 }
 
 const BudgetContext = createContext<BudgetContextValue | undefined>(undefined);
@@ -45,7 +47,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       try {
         const response = await budgetService.list(filters);
-        setBudgets(response.results);
+        setBudgets([...response.results]);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'No se pudieron cargar los presupuestos';
         setError(message);
@@ -62,6 +64,26 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } else {
       setBudgets([]);
     }
+  }, [isAuthenticated, loadBudgets]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const handleTransactionUpdate = () => {
+      setTimeout(() => {
+        loadBudgets({ active_only: true, period: 'monthly' });
+      }, 500);
+    };
+
+    window.addEventListener('transactionCreated', handleTransactionUpdate);
+    window.addEventListener('transactionUpdated', handleTransactionUpdate);
+    window.addEventListener('transactionDeleted', handleTransactionUpdate);
+
+    return () => {
+      window.removeEventListener('transactionCreated', handleTransactionUpdate);
+      window.removeEventListener('transactionUpdated', handleTransactionUpdate);
+      window.removeEventListener('transactionDeleted', handleTransactionUpdate);
+    };
   }, [isAuthenticated, loadBudgets]);
 
   const refreshBudgets = useCallback(
@@ -167,6 +189,20 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     [],
   );
 
+  const getBudgetByCategory = useCallback(
+    async (categoryId: number, activeOnly?: boolean): Promise<BudgetByCategoryResponse> => {
+      setError(null);
+      try {
+        return await budgetService.getByCategory(categoryId, activeOnly);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'No se pudo obtener el presupuesto de la categoría';
+        setError(message);
+        throw err;
+      }
+    },
+    [],
+  );
+
   return (
     <BudgetContext.Provider
       value={{
@@ -181,6 +217,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         getBudgetDetail,
         getMonthlySummary,
         getCategoriesWithoutBudget,
+        getBudgetByCategory,
       }}
     >
       {children}

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   ArrowLeft,
   Plus,
@@ -34,6 +34,9 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
     getBudgetDetail,
   } = useBudgets();
 
+  useEffect(() => {
+  }, [budgets]);
+
   const [budgetToEdit, setBudgetToEdit] = useState<BudgetListItem | null>(null);
   const [budgetToDelete, setBudgetToDelete] = useState<BudgetListItem | null>(null);
   const [budgetDetail, setBudgetDetail] = useState<BudgetDetail | null>(null);
@@ -42,6 +45,39 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isToggling, setIsToggling] = useState<number | null>(null);
   const [activeOnly, setActiveOnly] = useState(true);
+
+  useEffect(() => {
+    refreshBudgets({ active_only: activeOnly, period: 'monthly' });
+  }, [activeOnly, refreshBudgets]);
+
+  useEffect(() => {
+    const handleTransactionUpdate = async () => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      try {
+        await refreshBudgets({ active_only: activeOnly, period: 'monthly' });
+      } catch {
+        // Intentionally empty
+      }
+    };
+
+    window.addEventListener('transactionCreated', handleTransactionUpdate);
+    window.addEventListener('transactionUpdated', handleTransactionUpdate);
+    window.addEventListener('transactionDeleted', handleTransactionUpdate);
+
+    return () => {
+      window.removeEventListener('transactionCreated', handleTransactionUpdate);
+      window.removeEventListener('transactionUpdated', handleTransactionUpdate);
+      window.removeEventListener('transactionDeleted', handleTransactionUpdate);
+    };
+  }, [activeOnly, refreshBudgets]);
+
+  const handleManualRefresh = useCallback(async () => {
+    try {
+      await refreshBudgets({ active_only: activeOnly, period: 'monthly' });
+    } catch {
+      // Intentionally empty
+    }
+  }, [activeOnly, refreshBudgets]);
 
   const formatCurrency = (amount: string | number): string => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -88,8 +124,8 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
         const detail = await getBudgetDetail(budget.id);
         setBudgetDetail(detail);
         setShowDetailModal(true);
-      } catch (err) {
-        console.error('Error al obtener detalle:', err);
+      } catch {
+        // Intentionally empty
       }
     },
     [getBudgetDetail],
@@ -107,8 +143,8 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
     try {
       await deleteBudget(budgetToDelete.id);
       setBudgetToDelete(null);
-    } catch (err) {
-      console.error('Error al eliminar:', err);
+    } catch {
+      // Intentionally empty
     } finally {
       setIsDeleting(false);
     }
@@ -119,8 +155,8 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
       setIsToggling(budget.id);
       try {
         await toggleBudget(budget.id);
-      } catch (err) {
-        console.error('Error al cambiar estado:', err);
+      } catch {
+        // Intentionally empty
       } finally {
         setIsToggling(null);
       }
@@ -186,7 +222,7 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => refreshBudgets({ active_only: activeOnly, period: 'monthly' })}
+                onClick={handleManualRefresh}
                 className="inline-flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 <RefreshCcw className="w-4 h-4" />
@@ -359,7 +395,9 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Límite</p>
-                      <p className="text-sm font-semibold text-gray-900">{formatCurrency(budget.amount)}</p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {formatCurrency(budget.amount)} {('currency' in budget && typeof budget.currency === 'string') ? budget.currency : 'COP'}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Gastado</p>

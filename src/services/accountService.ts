@@ -17,6 +17,7 @@ export interface Account {
   account_type: 'asset' | 'liability';
   category: 'bank_account' | 'savings_account' | 'credit_card' | 'wallet' | 'other';
   currency: 'COP' | 'USD' | 'EUR';
+  currency_display?: string; // Nombre de visualización de la moneda
   current_balance: number;
   description?: string;
   is_active?: boolean;
@@ -67,18 +68,14 @@ const getAuthHeaders = () => {
 };
 
 const parseError = async (response: Response, defaultMessage: string = 'Error en la operación'): Promise<Error> => {
-  // Manejar errores del servidor (500, 502, 503, etc.)
   if (response.status >= 500) {
     let errorText = await response.text();
     
-    // Si es HTML (página de error de Django), extraer el mensaje de error
     if (errorText.includes('<!DOCTYPE html>') || errorText.includes('<html')) {
-      // Intentar extraer el mensaje del pre.exception_value
       const exceptionMatch = errorText.match(/<pre class="exception_value">([^<]+)<\/pre>/);
       if (exceptionMatch) {
         errorText = exceptionMatch[1].trim();
       } else {
-        // Intentar extraer del título
         const titleMatch = errorText.match(/<title>([^<]+)<\/title>/);
         if (titleMatch) {
           errorText = titleMatch[1].trim();
@@ -87,12 +84,10 @@ const parseError = async (response: Response, defaultMessage: string = 'Error en
         }
       }
     } else {
-      // Intentar parsear como JSON si es posible
       try {
         const errorJson = JSON.parse(errorText);
         errorText = errorJson.detail || errorJson.message || errorJson.error || errorText;
       } catch {
-        // Si no es JSON, usar el texto directamente (pero limitar la longitud)
         if (errorText.length > 500) {
           errorText = errorText.substring(0, 500) + '...';
         }
@@ -102,23 +97,19 @@ const parseError = async (response: Response, defaultMessage: string = 'Error en
     return new Error(`Error del servidor (${response.status}): ${errorText}. Por favor, intenta nuevamente más tarde o contacta al administrador.`);
   }
 
-  // Manejar errores de autenticación
   if (response.status === 401) {
     checkAndHandleAuthError(response);
     return new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
   }
 
-  // Manejar errores de permisos
   if (response.status === 403) {
     return new Error('No tienes permisos para realizar esta operación.');
   }
 
-  // Manejar errores de recurso no encontrado
   if (response.status === 404) {
     return new Error('El recurso solicitado no fue encontrado.');
   }
 
-  // Manejar otros errores del cliente (400, 422, etc.)
   const fallback = { message: defaultMessage };
   let error;
   try {
@@ -129,7 +120,6 @@ const parseError = async (response: Response, defaultMessage: string = 'Error en
 
   const errorMessages: string[] = [];
 
-  // Primero, mostrar el mensaje general si existe
   if (error.message && !errorMessages.includes(error.message)) {
     errorMessages.push(error.message);
   }
@@ -137,7 +127,6 @@ const parseError = async (response: Response, defaultMessage: string = 'Error en
     errorMessages.push(error.detail);
   }
 
-  // Agregar errores de campos específicos
   const fields = ['name', 'account_type', 'category', 'currency', 'current_balance', 'credit_limit', 'bank_name', 'account_number'];
 
   for (const field of fields) {
@@ -162,7 +151,6 @@ const parseError = async (response: Response, defaultMessage: string = 'Error en
     errorMessages.push(...nonFieldErrors);
   }
 
-  // Si no se encontraron mensajes específicos, usar el mensaje de fallback
   if (errorMessages.length === 0) {
     errorMessages.push(defaultMessage);
   }
@@ -194,7 +182,6 @@ export const accountService = {
 
       const data = await response.json();
       
-      // Manejar respuestas paginadas
       if (data.results && Array.isArray(data.results)) {
         return data.results;
       }
