@@ -1,5 +1,6 @@
 import React from 'react';
 import { XCircle, Edit2, Trash2, CreditCard, Receipt, Sparkles } from 'lucide-react';
+import { formatMoney, Currency } from '../utils/currencyUtils';
 import './MovementDetailModal.css';
 
 interface Movement {
@@ -39,13 +40,9 @@ interface MovementDetailModalProps {
 const MovementDetailModal: React.FC<MovementDetailModalProps> = ({ movement, onClose, onEdit, onDelete }) => {
   if (!movement) return null;
 
-  const formatCurrency = (amount: number | undefined): string => {
-    if (amount === undefined) return '$0';
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0
-    }).format(Math.abs(amount));
+  const formatCurrency = (amount: number | undefined, currency: Currency = 'COP'): string => {
+    if (amount === undefined) return formatMoney(0, currency);
+    return formatMoney(Math.abs(amount), currency);
   };
 
   return (

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Bell, X, Check, CheckCheck, Trash2, AlertTriangle, AlertCircle, Loader2, Eye } from 'lucide-react';
 import { useAlerts } from '../context/AlertContext';
 import { useBudgets } from '../context/BudgetContext';
+import { formatMoney, Currency } from '../utils/currencyUtils';
 import './AlertCenter.css';
 
 interface AlertCenterProps {
@@ -33,14 +34,10 @@ const AlertCenter: React.FC<AlertCenterProps> = ({ onViewBudget }) => {
     };
   }, [isOpen, refreshAlerts]);
 
-  const formatCurrency = (amount: string | number): string => {
+  const formatCurrency = (amount: string | number, currency: Currency = 'COP'): string => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(Math.abs(numAmount));
+    if (isNaN(numAmount)) return formatMoney(0, currency);
+    return formatMoney(Math.abs(numAmount), currency);
   };
 
   const formatDate = (dateString: string): string => {

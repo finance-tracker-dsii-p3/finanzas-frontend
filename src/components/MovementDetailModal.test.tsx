@@ -243,14 +243,24 @@ describe('MovementDetailModal', () => {
   });
 
   it('debe formatear correctamente los montos en pesos colombianos', () => {
+    const movementWithLargeAmount = {
+      ...mockMovement,
+      total_amount: 10000000, // 100,000 pesos en centavos
+      base_amount: 10000000,
+    };
+    
     render(
       <MovementDetailModal 
-        movement={mockMovement} 
+        movement={movementWithLargeAmount} 
         onClose={mockOnClose} 
       />
     );
     
-    expect(screen.getByText(/\$.*100.*000/i)).toBeInTheDocument();
+    // Verificar que el monto se formatea correctamente (puede aparecer múltiples veces en diferentes secciones)
+    const amounts = screen.getAllByText(/\$.*100.*000/i);
+    expect(amounts.length).toBeGreaterThan(0);
+    // Verificar que al menos uno de los montos es el esperado
+    expect(amounts.some(el => el.textContent?.includes('100.000'))).toBe(true);
   });
 });
 

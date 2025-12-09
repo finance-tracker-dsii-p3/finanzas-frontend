@@ -1,17 +1,30 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DollarSign, Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, CreditCard, AlertCircle, User, LogOut } from 'lucide-react';
+import { DollarSign, Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, CreditCard, AlertCircle, User, LogOut, Clock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useBudgets } from '../../context/BudgetContext';
 import { MonthlySummaryResponse } from '../../services/budgetService';
-import Movements from '../movements/Movements';
-import Budgets from '../budgets/Budgets';
-import Reports from '../reports/Reports';
-import Accounts from '../accounts/Accounts';
-import CategoriesPage from '../categories/Categories';
-import Goals from '../goals/Goals';
-import Rules from '../rules/Rules';
-import Analytics from '../analytics/Analytics';
+import { creditCardPlanService, UpcomingPayment, MonthlySummary } from '../../services/creditCardPlanService';
+import { formatMoneyFromPesos, formatMoney, Currency } from '../../utils/currencyUtils';
+import { lazy, Suspense } from 'react';
+
+const Movements = lazy(() => import('../movements/Movements'));
+const Budgets = lazy(() => import('../budgets/Budgets'));
+const Reports = lazy(() => import('../reports/Reports'));
+const Accounts = lazy(() => import('../accounts/Accounts'));
+const CategoriesPage = lazy(() => import('../categories/Categories'));
+const Goals = lazy(() => import('../goals/Goals'));
+const Rules = lazy(() => import('../rules/Rules'));
+const Analytics = lazy(() => import('../analytics/Analytics'));
+
+const ViewLoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-[400px]">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+      <p className="text-gray-600 text-sm">Cargando...</p>
+    </div>
+  </div>
+);
 import AlertCenter from '../../components/AlertCenter';
 import './dashboard.css';
 
@@ -235,21 +248,51 @@ const Dashboard: React.FC = () => {
             setCurrentView={setCurrentView}
           />
         )}
-        {currentView === 'movements' && <Movements showTaxes={showTaxes} setShowTaxes={setShowTaxes} onBack={() => setCurrentView('dashboard')} />}
-        {currentView === 'budgets' && (
-          <Budgets
-            onBack={() => setCurrentView('dashboard')}
-            onViewMovements={() => {
-              setCurrentView('movements');
-            }}
-          />
+        {currentView === 'movements' && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <Movements showTaxes={showTaxes} setShowTaxes={setShowTaxes} onBack={() => setCurrentView('dashboard')} />
+          </Suspense>
         )}
-        {currentView === 'reports' && <Reports showTaxes={showTaxes} setShowTaxes={setShowTaxes} onBack={() => setCurrentView('dashboard')} />}
-        {currentView === 'accounts' && <Accounts key="accounts" onBack={() => setCurrentView('dashboard')} />}
-        {currentView === 'categories' && <CategoriesPage onBack={() => setCurrentView('dashboard')} />}
-        {currentView === 'goals' && <Goals onBack={() => setCurrentView('dashboard')} />}
-        {currentView === 'rules' && <Rules onBack={() => setCurrentView('dashboard')} />}
-        {currentView === 'analytics' && <Analytics onBack={() => setCurrentView('dashboard')} />}
+        {currentView === 'budgets' && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <Budgets
+              onBack={() => setCurrentView('dashboard')}
+              onViewMovements={() => {
+                setCurrentView('movements');
+              }}
+            />
+          </Suspense>
+        )}
+        {currentView === 'reports' && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <Reports showTaxes={showTaxes} setShowTaxes={setShowTaxes} onBack={() => setCurrentView('dashboard')} />
+          </Suspense>
+        )}
+        {currentView === 'accounts' && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <Accounts key="accounts" onBack={() => setCurrentView('dashboard')} />
+          </Suspense>
+        )}
+        {currentView === 'categories' && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <CategoriesPage onBack={() => setCurrentView('dashboard')} />
+          </Suspense>
+        )}
+        {currentView === 'goals' && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <Goals onBack={() => setCurrentView('dashboard')} />
+          </Suspense>
+        )}
+        {currentView === 'rules' && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <Rules onBack={() => setCurrentView('dashboard')} />
+          </Suspense>
+        )}
+        {currentView === 'analytics' && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <Analytics onBack={() => setCurrentView('dashboard')} />
+          </Suspense>
+        )}
       </main>
     </div>
   );
@@ -282,6 +325,9 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 }) => {
   const { getMonthlySummary } = useBudgets();
   const [budgetSummary, setBudgetSummary] = React.useState<MonthlySummaryResponse | null>(null);
+  const [upcomingPayments, setUpcomingPayments] = React.useState<UpcomingPayment[]>([]);
+  const [monthlySummary, setMonthlySummary] = React.useState<MonthlySummary | null>(null);
+  const [isLoadingCreditCards, setIsLoadingCreditCards] = React.useState(false);
 
   React.useEffect(() => {
     const loadBudgetSummary = async () => {
@@ -289,19 +335,49 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         const summary = await getMonthlySummary();
         setBudgetSummary(summary);
       } catch {
-        // Intentionally empty
+        void 0;
       }
     };
     loadBudgetSummary();
   }, [getMonthlySummary]);
 
-  const formatCurrency = (amount: number | string): string => {
+  React.useEffect(() => {
+    const loadCreditCardData = async () => {
+      try {
+        setIsLoadingCreditCards(true);
+        const [payments, summary] = await Promise.all([
+          creditCardPlanService.getUpcomingPayments(30),
+          creditCardPlanService.getMonthlySummary()
+        ]);
+        setUpcomingPayments(payments);
+        setMonthlySummary(summary);
+      } catch (error) {
+        console.error('Error al cargar datos de tarjetas:', error);
+      } finally {
+        setIsLoadingCreditCards(false);
+      }
+    };
+    loadCreditCardData();
+    
+    const handleUpdate = () => {
+      loadCreditCardData();
+    };
+    
+    window.addEventListener('installmentPlanCreated', handleUpdate);
+    window.addEventListener('installmentPlanUpdated', handleUpdate);
+    window.addEventListener('installmentPaymentRecorded', handleUpdate);
+    
+    return () => {
+      window.removeEventListener('installmentPlanCreated', handleUpdate);
+      window.removeEventListener('installmentPlanUpdated', handleUpdate);
+      window.removeEventListener('installmentPaymentRecorded', handleUpdate);
+    };
+  }, []);
+
+  const formatCurrency = (amount: number | string, currency: Currency = 'COP'): string => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0
-    }).format(Math.abs(numAmount));
+    if (isNaN(numAmount)) return formatMoney(0, currency);
+    return formatMoney(Math.abs(numAmount), currency);
   };
 
   const formatPercentage = (value: string | number): string => {
@@ -592,6 +668,133 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <p className="text-xl font-bold text-red-900">{formatCurrency(monthData.creditCardInterests)}</p>
           </div>
+        </div>
+      )}
+
+      {/* Sección de Tarjetas de Crédito */}
+      {(upcomingPayments.length > 0 || monthlySummary) && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-purple-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Tarjetas de Crédito</h3>
+            </div>
+            <button
+              onClick={() => setCurrentView('accounts')}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+            >
+              Ver todas
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {monthlySummary && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="w-5 h-5 text-purple-600" />
+                  <p className="text-sm font-medium text-purple-900">Cuotas del mes</p>
+                </div>
+                <p className="text-2xl font-bold text-purple-900">
+                  {formatMoneyFromPesos(monthlySummary.total_amount / 100, 'COP')}
+                </p>
+                <p className="text-xs text-purple-700 mt-1">
+                  {monthlySummary.total_installments} cuota{monthlySummary.total_installments !== 1 ? 's' : ''}
+                </p>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="w-5 h-5 text-green-600" />
+                  <p className="text-sm font-medium text-green-900">Pagadas</p>
+                </div>
+                <p className="text-2xl font-bold text-green-900">{monthlySummary.paid_installments}</p>
+                <p className="text-xs text-green-700 mt-1">de {monthlySummary.total_installments} cuotas</p>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="w-5 h-5 text-amber-600" />
+                  <p className="text-sm font-medium text-amber-900">Pendientes</p>
+                </div>
+                <p className="text-2xl font-bold text-amber-900">{monthlySummary.pending_installments}</p>
+                <p className="text-xs text-amber-700 mt-1">cuotas por pagar</p>
+              </div>
+            </div>
+          )}
+
+          {upcomingPayments.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">Próximos pagos (30 días)</h4>
+              <div className="space-y-2">
+                {upcomingPayments.slice(0, 5).map((payment) => {
+                  const dueDate = new Date(payment.due_date);
+                  const isOverdue = dueDate < new Date() && payment.status === 'pending';
+                  
+                  return (
+                    <div
+                      key={`${payment.plan_id}-${payment.installment_number}`}
+                      className={`flex items-center justify-between p-3 rounded-lg border ${
+                        isOverdue
+                          ? 'bg-red-50 border-red-200'
+                          : 'bg-gray-50 border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          isOverdue ? 'bg-red-500' : 'bg-purple-500'
+                        }`}>
+                          <CreditCard className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">{payment.credit_card}</p>
+                          <p className="text-xs text-gray-600">
+                            Cuota {payment.installment_number} - {dueDate.toLocaleDateString('es-CO', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-sm font-bold ${isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
+                          {formatMoneyFromPesos(payment.installment_amount / 100, 'COP')}
+                        </p>
+                        {isOverdue && (
+                          <p className="text-xs text-red-600">Vencida</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {upcomingPayments.length > 5 && (
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={() => setCurrentView('accounts')}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    Ver {upcomingPayments.length - 5} pago{upcomingPayments.length - 5 !== 1 ? 's' : ''} más
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {upcomingPayments.length === 0 && !isLoadingCreditCards && (
+            <div className="text-center py-8 text-gray-500">
+              <CreditCard className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+              <p className="text-sm">No hay pagos próximos en los próximos 30 días</p>
+            </div>
+          )}
+
+          {isLoadingCreditCards && (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <p className="text-sm text-gray-600 mt-2">Cargando información de tarjetas...</p>
+            </div>
+          )}
         </div>
       )}
 

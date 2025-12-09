@@ -324,7 +324,7 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ onBack }) => {
       try {
         await refreshCategories({ active_only: false });
       } catch {
-        // Intentionally empty - si falla el refresh, el estado local ya está actualizado
+        void 0;
       }
       
       setShowFormModal(false);

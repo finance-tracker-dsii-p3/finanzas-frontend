@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Download, Plus, Edit2, Trash2, Copy, FileText, ArrowLeft, TrendingUp, TrendingDown, DollarSign, Calendar, X } from 'lucide-react';
+import { Search, Download, Plus, Edit2, Trash2, Copy, FileText, ArrowLeft, TrendingUp, TrendingDown, DollarSign, Calendar, X, CreditCard } from 'lucide-react';
 import MovementDetailModal from '../../components/MovementDetailModal';
 import NewMovementModal from '../../components/NewMovementModal';
+import CreateInstallmentPlanModal from '../../components/CreateInstallmentPlanModal';
 import ConfirmModal from '../../components/ConfirmModal';
 import { transactionService, Transaction } from '../../services/transactionService';
 import { accountService, Account } from '../../services/accountService';
 import { useBudgets } from '../../context/BudgetContext';
 import { useCategories } from '../../context/CategoryContext';
+import { formatMoney, Currency } from '../../utils/currencyUtils';
 import './movements.css';
 
 interface Movement {
@@ -42,6 +44,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   const [showNewMovementModal, setShowNewMovementModal] = useState(false);
   const [movementToEdit, setMovementToEdit] = useState<Transaction | null>(null);
   const [movementToDuplicate, setMovementToDuplicate] = useState<Transaction | null>(null);
+  const [transactionForPlan, setTransactionForPlan] = useState<Transaction | null>(null);
   const [movements, setMovements] = useState<Transaction[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -157,10 +160,10 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
       
       const income = transactionsData
         .filter(t => t && t.type === 1 && typeof t.total_amount === 'number')
-        .reduce((sum, t) => sum + t.total_amount, 0);
+        .reduce((sum, t) => sum + (t.total_amount / 100), 0);
       const expenses = transactionsData
         .filter(t => t && t.type === 2 && typeof t.total_amount === 'number')
-        .reduce((sum, t) => sum + t.total_amount, 0);
+        .reduce((sum, t) => sum + (t.total_amount / 100), 0);
       
       setSummary({
         income,
@@ -210,12 +213,12 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
         const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
         setAccounts(activeAccounts);
       } catch {
-        // Intentionally empty
+        void 0;
       }
       try {
         await refreshBudgets({ active_only: true, period: 'monthly' });
       } catch {
-        // Intentionally empty
+        void 0;
       }
       
       setTimeout(async () => {
@@ -283,12 +286,12 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
         const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
         setAccounts(activeAccounts);
       } catch {
-        // Intentionally empty
+        void 0;
       }
       try {
         await refreshBudgets({ active_only: true, period: 'monthly' });
       } catch {
-        // Intentionally empty
+        void 0;
       }
       
       setTimeout(async () => {
@@ -361,7 +364,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
       try {
         await refreshBudgets({ active_only: true, period: 'monthly' });
       } catch {
-        // Intentionally empty
+        void 0;
       }
     }, 2000);
   };
@@ -370,6 +373,18 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
     if (!accountId) return '';
     const account = accounts.find(a => a.id === accountId);
     return account?.name || `Cuenta ${accountId}`;
+  };
+
+  const getAccountCurrency = (accountId: number | null): Currency => {
+    if (!accountId) return 'COP';
+    const account = accounts.find(a => a.id === accountId);
+    return (account?.currency as Currency) || 'COP';
+  };
+
+  const isCreditCardAccount = (accountId: number | null): boolean => {
+    if (!accountId) return false;
+    const account = accounts.find(a => a.id === accountId);
+    return account?.category === 'credit_card' || false;
   };
 
   const getTypeLabel = (type: number): string => {
@@ -394,12 +409,8 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
 
   const filteredMovements = movements;
 
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0
-    }).format(Math.abs(amount));
+  const formatCurrency = (amount: number, currency: Currency = 'COP'): string => {
+    return formatMoney(Math.abs(amount), currency);
   };
 
   return (
@@ -547,7 +558,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
             <p className="text-xs font-medium text-gray-600">Mayor Gasto</p>
           </div>
           <p className="text-xl font-bold text-red-600">
-            {summary.expenses > 0 ? formatCurrency(summary.expenses) : 'Sin gastos'}
+            {summary.expenses > 0 ? formatCurrency(Math.round(summary.expenses * 100), 'COP') : 'Sin gastos'}
           </p>
           {summary.expenses > 0 && (
             <p className="text-xs text-gray-500 mt-1">Este mes</p>
@@ -560,7 +571,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
             <p className="text-xs font-medium text-gray-600">Mayor Ingreso</p>
           </div>
           <p className="text-xl font-bold text-green-600">
-            {summary.income > 0 ? formatCurrency(summary.income) : 'Sin ingresos'}
+            {summary.income > 0 ? formatCurrency(Math.round(summary.income * 100), 'COP') : 'Sin ingresos'}
           </p>
           {summary.income > 0 && (
             <p className="text-xs text-gray-500 mt-1">Este mes</p>
@@ -572,7 +583,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
             <DollarSign className="w-4 h-4 text-purple-600" />
             <p className="text-xs font-medium text-gray-600">Total Gastado</p>
           </div>
-          <p className="text-xl font-bold text-purple-600">{formatCurrency(summary.expenses)}</p>
+          <p className="text-xl font-bold text-purple-600">{formatCurrency(Math.round(summary.expenses * 100), 'COP')}</p>
           <p className="text-xs text-gray-500 mt-1">Período actual</p>
         </div>
 
@@ -581,7 +592,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
             <TrendingUp className="w-4 h-4 text-blue-600" />
             <p className="text-xs font-medium text-gray-600">Total Recibido</p>
           </div>
-          <p className="text-xl font-bold text-blue-600">{formatCurrency(summary.income)}</p>
+          <p className="text-xl font-bold text-blue-600">{formatCurrency(Math.round(summary.income * 100), 'COP')}</p>
           <p className="text-xs text-gray-500 mt-1">Período actual</p>
         </div>
       </div>
@@ -709,21 +720,21 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
                 {showTaxes && (
                   <>
                     <td className="px-4 py-4 text-sm text-gray-600 text-right whitespace-nowrap">
-                      {formatCurrency(mov.base_amount)}
+                      {formatCurrency(mov.base_amount, getAccountCurrency(mov.origin_account))}
                     </td>
                     <td className="px-4 py-4 text-sm text-amber-600 text-right whitespace-nowrap">
                       {mov.tax_percentage && mov.tax_percentage > 0 
-                        ? formatCurrency(mov.taxed_amount ?? (mov.total_amount - mov.base_amount - (mov.gmf_amount || 0)))
+                        ? formatCurrency(mov.taxed_amount ?? (mov.total_amount - mov.base_amount - (mov.gmf_amount || 0)), getAccountCurrency(mov.origin_account))
                         : '-'
                       }
                     </td>
                     <td className="px-4 py-4 text-sm text-blue-600 text-right whitespace-nowrap">
-                      {mov.gmf_amount && mov.gmf_amount > 0 ? formatCurrency(mov.gmf_amount) : '-'}
+                      {mov.gmf_amount && mov.gmf_amount > 0 ? formatCurrency(mov.gmf_amount, getAccountCurrency(mov.origin_account)) : '-'}
                     </td>
                   </>
                 )}
                 <td className={`px-4 py-4 text-sm font-semibold text-right whitespace-nowrap ${getTypeColor(mov.type)}`}>
-                  {mov.type === 1 ? '+' : mov.type === 2 ? '-' : ''}{formatCurrency(mov.total_amount)}
+                  {mov.type === 1 ? '+' : mov.type === 2 ? '-' : ''}{formatCurrency(mov.total_amount, getAccountCurrency(mov.origin_account))}
                 </td>
                 <td className="px-4 py-4 text-center whitespace-nowrap">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -732,6 +743,18 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
                 </td>
                 <td className="px-4 py-4 text-right sticky right-0 bg-white z-10 border-l border-gray-200 hover:bg-gray-50">
                   <div className="flex items-center justify-end gap-2">
+                    {mov.type === 2 && isCreditCardAccount(mov.origin_account) && (
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTransactionForPlan(mov);
+                        }}
+                        className="p-2 hover:bg-blue-50 rounded transition-colors border border-gray-200 hover:border-blue-300"
+                        title="Crear plan de cuotas"
+                      >
+                        <CreditCard className="w-4 h-4 text-blue-600" />
+                      </button>
+                    )}
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
@@ -836,7 +859,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
                     )}
                   </div>
                   <p className={`text-lg font-semibold ${getTypeColor(mov.type)}`}>
-                    {mov.type === 1 ? '+' : mov.type === 2 ? '-' : ''}{formatCurrency(mov.total_amount)}
+                    {mov.type === 1 ? '+' : mov.type === 2 ? '-' : ''}{formatCurrency(mov.total_amount, getAccountCurrency(mov.origin_account))}
                   </p>
                 </div>
               </div>
@@ -845,22 +868,22 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
             {mov.type === 3 && mov.destination_account && (mov.capital_amount || mov.interest_amount) && (
               <div className="text-xs mb-2 space-y-1">
                 {mov.capital_amount && mov.capital_amount > 0 && (
-                  <div className="text-green-600">Capital: {formatCurrency(mov.capital_amount)}</div>
+                  <div className="text-green-600">Capital: {formatCurrency(mov.capital_amount, getAccountCurrency(mov.origin_account))}</div>
                 )}
                 {mov.interest_amount && mov.interest_amount > 0 && (
-                  <div className="text-amber-600">Intereses: {formatCurrency(mov.interest_amount)}</div>
+                  <div className="text-amber-600">Intereses: {formatCurrency(mov.interest_amount, getAccountCurrency(mov.origin_account))}</div>
                 )}
               </div>
             )}
             
             {showTaxes && ((mov.tax_percentage && mov.tax_percentage > 0) || mov.gmf_amount) && (
               <div className="text-xs text-gray-600 mb-2 space-y-1">
-                <div>Base: {formatCurrency(mov.base_amount)}</div>
+                <div>Base: {formatCurrency(mov.base_amount, getAccountCurrency(mov.origin_account))}</div>
                 {mov.tax_percentage && mov.tax_percentage > 0 && (
-                  <div>IVA: {formatCurrency(mov.taxed_amount ?? (mov.total_amount - mov.base_amount - (mov.gmf_amount || 0)))}</div>
+                  <div>IVA: {formatCurrency(mov.taxed_amount ?? (mov.total_amount - mov.base_amount - (mov.gmf_amount || 0)), getAccountCurrency(mov.origin_account))}</div>
                 )}
                 {mov.gmf_amount && mov.gmf_amount > 0 && (
-                  <div className="text-blue-600">GMF: {formatCurrency(mov.gmf_amount)}</div>
+                  <div className="text-blue-600">GMF: {formatCurrency(mov.gmf_amount, getAccountCurrency(mov.origin_account))}</div>
                 )}
               </div>
             )}
@@ -884,6 +907,18 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
             </div>
             
             <div className="flex gap-2">
+              {mov.type === 2 && isCreditCardAccount(mov.origin_account) && (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTransactionForPlan(mov);
+                  }}
+                  className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  title="Crear plan de cuotas"
+                >
+                  <CreditCard className="w-4 h-4" />
+                </button>
+              )}
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
@@ -1012,6 +1047,17 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
           onSuccess={handleModalSuccess}
           transactionToEdit={movementToEdit || undefined}
           transactionToDuplicate={movementToDuplicate || undefined}
+        />
+      )}
+
+      {transactionForPlan && (
+        <CreateInstallmentPlanModal
+          purchaseTransaction={transactionForPlan}
+          onClose={() => setTransactionForPlan(null)}
+          onSuccess={() => {
+            setTransactionForPlan(null);
+            loadData();
+          }}
         />
       )}
 

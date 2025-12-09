@@ -16,6 +16,7 @@ import {
 import { useBudgets } from '../../context/BudgetContext';
 import { BudgetListItem, BudgetDetail } from '../../services/budgetService';
 import NewBudgetModal from '../../components/NewBudgetModal';
+import { formatMoney, Currency } from '../../utils/currencyUtils';
 import './budgets.css';
 
 interface BudgetsProps {
@@ -56,7 +57,7 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
       try {
         await refreshBudgets({ active_only: activeOnly, period: 'monthly' });
       } catch {
-        // Intentionally empty
+        void 0;
       }
     };
 
@@ -79,14 +80,10 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
     }
   }, [activeOnly, refreshBudgets]);
 
-  const formatCurrency = (amount: string | number): string => {
+  const formatCurrency = (amount: string | number, currency: Currency = 'COP'): string => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(Math.abs(numAmount));
+    if (isNaN(numAmount)) return formatMoney(0, currency);
+    return formatMoney(Math.abs(numAmount), currency);
   };
 
   const formatPercentage = (value: string | number): string => {
@@ -125,7 +122,7 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
         setBudgetDetail(detail);
         setShowDetailModal(true);
       } catch {
-        // Intentionally empty
+        void 0;
       }
     },
     [getBudgetDetail],
@@ -156,7 +153,7 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
       try {
         await toggleBudget(budget.id);
       } catch {
-        // Intentionally empty
+        void 0;
       } finally {
         setIsToggling(null);
       }
@@ -396,16 +393,16 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Límite</p>
                       <p className="text-sm font-semibold text-gray-900">
-                        {formatCurrency(budget.amount)} {('currency' in budget && typeof budget.currency === 'string') ? budget.currency : 'COP'}
+                        {formatCurrency(budget.amount, (budget.currency as Currency) || 'COP')}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Gastado</p>
-                      <p className="text-sm font-semibold text-red-600">{formatCurrency(budget.spent_amount)}</p>
+                      <p className="text-sm font-semibold text-red-600">{formatCurrency(budget.spent_amount, (budget.currency as Currency) || 'COP')}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Restante</p>
-                      <p className="text-sm font-semibold text-green-600">{formatCurrency(budget.remaining_amount)}</p>
+                      <p className="text-sm font-semibold text-green-600">{formatCurrency(budget.remaining_amount, (budget.currency as Currency) || 'COP')}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Estado</p>

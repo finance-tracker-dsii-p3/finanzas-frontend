@@ -206,7 +206,15 @@ const NewGoalModal: React.FC<NewGoalModalProps> = ({ onClose, onSuccess, goalToE
                   step="0.01"
                   min="0.01"
                   value={formData.target_amount}
-                  onChange={(e) => setFormData({ ...formData, target_amount: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                      const numValue = parseFloat(value);
+                      if (value === '' || (!isNaN(numValue) && numValue >= 0.01)) {
+                        setFormData({ ...formData, target_amount: value });
+                      }
+                    }
+                  }}
                   placeholder="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
