@@ -1,0 +1,687 @@
+﻿
+> finanzas-frontend@1.0.0 test
+> vitest --run --coverage --reporter=verbose
+
+
+ RUN  v2.1.9 C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend
+      Coverage enabled with v8
+
+stdout | src/services/transactionService.test.ts > transactionService > create > debe crear una transacci├│n de gasto
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 119000,
+  category: 1,
+  tax_percentage: 19,
+  tag: 'almuerzo',
+  note: 'Almuerzo con amigos'
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create > debe crear una transferencia
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 3,
+  date: '2025-01-15',
+  total_amount: 50000,
+  destination_account: 2,
+  note: 'Transferencia'
+}
+[DEBUG] total_amount tipo: number valor: 50000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create > debe crear un pago a tarjeta de cr├®dito con capital e intereses
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 3,
+  date: '2025-01-15',
+  total_amount: 450000,
+  destination_account: 3,
+  note: 'Pago tarjeta'
+}
+[DEBUG] total_amount tipo: number valor: 450000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create > debe redondear montos a enteros
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 119000
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > duplicate > debe duplicar una transacci├│n
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-12-10',
+  total_amount: 119000,
+  tax_percentage: 19,
+  tag: 'almuerzo',
+  note: 'Almuerzo con amigos (duplicado)'
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > parseError > debe parsear errores de campos espec├¡ficos
+[DEBUG] Enviando al backend: { origin_account: 1, type: 2, date: '2025-01-15', total_amount: 1000 }
+[DEBUG] total_amount tipo: number valor: 1000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+ Ô£ô src/services/transactionService.test.ts > transactionService > list > debe obtener todas las transacciones
+ Ô£ô src/services/transactionService.test.ts > transactionService > list > debe filtrar transacciones por tipo
+ Ô£ô src/services/transactionService.test.ts > transactionService > list > debe filtrar transacciones por cuenta origen
+ Ô£ô src/services/transactionService.test.ts > transactionService > list > debe ordenar transacciones por fecha descendente
+ Ô£ô src/services/transactionService.test.ts > transactionService > list > debe manejar respuestas paginadas
+ Ô£ô src/services/transactionService.test.ts > transactionService > list > debe manejar errores del servidor
+ Ô£ô src/services/transactionService.test.ts > transactionService > list > debe manejar errores de conexi├│n
+ Ô£ô src/services/transactionService.test.ts > transactionService > get > debe obtener una transacci├│n por ID
+ Ô£ô src/services/transactionService.test.ts > transactionService > get > debe manejar error 404
+ Ô£ô src/services/transactionService.test.ts > transactionService > create > debe crear una transacci├│n de gasto
+ Ô£ô src/services/transactionService.test.ts > transactionService > create > debe crear una transferencia
+ Ô£ô src/services/transactionService.test.ts > transactionService > create > debe crear un pago a tarjeta de cr├®dito con capital e intereses
+ Ô£ô src/services/transactionService.test.ts > transactionService > create > debe redondear montos a enteros
+ Ô£ô src/services/transactionService.test.ts > transactionService > create > debe manejar errores de validaci├│n
+ Ô£ô src/services/transactionService.test.ts > transactionService > update > debe actualizar una transacci├│n
+ Ô£ô src/services/transactionService.test.ts > transactionService > update > debe redondear montos al actualizar
+ Ô£ô src/services/transactionService.test.ts > transactionService > delete > debe eliminar una transacci├│n
+ Ô£ô src/services/transactionService.test.ts > transactionService > delete > debe manejar error al eliminar
+ Ô£ô src/services/transactionService.test.ts > transactionService > duplicate > debe duplicar una transacci├│n
+ Ô£ô src/services/transactionService.test.ts > transactionService > duplicate > debe manejar error al duplicar
+ Ô£ô src/services/transactionService.test.ts > transactionService > parseError > debe parsear errores de campos espec├¡ficos
+ Ô£ô src/services/transactionService.test.ts > transactionService > parseError > debe parsear errores del servidor (500)
+ Ô£ô src/services/transactionService.test.ts > transactionService > parseError > debe manejar errores de autenticaci├│n (401)
+ Ô£ô src/services/transactionService.test.ts > transactionService > parseError > debe manejar errores de permisos (403)
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe renderizar el modal de nuevo movimiento
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe mostrar el modal de edici├│n cuando se pasa una transacci├│n
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe mostrar el modal de duplicaci├│n cuando se pasa una transacci├│n a duplicar
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe renderizar la p├ígina de movimientos 482ms
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe cargar y mostrar las transacciones
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe permitir seleccionar el tipo de movimiento 384ms
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe mostrar el resumen de ingresos, gastos y balance
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe permitir escribir en el campo de monto 490ms
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe mostrar el bot├│n de nuevo movimiento 472ms
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe permitir escribir en el campo de nota 605ms
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe permitir escribir en el campo de etiqueta 407ms
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe abrir el modal de nuevo movimiento al hacer clic 795ms
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe mostrar selector de cuenta origen
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe mostrar selector de cuenta destino para transferencias
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe mostrar selector de categor├¡a para ingresos y gastos
+ Ô£ô src/services/categoryService.test.ts > categoryService > list > debe obtener todas las categor├¡as
+ Ô£ô src/services/categoryService.test.ts > categoryService > list > debe aplicar filtros cuando se proporcionan
+ Ô£ô src/services/categoryService.test.ts > categoryService > get > debe obtener una categor├¡a por ID
+ Ô£ô src/services/categoryService.test.ts > categoryService > create > debe crear una nueva categor├¡a
+ Ô£ô src/services/categoryService.test.ts > categoryService > update > debe actualizar una categor├¡a existente
+ Ô£ô src/services/categoryService.test.ts > categoryService > toggleActive > debe cambiar el estado activo de una categor├¡a
+ Ô£ô src/services/categoryService.test.ts > categoryService > delete > debe eliminar una categor├¡a
+ Ô£ô src/services/categoryService.test.ts > categoryService > deleteWithReassignment > debe eliminar una categor├¡a con reasignaci├│n
+ Ô£ô src/services/categoryService.test.ts > categoryService > validateDeletion > debe validar la eliminaci├│n de una categor├¡a
+ Ô£ô src/services/categoryService.test.ts > categoryService > getStats > debe obtener estad├¡sticas de categor├¡as
+ Ô£ô src/services/categoryService.test.ts > categoryService > createDefaults > debe crear categor├¡as por defecto
+ Ô£ô src/services/categoryService.test.ts > categoryService > bulkUpdateOrder > debe actualizar el orden de m├║ltiples categor├¡as
+ Ô£ô src/services/categoryService.test.ts > categoryService > error handling > debe lanzar error cuando la respuesta no es ok
+ Ô£ô src/services/categoryService.test.ts > categoryService > error handling > debe manejar errores sin mensaje espec├¡fico
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe filtrar movimientos por tipo 711ms
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe permitir crear una nueva categor├¡a
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe cerrar el modal al hacer clic en cancelar 363ms
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe validar que se seleccione una cuenta origen 370ms
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe buscar movimientos por t├®rmino de b├║squeda 1354ms
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe validar que el monto sea mayor a cero 738ms
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe mostrar el desglose fiscal cuando showTaxes es true
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe mostrar el desglose de capital e intereses para pagos a tarjetas
+stdout | src/components/NewMovementModal.test.tsx > NewMovementModal > debe crear un movimiento de gasto correctamente
+[DEBUG] Total sin GMF en pesos: 100000, Total en centavos: 10000000, GMF estimado: 400
+
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe eliminar un movimiento 973ms
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe duplicar un movimiento 752ms
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe mostrar mensaje cuando no hay movimientos
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe crear un movimiento de gasto correctamente 2223ms
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe mostrar modo de c├ílculo con IVA
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe mostrar error cuando falla la carga
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe manejar el fallback cuando ordering falla 315ms
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe mostrar el bot├│n de volver 441ms
+ Ô£ô src/components/NewMovementModal.test.tsx > NewMovementModal > debe calcular el total cuando se ingresa base e IVA 948ms
+ Ô£ô src/pages/register/Register.test.tsx > Register > debe renderizar el formulario de registro
+ Ô£ô src/pages/register/Register.test.tsx > Register > debe validar que todos los campos sean requeridos
+ Ô£ô src/pages/movements/Movements.test.tsx > Movements > debe mostrar el checkbox para mostrar desglose fiscal
+ Ô£ô src/pages/register/Register.test.tsx > Register > debe mostrar validaci├│n de contrase├▒a en tiempo real 1310ms
+ Ô£ô src/pages/register/Register.test.tsx > Register > debe validar que la contrase├▒a tenga may├║scula, min├║scula, n├║mero y car├ícter especial 784ms
+ Ô£ô src/pages/register/Register.test.tsx > Register > debe mostrar error si las contrase├▒as no coinciden 1119ms
+ Ô£ô src/services/accountService.test.ts > accountService > getAllAccounts > debe obtener todas las cuentas
+ Ô£ô src/services/accountService.test.ts > accountService > getAllAccounts > debe lanzar error cuando la respuesta no es ok
+ Ô£ô src/services/accountService.test.ts > accountService > getAccountById > debe obtener una cuenta por ID
+ Ô£ô src/services/accountService.test.ts > accountService > getAccountById > debe lanzar error cuando la cuenta no existe
+ Ô£ô src/services/accountService.test.ts > accountService > createAccount > debe crear una nueva cuenta
+ Ô£ô src/services/accountService.test.ts > accountService > createAccount > debe lanzar error cuando falla la creaci├│n
+ Ô£ô src/services/accountService.test.ts > accountService > updateAccount > debe actualizar una cuenta existente
+ Ô£ô src/services/accountService.test.ts > accountService > deleteAccount > debe eliminar una cuenta
+ Ô£ô src/services/accountService.test.ts > accountService > validateDeletion > debe validar si se puede eliminar una cuenta
+ Ô£ô src/services/accountService.test.ts > accountService > toggleActive > debe activar/desactivar una cuenta
+ Ô£ô src/services/accountService.test.ts > accountService > getAccountOptions > debe obtener las opciones de cuentas
+ Ô£ô src/services/accountService.test.ts > accountService > getAccountOptions > debe lanzar error cuando el endpoint no est├í implementado
+ Ô£ô src/components/MovementDetailModal.test.tsx > MovementDetailModal > debe renderizar el modal con los datos del movimiento
+ Ô£ô src/components/MovementDetailModal.test.tsx > MovementDetailModal > no debe renderizar nada si movement es null
+ Ô£ô src/components/MovementDetailModal.test.tsx > MovementDetailModal > debe mostrar la informaci├│n b├ísica del movimiento
+ Ô£ô src/components/MovementDetailModal.test.tsx > MovementDetailModal > debe mostrar la cuenta destino para transferencias
+ Ô£ô src/components/MovementDetailModal.test.tsx > MovementDetailModal > debe mostrar el desglose fiscal cuando hay IVA
+ Ô£ô src/components/MovementDetailModal.test.tsx > MovementDetailModal > debe mostrar el GMF cuando est├í presente
+ Ô£ô src/components/MovementDetailModal.test.tsx > MovementDetailModal > debe mostrar el desglose de capital e intereses para pagos a tarjetas de cr├®dito
+ Ô£ô src/components/MovementDetailModal.test.tsx > MovementDetailModal > debe cerrar el modal al hacer clic fuera
+ Ô£ô src/components/MovementDetailModal.test.tsx > MovementDetailModal > debe cerrar el modal al hacer clic en el bot├│n de cerrar
+ Ô£ô src/components/MovementDetailModal.test.tsx > MovementDetailModal > debe llamar onEdit cuando se hace clic en editar
+ Ô£ô src/components/MovementDetailModal.test.tsx > MovementDetailModal > debe llamar onDelete cuando se hace clic en eliminar
+ Ô£ô src/components/MovementDetailModal.test.tsx > MovementDetailModal > no debe mostrar botones de acci├│n si no se proporcionan callbacks
+ Ô£ô src/components/MovementDetailModal.test.tsx > MovementDetailModal > debe formatear correctamente las fechas
+ Ô£ô src/components/MovementDetailModal.test.tsx > MovementDetailModal > debe formatear correctamente los montos en pesos colombianos
+ Ô£ô src/pages/register/Register.test.tsx > Register > debe registrar usuario exitosamente con datos v├ílidos 4031ms
+ Ô£ô src/pages/categories/Categories.test.tsx > CategoriesPage > debe renderizar el componente de categor├¡as
+ Ô£ô src/pages/categories/Categories.test.tsx > CategoriesPage > debe mostrar el bot├│n de volver al dashboard
+ Ô£ô src/pages/categories/Categories.test.tsx > CategoriesPage > debe llamar onBack cuando se hace clic en el bot├│n de volver 418ms
+ Ô£ô src/pages/categories/Categories.test.tsx > CategoriesPage > debe mostrar los contadores de categor├¡as
+ Ô£ô src/pages/categories/Categories.test.tsx > CategoriesPage > debe mostrar el bot├│n de nueva categor├¡a
+ Ô£ô src/pages/register/Register.test.tsx > Register > debe mostrar error si el registro falla 3597ms
+ Ô£ô src/pages/categories/Categories.test.tsx > CategoriesPage > debe abrir el modal al hacer clic en nueva categor├¡a 317ms
+ Ô£ô src/pages/categories/Categories.test.tsx > CategoriesPage > debe mostrar las categor├¡as en la lista
+ Ô£ô src/pages/categories/Categories.test.tsx > CategoriesPage > debe mostrar el bot├│n de crear base
+ Ô£ô src/pages/categories/Categories.test.tsx > CategoriesPage > debe mostrar el bot├│n de actualizar
+ Ô£ô src/pages/accounts/Accounts.test.tsx > Accounts > debe renderizar el componente de cuentas 339ms
+ Ô£ô src/pages/accounts/Accounts.test.tsx > Accounts > debe mostrar el bot├│n de volver
+ Ô£ô src/pages/categories/Categories.test.tsx > CategoriesPage > debe filtrar categor├¡as por tipo
+ Ô£ô src/pages/categories/Categories.test.tsx > CategoriesPage > debe mostrar estado de carga cuando isLoading es true
+ Ô£ô src/pages/categories/Categories.test.tsx > CategoriesPage > debe mostrar mensaje cuando no hay categor├¡as
+ Ô£ô src/pages/accounts/Accounts.test.tsx > Accounts > debe llamar a onBack cuando se hace clic en volver
+ Ô£ô src/pages/accounts/Accounts.test.tsx > Accounts > debe mostrar el bot├│n de nueva cuenta
+ Ô£ô src/pages/accounts/Accounts.test.tsx > Accounts > debe cargar y mostrar las cuentas
+ Ô£ô src/pages/accounts/Accounts.test.tsx > Accounts > debe mostrar el total de cuentas
+ Ô£ô src/pages/accounts/Accounts.test.tsx > Accounts > debe mostrar el balance total
+ Ô£ô src/pages/accounts/Accounts.test.tsx > Accounts > debe mostrar mensaje cuando no hay cuentas
+ Ô£ô src/pages/accounts/Accounts.test.tsx > Accounts > debe mostrar estado de carga inicialmente
+ Ô£ô src/pages/accounts/Accounts.test.tsx > Accounts > debe abrir el modal al hacer clic en nueva cuenta
+ Ô£ô src/pages/accounts/Accounts.test.tsx > Accounts > debe mostrar cuentas activas e inactivas
+ Ô£ô src/pages/register/Register.test.tsx > Register > debe mostrar estado de carga durante el registro 3455ms
+ Ô£ô src/pages/register/Register.test.tsx > Register > debe mostrar/ocultar contrase├▒as al hacer clic en los botones
+ Ô£ô src/pages/register/Register.test.tsx > Register > debe mostrar enlace a login
+ Ô£ô src/pages/login/Login.test.tsx > Login > debe renderizar el formulario de login 539ms
+ Ô£ô src/pages/login/Login.test.tsx > Login > debe mostrar campos requeridos
+ Ô£ô src/pages/login/Login.test.tsx > Login > debe permitir escribir en los campos 1024ms
+ Ô£ô src/pages/login/Login.test.tsx > Login > debe mostrar/ocultar la contrase├▒a al hacer clic en el bot├│n 320ms
+ Ô£ô src/components/NewAccountModal.test.tsx > NewAccountModal > debe renderizar el modal de nueva cuenta 508ms
+ Ô£ô src/components/NewAccountModal.test.tsx > NewAccountModal > debe mostrar el modal de edici├│n cuando se pasa una cuenta
+ Ô£ô src/pages/login/Login.test.tsx > Login > debe mostrar error cuando el login falla 1189ms
+ Ô£ô src/components/NewAccountModal.test.tsx > NewAccountModal > debe permitir escribir en el campo de nombre 764ms
+ Ô£ô src/utils/currencyUtils.test.ts > currencyUtils > formatMoney > debe formatear montos en centavos para COP
+ Ô£ô src/utils/currencyUtils.test.ts > currencyUtils > formatMoney > debe formatear montos en centavos para USD
+ Ô£ô src/utils/currencyUtils.test.ts > currencyUtils > formatMoney > debe formatear montos en centavos para EUR
+ Ô£ô src/utils/currencyUtils.test.ts > currencyUtils > formatMoney > debe manejar montos cero
+ Ô£ô src/utils/currencyUtils.test.ts > currencyUtils > formatMoneyFromPesos > debe formatear montos en pesos para COP
+ Ô£ô src/utils/currencyUtils.test.ts > currencyUtils > formatMoneyFromPesos > debe formatear montos en pesos para USD
+ Ô£ô src/utils/currencyUtils.test.ts > currencyUtils > formatMoneyFromPesos > debe formatear montos en pesos para EUR
+ Ô£ô src/utils/currencyUtils.test.ts > currencyUtils > formatMoneyFromPesos > debe manejar montos cero
+ Ô£ô src/utils/currencyUtils.test.ts > currencyUtils > pesosToCents > debe convertir pesos a centavos
+ Ô£ô src/utils/currencyUtils.test.ts > currencyUtils > centsToPesos > debe convertir centavos a pesos
+ Ô£ô src/utils/currencyUtils.test.ts > currencyUtils > getCurrencyDisplay > debe retornar el nombre completo de la moneda
+ Ô£ô src/utils/currencyUtils.test.ts > currencyUtils > getExchangeRate > debe hacer una petici├│n al API
+ Ô£ô src/utils/currencyUtils.test.ts > currencyUtils > convertCurrency > debe hacer una petici├│n al API
+ Ô£ô src/components/NewAccountModal.test.tsx > NewAccountModal > debe tener un bot├│n de submit para crear cuenta
+ Ô£ô src/components/NewAccountModal.test.tsx > NewAccountModal > debe mostrar campos espec├¡ficos para tarjetas de cr├®dito
+ Ô£ô src/components/NewAccountModal.test.tsx > NewAccountModal > debe cerrar el modal al hacer clic en cancelar
+ Ô£ô src/pages/login/Login.test.tsx > Login > debe llamar a login con las credenciales correctas 771ms
+ Ô£ô src/components/NewAccountModal.test.tsx > NewAccountModal > debe cerrar el modal al hacer clic en el bot├│n de cerrar
+ Ô£ô src/components/NewAccountModal.test.tsx > NewAccountModal > debe mostrar el campo de banco cuando se selecciona tipo banco 320ms
+ Ô£ô src/components/NewAccountModal.test.tsx > NewAccountModal > debe permitir seleccionar la moneda 469ms
+ Ô£ô src/pages/login/Login.test.tsx > Login > debe mostrar estado de carga durante el login 999ms
+ Ô£ô src/pages/login/Login.test.tsx > Login > debe mostrar enlace a registro
+ Ô£ô src/pages/login/Login.test.tsx > Login > debe mostrar enlace a recuperar contrase├▒a
+ Ô£ô src/services/authService.test.ts > authService.deleteAccount > debe eliminar la cuenta con la contrase├▒a correcta
+ Ô£ô src/services/authService.test.ts > authService.deleteAccount > debe lanzar error cuando la contrase├▒a es incorrecta
+ Ô£ô src/services/authService.test.ts > authService.deleteAccount > debe lanzar error cuando la contrase├▒a es un array
+ Ô£ô src/services/authService.test.ts > authService.deleteAccount > debe lanzar error cuando hay un error de detalle
+ Ô£ô src/services/authService.test.ts > authService.deleteAccount > debe lanzar error gen├®rico cuando no hay mensaje espec├¡fico
+ Ô£ô src/services/authService.test.ts > authService.deleteAccount > debe lanzar error por defecto cuando la respuesta no es v├ílida
+ Ô£ô src/services/authService.test.ts > authService.deleteAccount > debe manejar errores cuando la respuesta JSON no es v├ílida
+ Ô£ô src/services/baseCurrencyService.test.ts > baseCurrencyService > getBaseCurrency > debe obtener la moneda base del usuario
+ Ô£ô src/services/baseCurrencyService.test.ts > baseCurrencyService > getBaseCurrency > debe manejar errores de red
+ Ô£ô src/services/baseCurrencyService.test.ts > baseCurrencyService > getBaseCurrency > debe manejar errores del servidor
+ Ô£ô src/services/baseCurrencyService.test.ts > baseCurrencyService > setBaseCurrency > debe establecer la moneda base del usuario
+ Ô£ô src/services/baseCurrencyService.test.ts > baseCurrencyService > setBaseCurrency > debe manejar errores de validaci├│n
+ Ô£ô src/components/ProtectedRoute.test.tsx > ProtectedRoute > debe renderizar el children cuando el usuario est├í autenticado
+ Ô£ô src/components/ProtectedRoute.test.tsx > ProtectedRoute > debe redirigir cuando el usuario no est├í autenticado
+ Ô£ô src/components/ProtectedRoute.test.tsx > ProtectedRoute > debe mostrar loading cuando isLoading es true
+ Ô£ô src/components/ConfirmModal.test.tsx > ConfirmModal > debe renderizar el modal con t├¡tulo y mensaje
+ Ô£ô src/components/ConfirmModal.test.tsx > ConfirmModal > debe llamar onConfirm cuando se hace clic en confirmar
+ Ô£ô src/components/ConfirmModal.test.tsx > ConfirmModal > debe llamar onCancel cuando se hace clic en cancelar
+ Ô£ô src/components/ConfirmModal.test.tsx > ConfirmModal > debe llamar onCancel cuando se hace clic en el bot├│n de cerrar
+ Ô£ô src/components/ConfirmModal.test.tsx > ConfirmModal > no debe renderizar cuando isOpen es false
+ ├ù src/components/AlertCenter.test.tsx > AlertCenter > debe renderizar cuando hay alertas
+   ÔåÆ [vitest] No "AlertProvider" export is defined on the "../context/AlertContext" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+ ├ù src/components/AlertCenter.test.tsx > AlertCenter > no debe renderizar cuando no hay alertas
+   ÔåÆ [vitest] No "AlertProvider" export is defined on the "../context/AlertContext" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+ ├ù src/components/BaseCurrencySettings.test.tsx > BaseCurrencySettings > debe renderizar el componente 1197ms
+   ÔåÆ Unable to find an element with the text: /configuraci├│n de moneda base/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-white rounded-xl border border-gray-200 p-6"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-3 mb-6"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-settings w-6 h-6 text-blue-600"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"[39m
+          [36m/>[39m
+          [36m<circle[39m
+            [33mcx[39m=[32m"12"[39m
+            [33mcy[39m=[32m"12"[39m
+            [33mr[39m=[32m"3"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<h3[39m
+          [33mclass[39m=[32m"text-xl font-bold text-gray-900"[39m
+        [36m>[39m
+          [0mMoneda Base[0m
+        [36m</h3>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"block text-sm font-medium text-gray-700 mb-2"[39m
+          [36m>[39m
+            [0mSelecciona tu moneda base[0m
+          [36m</label>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-xs text-gray-500 mb-4"[39m
+          [36m>[39m
+            [0mTodos los totales y reportes se mostrar├ín convertidos a esta moneda. Los valores originales de tus transacciones no se modificar├ín.[0m
+          [36m</p>[39m
+          [36m<select[39m
+            [33mclass[39m=[32m"w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"COP"[39m
+            [36m>[39m
+              [0mPesos Colombianos (COP)[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"USD"[39m
+            [36m>[39m
+              [0mD├│lares (USD)[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"EUR"[39m
+            [36m>[39m
+              [0mEuros (EUR)[0m
+            [36m</option>[39m
+          [36m</select>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex gap-3 pt-4"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"[39m
+          [36m>[39m
+            [0mGuardar[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"bg-white rounded-xl border border-gray-200 p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-3 mb-6"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-settings w-6 h-6 text-blue-600"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"[39m
+            [36m/>[39m
+            [36m<circle[39m
+              [33mcx[39m=[32m"12"[39m
+              [33mcy[39m=[32m"12"[39m
+              [33mr[39m=[32m"3"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"text-xl font-bold text-gray-900"[39m
+          [36m>[39m
+            [0mMoneda Base[0m
+          [36m</h3>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-4"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"block text-sm font-medium text-gray-700 mb-2"[39m
+            [36m>[39m
+              [0mSelecciona tu moneda base[0m
+            [36m</label>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-xs text-gray-500 mb-4"[39m
+            [36m>[39m
+              [0mTodos los totales y reportes se mostrar├ín convertidos a esta moneda. Los valores originales de tus transacciones no se modificar├ín.[0m
+            [36m</p>[39m
+            [36m<select[39m
+              [33mclass[39m=[32m"w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"COP"[39m
+              [36m>[39m
+                [0mPesos Colombianos (COP)[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"USD"[39m
+              [36m>[39m
+                [0mD├│lares (USD)[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"EUR"[39m
+              [36m>[39m
+                [0mEuros (EUR)[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-3 pt-4"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"[39m
+            [36m>[39m
+              [0mGuardar[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+ Ô£ô src/components/BaseCurrencySettings.test.tsx > BaseCurrencySettings > debe mostrar la moneda base actual
+
+node.exe : ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ» Failed Tests 3 ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»
+En línea: 1 Carácter: 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\SHADOW\AppData\Roaming ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»...ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ FAIL  src/components/AlertCenter.test.tsx > AlertCenter > debe renderizar cuando hay alertas
+ FAIL  src/components/AlertCenter.test.tsx > AlertCenter > no debe renderizar cuando no hay alertas
+Error: [vitest] No "AlertProvider" export is defined on the "../context/AlertContext" mock. Did you forget to return 
+it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+vi.mock(import("../context/AlertContext"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ÔØ» AllTheProviders src/test/utils/test-utils.tsx:15:14
+     13|         <CategoryProvider>
+     14|           <BudgetProvider>
+     15|             <AlertProvider>
+       |              ^
+     16|               {children}
+     17|             </AlertProvider>
+ ÔØ» Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:20
+ ÔØ» renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:22
+ ÔØ» updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:19
+ ÔØ» beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:18
+ ÔØ» runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:874:13
+ ÔØ» performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:22
+ ÔØ» workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:41
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/3]ÔÄ»
+
+ FAIL  src/components/BaseCurrencySettings.test.tsx > BaseCurrencySettings > debe renderizar el componente
+TestingLibraryElementError: Unable to find an element with the text: /configuraci├│n de moneda base/i. This could be 
+because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to 
+make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-white rounded-xl border border-gray-200 p-6"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-3 mb-6"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-settings w-6 h-6 text-blue-600"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 
+4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 
+0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 
+3.319-1.915"[39m
+          [36m/>[39m
+          [36m<circle[39m
+            [33mcx[39m=[32m"12"[39m
+            [33mcy[39m=[32m"12"[39m
+            [33mr[39m=[32m"3"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<h3[39m
+          [33mclass[39m=[32m"text-xl font-bold text-gray-900"[39m
+        [36m>[39m
+          [0mMoneda Base[0m
+        [36m</h3>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"block text-sm font-medium text-gray-700 mb-2"[39m
+          [36m>[39m
+            [0mSelecciona tu moneda base[0m
+          [36m</label>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-xs text-gray-500 mb-4"[39m
+          [36m>[39m
+            [0mTodos los totales y reportes se mostrar├ín convertidos a esta moneda. Los valores originales de tus 
+transacciones no se modificar├ín.[0m
+          [36m</p>[39m
+          [36m<select[39m
+            [33mclass[39m=[32m"w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 
+focus:border-transparent"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"COP"[39m
+            [36m>[39m
+              [0mPesos Colombianos (COP)[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"USD"[39m
+            [36m>[39m
+              [0mD├│lares (USD)[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"EUR"[39m
+            [36m>[39m
+              [0mEuros (EUR)[0m
+            [36m</option>[39m
+          [36m</select>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex gap-3 pt-4"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
+transition-colors disabled:opacity-50 disabled:cursor-not-allowed"[39m
+          [36m>[39m
+            [0mGuardar[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"bg-white rounded-xl border border-gray-200 p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-3 mb-6"[39m
+ Test Files  2 failed | 16 passed (18)
+      Tests  3 failed | 182 passed (185)
+   Start at  22:57:26
+   Duration  50.50s (transform 5.00s, setup 14.51s, collect 12.56s, tests 46.79s, environment 44.54s, prepare 7.40s)
+
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-settings w-6 h-6 text-blue-600"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 
+4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 
+0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 
+3.319-1.915"[39m
+            [36m/>[39m
+            [36m<circle[39m
+              [33mcx[39m=[32m"12"[39m
+              [33mcy[39m=[32m"12"[39m
+              [33mr[39m=[32m"3"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"text-xl font-bold text-gray-900"[39m
+          [36m>[39m
+            [0mMoneda Base[0m
+          [36m</h3>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-4"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"block text-sm font-medium text-gray-700 mb-2"[39m
+            [36m>[39m
+              [0mSelecciona tu moneda base[0m
+            [36m</label>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-xs text-gray-500 mb-4"[39m
+            [36m>[39m
+              [0mTodos los totales y reportes se mostrar├ín convertidos a esta moneda. Los valores originales de tus 
+transacciones no se modificar├ín.[0m
+            [36m</p>[39m
+            [36m<select[39m
+              [33mclass[39m=[32m"w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 
+focus:ring-blue-500 focus:border-transparent"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"COP"[39m
+              [36m>[39m
+                [0mPesos Colombianos (COP)[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"USD"[39m
+              [36m>[39m
+                [0mD├│lares (USD)[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"EUR"[39m
+              [36m>[39m
+                [0mEuros (EUR)[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-3 pt-4"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
+transition-colors disabled:opacity-50 disabled:cursor-not-allowed"[39m
+            [36m>[39m
+              [0mGuardar[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+ ÔØ» Module.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ÔØ» src/components/BaseCurrencySettings.test.tsx:29:11
+     27|     render(<BaseCurrencySettings />);
+     28| 
+     29|     await waitFor(() => {
+       |           ^
+     30|       expect(screen.getByText(/configuraci├│n de moneda base/i)).toBeInÔÇª
+     31|     });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[2/3]ÔÄ»
+

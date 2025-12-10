@@ -91,24 +91,53 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
     }
   };
 
-  const totalBalance = accounts
+  // Agrupar balances por moneda (solo activos)
+  const balancesByCurrency = accounts
     .filter(acc => acc.is_active === true && acc.account_type === 'asset')
-    .reduce((sum, acc) => {
-      const balance = Number(acc.current_balance) || 0;
-      return sum + (isNaN(balance) || !isFinite(balance) ? 0 : balance);
-    }, 0);
-  
-  const totalDebts = accounts
+    .reduce((acc, account) => {
+      const balance = Number(account.current_balance) || 0;
+      const currency = (account.currency as Currency) || 'COP';
+      if (!acc[currency]) {
+        acc[currency] = 0;
+      }
+      acc[currency] += isNaN(balance) || !isFinite(balance) ? 0 : balance;
+      return acc;
+    }, {} as Record<Currency, number>);
+
+  // Agrupar deudas por moneda (solo pasivos)
+  const debtsByCurrency = accounts
     .filter(acc => acc.is_active === true && acc.account_type === 'liability')
-    .reduce((sum, acc) => {
-      const balance = Number(acc.current_balance) || 0;
-      return sum + (isNaN(balance) || !isFinite(balance) ? 0 : balance);
-    }, 0);
+    .reduce((acc, account) => {
+      const balance = Number(account.current_balance) || 0;
+      const currency = (account.currency as Currency) || 'COP';
+      if (!acc[currency]) {
+        acc[currency] = 0;
+      }
+      acc[currency] += isNaN(balance) || !isFinite(balance) ? 0 : balance;
+      return acc;
+    }, {} as Record<Currency, number>);
 
   const handleSaveAccount = async (accountData: CreateAccountData, accountId?: number) => {
     if (accountId) {
-      await accountService.updateAccount(accountId, accountData);
+      const existingAccount = accounts.find(acc => acc.id === accountId);
+      const newBalanceInPesos = accountData.current_balance;
+      // El current_balance del backend ya viene en pesos (no en centavos)
+      const oldBalanceInPesos = existingAccount?.current_balance;
+      
+      const accountUpdateData: CreateAccountData = { ...accountData };
+      delete accountUpdateData.current_balance;
+      
+      await accountService.updateAccount(accountId, accountUpdateData);
+      
+      if (newBalanceInPesos !== undefined) {
+        // El backend espera recibir el saldo en pesos (no multiplicar por 100)
+        if (newBalanceInPesos !== oldBalanceInPesos) {
+          await accountService.updateBalance(accountId, newBalanceInPesos, 'Actualización desde edición de cuenta');
+        }
+      }
     } else {
+      // El backend espera recibir el saldo en pesos (no multiplicar por 100)
+      // accountData.current_balance ya está en pesos, no necesita conversión
       await accountService.createAccount(accountData);
     }
     await loadAccounts();
@@ -117,13 +146,18 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
   const handleDeleteAccount = async (id: number) => {
     try {
       const validation = await accountService.validateDeletion(id);
-      const message = !validation.can_delete && validation.has_movements
-        ? `Esta cuenta tiene ${validation.movement_count || 0} movimiento(s) asociado(s).\n\n¿Estás seguro de que deseas eliminar esta cuenta? Esta acción no se puede deshacer.`
-        : '¿Estás seguro de que deseas eliminar esta cuenta? Esta acción no se puede deshacer.';
+      
+      let message = '¿Estás seguro de que deseas eliminar esta cuenta? Esta acción no se puede deshacer.';
+      
+      if (validation.warnings && validation.warnings.length > 0) {
+        message = '⚠️ Advertencias:\n\n' + validation.warnings.join('\n') + '\n\n¿Deseas continuar con la eliminación? El saldo y las transacciones asociadas se perderán.';
+      } else if (validation.has_movements) {
+        message = `Esta cuenta tiene ${validation.movement_count || 0} movimiento(s) asociado(s).\n\n¿Estás seguro de que deseas eliminar esta cuenta? Esta acción no se puede deshacer.`;
+      }
 
       setConfirmModal({
         isOpen: true,
-        title: 'Confirmar eliminación',
+        title: validation.warnings && validation.warnings.length > 0 ? 'Confirmar eliminación' : 'Confirmar eliminación',
         message,
         type: 'danger',
         onConfirm: async () => {
@@ -142,6 +176,7 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
             });
           }
         },
+        cancelText: 'Cancelar',
       });
     } catch (error) {
       setConfirmModal({
@@ -187,16 +222,25 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
 
   if (selectedCard && selectedCard.category === 'credit_card') {
     const creditDetails = selectedCard.credit_card_details;
+    // credit_limit viene en PESOS desde el backend (DecimalField), NO en centavos
+    // creditDetails.credit_limit también viene en PESOS (Decimal)
     const creditLimit = creditDetails?.credit_limit ?? selectedCard.credit_limit ?? 0;
+    // current_balance también viene en PESOS desde el backend
     const currentBalance = selectedCard.current_balance ?? 0;
     
     let available = 0;
+    // creditDetails.available_credit viene en PESOS (Decimal), NO en centavos
     if (creditDetails?.available_credit !== undefined && creditDetails.available_credit !== null) {
       available = creditDetails.available_credit;
     } else if (creditLimit > 0) {
       available = Math.max(0, creditLimit + currentBalance);
     }
     available = isNaN(available) || !isFinite(available) ? 0 : available;
+    
+    // creditDetails.used_credit, current_debt y total_paid vienen en PESOS (Decimal), NO en centavos
+    const usedCredit = creditDetails?.used_credit ?? Math.abs(currentBalance);
+    const currentDebt = creditDetails?.current_debt ?? currentBalance;
+    const totalPaid = creditDetails?.total_paid ?? 0;
     
     return (
       <CardDetail
@@ -207,9 +251,9 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
           accountNumber: selectedCard.account_number || '',
           limit: creditLimit,
           available: available,
-          used: creditDetails?.used_credit ?? Math.abs(currentBalance),
-          currentDebt: creditDetails?.current_debt ?? currentBalance,
-          totalPaid: creditDetails?.total_paid ?? 0,
+          used: usedCredit,
+          currentDebt: currentDebt,
+          totalPaid: totalPaid,
           utilizationPercentage: creditDetails?.utilization_percentage ?? 
             (creditLimit > 0 ? (Math.abs(currentBalance) / creditLimit) * 100 : 0),
           currency: selectedCard.currency,
@@ -247,31 +291,47 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
         </button>
       </div>
 
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div>
-            <p className="text-sm text-gray-600 mb-1">Total de cuentas</p>
-            <p className="text-2xl font-bold text-gray-900">{accounts.length}</p>
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-6 shadow-sm">
+        <div className="flex flex-wrap gap-4">
+          <div className="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-white/50 shadow-sm flex-1 min-w-[200px]">
+            <p className="text-sm text-gray-600 mb-2 text-center">Total de cuentas</p>
+            <p className="text-3xl font-bold text-gray-900 text-center">{accounts.length}</p>
           </div>
-          <div>
-            <p className="text-sm text-gray-600 mb-1">Cuentas activas</p>
-            <p className="text-2xl font-bold text-blue-600">{accounts.filter(acc => acc.is_active === true).length}</p>
+          <div className="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-white/50 shadow-sm flex-1 min-w-[200px]">
+            <p className="text-sm text-gray-600 mb-2 text-center">Cuentas activas</p>
+            <p className="text-3xl font-bold text-blue-600 text-center">{accounts.filter(acc => acc.is_active === true).length}</p>
           </div>
-          <div>
-            <p className="text-sm text-gray-600 mb-1">Balance disponible</p>
-            <p className="text-2xl font-bold text-green-600">
-              {formatCurrency(totalBalance)}
-            </p>
-            <p className="text-xs text-gray-500 mt-1">Solo activos</p>
-          </div>
-          {totalDebts > 0 && (
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Deudas totales</p>
-              <p className="text-2xl font-bold text-red-600">
-                {formatCurrency(totalDebts)}
+          {Object.entries(balancesByCurrency).length > 0 ? (
+            Object.entries(balancesByCurrency).map(([currency, balance]) => (
+              <div key={currency} className="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-white/50 shadow-sm flex-1 min-w-[200px]">
+                <p className="text-sm text-gray-600 mb-2 text-center">Balance disponible</p>
+                <p className="text-2xl font-bold text-green-600 text-center">
+                  {formatCurrency(balance, currency as Currency)}
+                </p>
+                <p className="text-xs text-gray-500 text-center mt-1">{currency}</p>
+                <p className="text-xs text-gray-500 text-center mt-2">Solo activos</p>
+              </div>
+            ))
+          ) : (
+            <div className="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-white/50 shadow-sm flex-1 min-w-[200px]">
+              <p className="text-sm text-gray-600 mb-2 text-center">Balance disponible</p>
+              <p className="text-2xl font-bold text-green-600 text-center">
+                {formatCurrency(0)}
               </p>
-              <p className="text-xs text-gray-500 mt-1">Tarjetas de crédito</p>
+              <p className="text-xs text-gray-500 text-center mt-2">Solo activos</p>
             </div>
+          )}
+          {Object.keys(debtsByCurrency).length > 0 && (
+            Object.entries(debtsByCurrency).map(([currency, debt]) => (
+              <div key={`debt-${currency}`} className="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-white/50 shadow-sm flex-1 min-w-[200px]">
+                <p className="text-sm text-gray-600 mb-2 text-center">Deudas totales</p>
+                <p className="text-2xl font-bold text-red-600 text-center">
+                  {formatCurrency(Math.abs(debt), currency as Currency)}
+                </p>
+                <p className="text-xs text-gray-500 text-center mt-1">{currency}</p>
+                <p className="text-xs text-gray-500 text-center mt-2">Tarjetas de crédito</p>
+              </div>
+            ))
           )}
         </div>
       </div>
@@ -321,13 +381,16 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
               };
 
               const creditDetails = account.credit_card_details;
+              // credit_limit y current_balance vienen en PESOS desde el backend (DecimalField), NO en centavos
               const creditLimit = creditDetails?.credit_limit ?? account.credit_limit ?? 0;
               const currentBalance = account.current_balance ?? 0;
               
+              // creditDetails.used_credit viene en PESOS (Decimal), NO en centavos
               const usedCredit = creditDetails?.used_credit ?? Math.abs(currentBalance);
-              const currentDebt = creditDetails?.current_debt ?? currentBalance;
-              const totalPaid = creditDetails?.total_paid ?? 0;
+              const currentDebt = creditDetails?.current_debt ? creditDetails.current_debt / 100 : currentBalance;
+              const totalPaid = creditDetails?.total_paid ? creditDetails.total_paid / 100 : 0;
               
+              // creditDetails.available_credit viene en PESOS (Decimal), NO en centavos
               let available = 0;
               if (creditDetails?.available_credit !== undefined && creditDetails.available_credit !== null) {
                 available = creditDetails.available_credit;

@@ -135,13 +135,16 @@ Tareas:
 
 Se ejecuta en:
 - Push a `main`, `develop` o `master`
+- Pull Requests hacia `develop`
 - Manualmente desde GitHub Actions
 
 Tareas:
 - ✅ Build del proyecto
 - ✅ Despliegue automático en Vercel:
   - **Producción**: Push a `main` o `master` → Despliega en producción (`--prod`)
-  - **Staging/Preview**: Push a `develop` → Despliega como preview deployment
+  - **Staging/Preview**: 
+    - Push a `develop` → Despliega como preview deployment
+    - Pull Request hacia `develop` → Despliega como preview deployment (permite probar cambios antes del merge)
 
 ### Deploy Preview
 
@@ -153,6 +156,8 @@ Se ejecuta en:
 Tareas:
 - ✅ Build del proyecto
 - ✅ Comentario en el PR con el estado del build
+
+**Nota**: Los Pull Requests hacia `develop` también activan el workflow de CD que despliega automáticamente en Vercel, además de este workflow de preview.
 
 ## 🔄 Flujo de Trabajo
 
@@ -170,9 +175,11 @@ Tareas:
    git push origin feature/nueva-funcionalidad
    ```
 
-3. **Crear Pull Request**:
+3. **Crear Pull Request hacia develop**:
    - El CI se ejecutará automáticamente
-   - Vercel creará un preview del PR automáticamente (si está conectado)
+   - El CD se ejecutará automáticamente y desplegará un preview en Vercel
+   - Vercel también creará un preview del PR automáticamente (si está conectado)
+   - Esto permite probar los cambios antes de hacer merge
 
 4. **Merge a develop**:
    - El CD se ejecutará automáticamente
@@ -242,6 +249,7 @@ npm run preview          # Preview del build local
 - **URL**: 
   - Generada automáticamente por Vercel para cada PR
   - También se despliega automáticamente cuando hay push a `develop`
+  - También se despliega automáticamente cuando hay Pull Request hacia `develop` (permite probar cambios antes del merge)
 - **API**: Usa `VITE_API_BASE_URL_STAGING` (si está definido) o `VITE_API_BASE_URL` del secret de GitHub
 
 ### Producción

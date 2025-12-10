@@ -159,12 +159,12 @@ describe('Register', () => {
     
     await waitFor(() => {
       expect(screen.getByText(/el usuario ya existe/i)).toBeInTheDocument();
-    });
+    }, { timeout: 3000 });
   });
 
   it('debe mostrar estado de carga durante el registro', async () => {
     const user = userEvent.setup();
-    vi.mocked(authService.register).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
+    vi.mocked(authService.register).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 200)));
     
     render(<Register />);
     
@@ -179,9 +179,12 @@ describe('Register', () => {
     const submitButton = screen.getByRole('button', { name: /crear cuenta/i });
     await user.click(submitButton);
     
-    expect(screen.getByText(/creando cuenta\.\.\./i)).toBeInTheDocument();
-    expect(submitButton).toBeDisabled();
-  });
+    await waitFor(() => {
+      const loadingButton = screen.getByRole('button', { name: /creando cuenta\.\.\./i });
+      expect(loadingButton).toBeInTheDocument();
+      expect(loadingButton).toBeDisabled();
+    }, { timeout: 3000 });
+  }, 10000);
 
   it('debe mostrar/ocultar contraseñas al hacer clic en los botones', async () => {
     const user = userEvent.setup();

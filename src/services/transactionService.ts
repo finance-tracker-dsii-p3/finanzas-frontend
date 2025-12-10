@@ -1,5 +1,7 @@
 import { checkAndHandleAuthError } from '../utils/authErrorHandler';
 
+import { Currency } from '../utils/currencyUtils';
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
 
 export type TransactionType = 1 | 2 | 3 | 4;
@@ -8,6 +10,7 @@ export interface Transaction {
   id: number;
   origin_account: number;
   origin_account_name?: string;
+  origin_account_currency?: Currency; // Moneda de la cuenta de origen
   destination_account: number | null;
   destination_account_name?: string;
   type: TransactionType;
@@ -20,6 +23,8 @@ export interface Transaction {
   capital_amount?: number | null;
   interest_amount?: number | null;
   date: string;
+  created_at?: string; // Fecha y hora de creación (del servidor)
+  updated_at?: string; // Fecha y hora de última actualización
   category?: number | null;
   category_name?: string;
   category_color?: string;
@@ -28,10 +33,16 @@ export interface Transaction {
   note?: string | null;
   applied_rule?: number | null;
   applied_rule_name?: string | null;
-  created_at?: string;
-  updated_at?: string;
   created_by?: number;
   updated_by?: number;
+  // Campos de conversión a moneda base (HU-17)
+  transaction_currency?: Currency | null;
+  exchange_rate?: number | null;
+  original_amount?: number | null;
+  base_currency?: Currency;
+  base_equivalent_amount?: number | null; // En centavos
+  base_exchange_rate?: number | null;
+  base_exchange_rate_warning?: string | null;
 }
 
 export interface CreateTransactionData {
@@ -394,21 +405,42 @@ export const transactionService = {
         date: data.date,
       };
 
+      // Los montos ya vienen en centavos desde NewMovementModal
+      // Asegurarse de que sean números enteros (no floats) para evitar que el backend los multiplique por 100
       if (data.total_amount !== undefined && data.total_amount > 0) {
-        cleanData.total_amount = Math.round(data.total_amount);
+        // Asegurar que sea un entero, no un float
+        // Usar Math.floor para asegurar que siempre sea un entero, incluso para números muy grandes
+        const totalAmountInt = Number.isInteger(data.total_amount) 
+          ? data.total_amount 
+          : Math.floor(data.total_amount);
+        cleanData.total_amount = totalAmountInt;
+        // Verificar que el valor sea razonable (al menos 100 centavos = 1 peso)
+        if ((cleanData.total_amount as number) < 100) {
+          throw new Error('El monto debe ser al menos 1 peso');
+        }
         if ('base_amount' in cleanData) {
           delete cleanData.base_amount;
         }
       } else if (data.base_amount !== undefined && data.base_amount > 0) {
-        cleanData.base_amount = Math.round(data.base_amount);
+        // Asegurar que sea un entero, no un float
+        // Usar Math.floor para asegurar que siempre sea un entero, incluso para números muy grandes
+        const baseAmountInt = Number.isInteger(data.base_amount) 
+          ? data.base_amount 
+          : Math.floor(data.base_amount);
+        cleanData.base_amount = baseAmountInt;
+        // Verificar que el valor sea razonable (al menos 100 centavos = 1 peso)
+        if ((cleanData.base_amount as number) < 100) {
+          throw new Error('El monto base debe ser al menos 1 peso');
+        }
         if (data.tax_percentage && data.tax_percentage > 0) {
           const baseAmount = cleanData.base_amount as number;
-          cleanData.total_amount = Math.round(baseAmount * (1 + data.tax_percentage / 100));
+          // Calcular total con impuestos en centavos
+          cleanData.total_amount = Math.floor(baseAmount * (1 + data.tax_percentage / 100));
         } else {
           cleanData.total_amount = cleanData.base_amount;
         }
         if (data.total_amount !== undefined && data.total_amount !== cleanData.total_amount) {
-          // Intentionally empty
+          void 0;
         }
       } else {
         throw new Error('Debe proporcionarse base_amount o total_amount');
@@ -442,6 +474,11 @@ export const transactionService = {
         cleanData.goal = data.goal;
       }
 
+      // Debug: verificar qué se está enviando
+      console.log('[DEBUG] Enviando al backend:', cleanData);
+      console.log('[DEBUG] total_amount tipo:', typeof cleanData.total_amount, 'valor:', cleanData.total_amount);
+      console.log('[DEBUG] base_amount tipo:', typeof cleanData.base_amount, 'valor:', cleanData.base_amount);
+      
       const response = await fetch(`${API_BASE_URL}/api/transactions/`, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -470,12 +507,15 @@ export const transactionService = {
         cleanData.type = data.type;
       }
       
+      // Los montos ya vienen en centavos desde NewMovementModal
+      // Solo validamos que sean números enteros positivos
       if (data.total_amount !== undefined && data.total_amount > 0) {
         cleanData.total_amount = Math.round(data.total_amount);
       } else if (data.base_amount !== undefined && data.base_amount > 0) {
         cleanData.base_amount = Math.round(data.base_amount);
         if (data.tax_percentage !== undefined && data.tax_percentage !== null && data.tax_percentage > 0) {
           const baseAmount = cleanData.base_amount as number;
+          // Calcular total con impuestos en centavos
           cleanData.total_amount = Math.round(baseAmount * (1 + data.tax_percentage / 100));
         } else {
           cleanData.total_amount = cleanData.base_amount;
@@ -499,7 +539,7 @@ export const transactionService = {
         if (cleanData.base_amount !== undefined && !cleanData.total_amount) {
           const baseAmount = cleanData.base_amount as number;
           const taxPercentage = data.tax_percentage;
-          cleanData.total_amount = Math.round(baseAmount * (1 + taxPercentage / 100));
+          cleanData.total_amount = parseFloat((baseAmount * (1 + taxPercentage / 100)).toFixed(2));
         }
       }
       

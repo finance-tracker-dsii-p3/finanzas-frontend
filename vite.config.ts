@@ -19,6 +19,15 @@ export default defineConfig({
         preserveSymlinks: true,
     },
     build: {
-        chunkSizeWarningLimit: 1000, // Aumentar límite a 1MB para evitar warnings
+        chunkSizeWarningLimit: 1000,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+                    'chart-vendor': ['recharts'],
+                    'ui-vendor': ['lucide-react', 'framer-motion'],
+                },
+            },
+        },
     },
 });

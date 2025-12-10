@@ -1,5 +1,6 @@
 import React from 'react';
-import { XCircle, Edit2, Trash2, CreditCard, Receipt, Sparkles } from 'lucide-react';
+import { XCircle, Edit2, Trash2, CreditCard, Receipt, Sparkles, AlertTriangle } from 'lucide-react';
+import { formatMoney, Currency } from '../utils/currencyUtils';
 import './MovementDetailModal.css';
 
 interface Movement {
@@ -9,6 +10,7 @@ interface Movement {
   tag?: string | null;
   origin_account: number;
   origin_account_name?: string;
+  origin_account_currency?: Currency;
   destination_account?: number | null;
   destination_account_name?: string;
   type: 1 | 2 | 3 | 4;
@@ -27,6 +29,14 @@ interface Movement {
   taxed_amount?: number | null;
   applied_rule?: number | null;
   applied_rule_name?: string | null;
+  // Campos de conversión a moneda base (HU-17)
+  transaction_currency?: Currency | null;
+  exchange_rate?: number | null;
+  original_amount?: number | null;
+  base_currency?: Currency;
+  base_equivalent_amount?: number | null; // En centavos
+  base_exchange_rate?: number | null;
+  base_exchange_rate_warning?: string | null;
 }
 
 interface MovementDetailModalProps {
@@ -39,13 +49,9 @@ interface MovementDetailModalProps {
 const MovementDetailModal: React.FC<MovementDetailModalProps> = ({ movement, onClose, onEdit, onDelete }) => {
   if (!movement) return null;
 
-  const formatCurrency = (amount: number | undefined): string => {
-    if (amount === undefined) return '$0';
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0
-    }).format(Math.abs(amount));
+  const formatCurrency = (amount: number | undefined, currency: Currency = 'COP'): string => {
+    if (amount === undefined) return formatMoney(0, currency);
+    return formatMoney(Math.abs(amount), currency);
   };
 
   return (
@@ -70,14 +76,19 @@ const MovementDetailModal: React.FC<MovementDetailModalProps> = ({ movement, onC
                   </span>
                 )}
               </div>
-              <p className={`text-2xl font-bold ${
-                movement.type === 1 ? 'text-green-600' : 
-                movement.type === 2 ? 'text-red-600' : 
-                movement.type === 3 ? 'text-gray-600' : 
-                'text-blue-600'
-              }`}>
-                {movement.type === 1 ? '+' : movement.type === 2 ? '-' : ''}{formatCurrency(movement.total_amount || movement.amount)}
-              </p>
+              <div className="text-right">
+                <p className={`text-2xl font-bold ${
+                  movement.type === 1 ? 'text-green-600' : 
+                  movement.type === 2 ? 'text-red-600' : 
+                  movement.type === 3 ? 'text-gray-600' : 
+                  'text-blue-600'
+                }`}>
+                  {movement.type === 1 ? '+' : movement.type === 2 ? '-' : ''}{formatCurrency(movement.total_amount || movement.amount, movement.origin_account_currency || 'COP')}
+                </p>
+                {movement.origin_account_currency && (
+                  <p className="text-xs text-gray-500 mt-1">{movement.origin_account_currency}</p>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 pt-4 border-t">
@@ -182,6 +193,47 @@ const MovementDetailModal: React.FC<MovementDetailModalProps> = ({ movement, onC
               </div>
             )}
 
+            {/* Conversión a moneda base (HU-17) */}
+            {movement.base_currency && movement.base_equivalent_amount !== null && movement.base_equivalent_amount !== undefined && (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-5 h-5 text-indigo-600" />
+                  <p className="font-semibold text-indigo-900">Conversión a moneda base</p>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-indigo-700">Moneda original:</span>
+                    <span className="font-medium">
+                      {formatCurrency(movement.total_amount || movement.amount || 0, movement.transaction_currency || movement.origin_account_currency || 'COP')}
+                      <span className="ml-2 text-xs text-indigo-600">
+                        ({movement.transaction_currency || movement.origin_account_currency || 'COP'})
+                      </span>
+                    </span>
+                  </div>
+                  {movement.base_exchange_rate && movement.base_exchange_rate !== 1 && (
+                    <div className="flex justify-between">
+                      <span className="text-indigo-700">Tipo de cambio:</span>
+                      <span className="font-medium text-indigo-600">
+                        1 {movement.transaction_currency || movement.origin_account_currency || 'COP'} = {movement.base_exchange_rate.toFixed(4)} {movement.base_currency}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between pt-2 border-t border-indigo-300">
+                    <span className="font-semibold text-indigo-900">Equivalente en {movement.base_currency}:</span>
+                    <span className="font-bold text-indigo-900">
+                      {formatCurrency(movement.base_equivalent_amount, movement.base_currency)}
+                    </span>
+                  </div>
+                  {movement.base_exchange_rate_warning && (
+                    <div className="mt-2 flex items-start gap-2 p-2 bg-amber-50 border border-amber-200 rounded">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-800">{movement.base_exchange_rate_warning}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Desglose fiscal (IVA y GMF) - HU-15 */}
             {((movement.tax_percentage && movement.tax_percentage > 0) || movement.gmf_amount) && (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -193,7 +245,7 @@ const MovementDetailModal: React.FC<MovementDetailModalProps> = ({ movement, onC
                   {movement.base_amount !== undefined && movement.base_amount > 0 && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Base calculada:</span>
-                      <span className="font-medium">{formatCurrency(movement.base_amount || movement.base || 0)}</span>
+                      <span className="font-medium">{formatCurrency(movement.base_amount || movement.base || 0, movement.origin_account_currency || 'COP')}</span>
                     </div>
                   )}
                   {movement.tax_percentage && movement.tax_percentage > 0 && (
@@ -202,7 +254,8 @@ const MovementDetailModal: React.FC<MovementDetailModalProps> = ({ movement, onC
                       <span className="font-medium text-amber-600">
                         {formatCurrency(
                           movement.taxed_amount ?? 
-                          ((movement.total_amount || movement.amount || 0) - (movement.base_amount || movement.base || 0) - (movement.gmf_amount || 0))
+                          ((movement.total_amount || movement.amount || 0) - (movement.base_amount || movement.base || 0) - (movement.gmf_amount || 0)),
+                          movement.origin_account_currency || 'COP'
                         )}
                       </span>
                     </div>
@@ -210,12 +263,12 @@ const MovementDetailModal: React.FC<MovementDetailModalProps> = ({ movement, onC
                   {movement.gmf_amount && movement.gmf_amount > 0 && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">GMF (4x1000):</span>
-                      <span className="font-medium text-blue-600">{formatCurrency(movement.gmf_amount)}</span>
+                      <span className="font-medium text-blue-600">{formatCurrency(movement.gmf_amount, movement.origin_account_currency || 'COP')}</span>
                     </div>
                   )}
                   <div className="flex justify-between pt-2 border-t border-gray-300">
                     <span className="font-semibold text-gray-900">Total final:</span>
-                    <span className="font-bold">{formatCurrency(movement.total_amount || movement.amount || 0)}</span>
+                    <span className="font-bold">{formatCurrency(movement.total_amount || movement.amount || 0, movement.origin_account_currency || 'COP')}</span>
                   </div>
                 </div>
               </div>

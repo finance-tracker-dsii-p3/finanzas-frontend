@@ -230,7 +230,7 @@ export const authService = {
           },
         });
       } catch {
-        // Intentionally empty
+        void 0;
       }
     }
 

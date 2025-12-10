@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { XCircle, Building2, Wallet, CreditCard, Banknote, DollarSign } from 'lucide-react';
 import { Account, CreateAccountData, accountService } from '../services/accountService';
+import { formatMoneyFromPesos, Currency } from '../utils/currencyUtils';
 import './NewAccountModal.css';
 
 type LocalAccountType = 'bank' | 'wallet' | 'credit_card' | 'cash' | 'other';
@@ -53,6 +54,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
         type: localType,
         bankName: accountData.bank_name || '',
         accountNumber: accountData.account_number || '',
+        // El current_balance del backend ya viene en pesos (no en centavos)
         balance: accountData.current_balance.toString(),
         creditLimit: accountData.credit_limit?.toString() || '',
         currency: accountData.currency,
@@ -149,7 +151,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
         }
       } catch (error) {
         if (error instanceof Error && error.message.includes('no implementado')) {
-          // Intentionally empty
+          void 0;
         }
       }
     };
@@ -177,12 +179,13 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
     });
   };
 
-  const formatCurrency = (amount: number, currency: string = 'COP'): string => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 0
-    }).format(Math.abs(amount));
+  const formatCurrency = (amount: number, currency: Currency = 'COP'): string => {
+    return formatMoneyFromPesos(Math.abs(amount), currency);
+  };
+
+  const handleWheel = (e: React.WheelEvent<HTMLInputElement>) => {
+    // Prevenir que la rueda del mouse cambie el valor del input
+    e.currentTarget.blur();
   };
 
   const validateForm = (): boolean => {
@@ -192,6 +195,21 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
     
     if (!formData.name.trim()) {
       newErrors.name = 'El nombre de la cuenta es requerido';
+    }
+    
+    // Validar número de cuenta: obligatorio con mínimo de dígitos según moneda
+    const accountNumberDigits = formData.accountNumber.replace(/\D/g, ''); // Solo dígitos
+    const minDigitsByCurrency: Record<Account['currency'], number> = {
+      'COP': 10,
+      'USD': 7,
+      'EUR': 8
+    };
+    const minDigits = minDigitsByCurrency[formData.currency] || 10;
+    
+    if (!formData.accountNumber.trim()) {
+      newErrors.accountNumber = 'El número de cuenta es requerido';
+    } else if (accountNumberDigits.length < minDigits) {
+      newErrors.accountNumber = `El número de cuenta debe tener al menos ${minDigits} dígitos para cuentas en ${formData.currency}`;
     }
     
     if (isCreditCard) {
@@ -240,9 +258,10 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
       current_balance: balance,
       description: formData.description.trim() || undefined,
       is_active: formData.isActive,
-      gmf_exempt: formData.gmfExempt,
+      // GMF no aplica a tarjetas de crédito ni efectivo, siempre false para ellas
+      gmf_exempt: (formData.type === 'credit_card' || formData.type === 'cash') ? false : formData.gmfExempt,
       bank_name: formData.bankName.trim() || undefined,
-      account_number: formData.accountNumber.trim() || undefined
+      account_number: formData.accountNumber.trim()
     };
     
     if (isCreditCard) {
@@ -368,12 +387,16 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                 type="text"
                 value={formData.name}
                 onChange={(e) => {
-                  setFormData({ ...formData, name: e.target.value });
-                  if (errors.name) {
-                    setErrors({ ...errors, name: '' });
+                  const value = e.target.value;
+                  if (value.length <= 100) {
+                    setFormData({ ...formData, name: value });
+                    if (errors.name) {
+                      setErrors({ ...errors, name: '' });
+                    }
                   }
                 }}
                 placeholder={formData.type === 'bank' ? 'Ej: Cuenta Ahorros Bancolombia' : formData.type === 'wallet' ? 'Ej: Nequi Personal' : formData.type === 'credit_card' ? 'Ej: Visa Bancolombia' : 'Ej: Efectivo Casa'}
+                maxLength={100}
                 className={`newaccountmodal-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
@@ -452,10 +475,26 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                 <input
                   type="text"
                   value={formData.accountNumber}
-                  onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value.length <= 50) {
+                      setFormData({ ...formData, accountNumber: value });
+                      // Limpiar error si existe
+                      if (errors.accountNumber) {
+                        setErrors({ ...errors, accountNumber: '' });
+                      }
+                    }
+                  }}
                   placeholder={formData.type === 'credit_card' ? 'Ej: 1234 5678 9012 3456' : 'Ej: 123456789'}
-                  className="newaccountmodal-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
+                  maxLength={50}
+                  required
+                  className={`newaccountmodal-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono ${
+                    errors.accountNumber ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
+                {errors.accountNumber && (
+                  <p className="text-xs text-red-600 mt-1">{errors.accountNumber}</p>
+                )}
               </div>
             )}
 
@@ -471,11 +510,18 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                       type="number"
                       value={formData.creditLimit}
                       onChange={(e) => {
-                        setFormData({ ...formData, creditLimit: e.target.value });
-                        if (errors.creditLimit) {
-                          setErrors({ ...errors, creditLimit: '' });
+                        const value = e.target.value;
+                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                          const numValue = parseFloat(value);
+                          if (value === '' || (!isNaN(numValue) && numValue >= 0)) {
+                            setFormData({ ...formData, creditLimit: value });
+                            if (errors.creditLimit) {
+                              setErrors({ ...errors, creditLimit: '' });
+                            }
+                          }
                         }
                       }}
+                      onWheel={handleWheel}
                       placeholder="0"
                       step="1000"
                       min="0"
@@ -532,11 +578,18 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                     type="number"
                     value={formData.balance}
                     onChange={(e) => {
-                      setFormData({ ...formData, balance: e.target.value });
-                      if (errors.balance) {
-                        setErrors({ ...errors, balance: '' });
+                      const value = e.target.value;
+                      if (value === '' || /^-?\d*\.?\d*$/.test(value)) {
+                        const numValue = parseFloat(value);
+                        if (value === '' || !isNaN(numValue)) {
+                          setFormData({ ...formData, balance: value });
+                          if (errors.balance) {
+                            setErrors({ ...errors, balance: '' });
+                          }
+                        }
                       }
                     }}
+                    onWheel={handleWheel}
                     placeholder="0"
                     step="1000"
                     className={`newaccountmodal-input w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -565,7 +618,12 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                 </label>
                 <select
                   value={formData.currency}
-                  onChange={(e) => setFormData({ ...formData, currency: e.target.value as Account['currency'] })}
+                  onChange={(e) => {
+                    const newCurrency = e.target.value as Account['currency'];
+                    // Si cambia a USD o EUR, desmarcar GMF automáticamente
+                    const newGmfExempt = newCurrency === 'COP' ? formData.gmfExempt : false;
+                    setFormData({ ...formData, currency: newCurrency, gmfExempt: newGmfExempt });
+                  }}
                   className="newaccountmodal-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="COP">COP - Peso Colombiano</option>
@@ -581,27 +639,39 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
               </label>
               <textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.length <= 500) {
+                    setFormData({ ...formData, description: value });
+                  }
+                }}
                 placeholder="Agrega una descripción adicional de la cuenta..."
                 rows={3}
+                maxLength={500}
                 className="newaccountmodal-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               />
-            </div>
-
-            <div className="newaccountmodal-form-group">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.gmfExempt}
-                  onChange={(e) => setFormData({ ...formData, gmfExempt: e.target.checked })}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700">Exenta GMF</span>
-              </label>
-              <p className="text-xs text-gray-500 mt-1 ml-6">
-                Si está marcada, la cuenta está exenta del GMF (Gravamen a los Movimientos Financieros - 4x1000)
+              <p className="text-xs text-gray-500 mt-1">
+                {formData.description.length}/500 caracteres
               </p>
             </div>
+
+            {/* GMF solo aplica a cuentas en COP que NO sean tarjetas de crédito ni efectivo */}
+            {formData.currency === 'COP' && formData.type !== 'credit_card' && formData.type !== 'cash' && (
+              <div className="newaccountmodal-form-group">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.gmfExempt}
+                    onChange={(e) => setFormData({ ...formData, gmfExempt: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">Exenta GMF</span>
+                </label>
+                <p className="text-xs text-gray-500 mt-1 ml-6">
+                  Si está marcada, la cuenta está exenta del GMF (Gravamen a los Movimientos Financieros - 4x1000)
+                </p>
+              </div>
+            )}
 
             <div className="newaccountmodal-form-group">
               <label className="block text-sm font-medium text-gray-700 mb-2">
