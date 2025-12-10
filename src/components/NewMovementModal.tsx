@@ -484,13 +484,27 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     if (accountIdToUse) {
       const originAccount = accounts.find(acc => acc.id?.toString() === accountIdToUse);
       if (originAccount) {
-        const isCreditCard = originAccount.account_type === 'liability' || originAccount.category === 'credit_card';
+        const isOriginCreditCard = originAccount.account_type === 'liability' || originAccount.category === 'credit_card';
+        const isOriginCash = originAccount.category === 'other'; // Efectivo se mapea a 'other'
         const isExempt = originAccount.gmf_exempt === true;
         const isCOP = originAccount.currency === 'COP'; // GMF solo aplica a pesos colombianos
         const isApplicableTransaction = transactionTypeToUse === 'expense' || transactionTypeToUse === 'transfer';
         
-        // GMF solo se aplica a cuentas en COP, NO exentas, y para gastos/transferencias (no tarjetas de crédito)
-        if (isApplicableTransaction && !isCreditCard && !isExempt && isCOP) {
+        // Verificar si la cuenta destino es tarjeta de crédito o efectivo (para transferencias)
+        let isDestinationCreditCard = false;
+        let isDestinationCash = false;
+        if (transactionTypeToUse === 'transfer' && formData.destinationAccount) {
+          const destinationAccount = accounts.find(acc => acc.id?.toString() === formData.destinationAccount);
+          if (destinationAccount) {
+            isDestinationCreditCard = destinationAccount.account_type === 'liability' || destinationAccount.category === 'credit_card';
+            isDestinationCash = destinationAccount.category === 'other';
+          }
+        }
+        
+        // GMF solo se aplica a cuentas en COP, NO exentas, y para gastos/transferencias
+        // NO se aplica si la cuenta origen o destino es tarjeta de crédito o efectivo
+        if (isApplicableTransaction && !isOriginCreditCard && !isOriginCash 
+            && !isDestinationCreditCard && !isDestinationCash && !isExempt && isCOP) {
           gmf = (base + tax) * 0.004;
         }
       }
@@ -709,16 +723,32 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
 
       // Agregar datos de conversión de moneda si hay diferencia
       if (hasCurrencyConversion) {
-        const amount = parseFloat(formData.amount || formData.base || '0');
-        if (amount > 0) {
+        // El monto original está en formData.amount (moneda de transacción)
+        // NO usar breakdown.base que está en la moneda de la cuenta (ya convertido)
+        const originalAmountInPesos = parseFloat(formData.amount || formData.base || '0');
+        if (originalAmountInPesos > 0) {
           transactionData.transaction_currency = transactionCurrencyNormal;
           transactionData.exchange_rate = exchangeRateNormal;
-          // El original_amount debe estar en centavos de la moneda original
-          // Usar el monto base (sin IVA) para original_amount si es modo base, o el total si es modo total
-          const originalAmount = calculationMode === 'base' 
-            ? formatAmountForBackend(breakdown.base)
-            : formatAmountForBackend(breakdown.base + breakdown.tax);
-          transactionData.original_amount = originalAmount;
+          // El original_amount debe estar en centavos de la moneda original (transactionCurrencyNormal)
+          // Usar el monto original en la moneda de transacción, no el convertido
+          // Si es modo base, usar solo el monto base; si es modo total, incluir IVA
+          let originalAmount = originalAmountInPesos;
+          if (calculationMode === 'total' && formData.taxRate && formData.taxRate > 0) {
+            // En modo total, el usuario ingresó el total con IVA
+            // Para original_amount, necesitamos el base + tax en la moneda original
+            // Pero formData.amount ya incluye IVA si es modo total, así que lo usamos directamente
+            // El backend calculará el base_amount desde el total_amount
+            originalAmount = originalAmountInPesos;
+          } else if (calculationMode === 'base') {
+            // En modo base, formData.amount es el base sin IVA
+            // Si hay IVA, necesitamos agregarlo para original_amount
+            if (formData.taxRate && formData.taxRate > 0) {
+              originalAmount = originalAmountInPesos * (1 + formData.taxRate / 100);
+            } else {
+              originalAmount = originalAmountInPesos;
+            }
+          }
+          transactionData.original_amount = formatAmountForBackend(originalAmount);
         }
       }
 

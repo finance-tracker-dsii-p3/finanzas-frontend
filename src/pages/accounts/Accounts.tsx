@@ -222,23 +222,25 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
 
   if (selectedCard && selectedCard.category === 'credit_card') {
     const creditDetails = selectedCard.credit_card_details;
-    const creditLimitInCents = creditDetails?.credit_limit ?? selectedCard.credit_limit ?? 0;
-    const currentBalanceInCents = selectedCard.current_balance ?? 0;
-    
-    const creditLimit = creditLimitInCents / 100;
-    const currentBalance = currentBalanceInCents / 100;
+    // credit_limit viene en PESOS desde el backend (DecimalField), NO en centavos
+    // creditDetails.credit_limit también viene en PESOS (Decimal)
+    const creditLimit = creditDetails?.credit_limit ?? selectedCard.credit_limit ?? 0;
+    // current_balance también viene en PESOS desde el backend
+    const currentBalance = selectedCard.current_balance ?? 0;
     
     let available = 0;
+    // creditDetails.available_credit viene en PESOS (Decimal), NO en centavos
     if (creditDetails?.available_credit !== undefined && creditDetails.available_credit !== null) {
-      available = creditDetails.available_credit / 100;
+      available = creditDetails.available_credit;
     } else if (creditLimit > 0) {
       available = Math.max(0, creditLimit + currentBalance);
     }
     available = isNaN(available) || !isFinite(available) ? 0 : available;
     
-    const usedCredit = creditDetails?.used_credit ? creditDetails.used_credit / 100 : Math.abs(currentBalance);
-    const currentDebt = creditDetails?.current_debt ? creditDetails.current_debt / 100 : currentBalance;
-    const totalPaid = creditDetails?.total_paid ? creditDetails.total_paid / 100 : 0;
+    // creditDetails.used_credit, current_debt y total_paid vienen en PESOS (Decimal), NO en centavos
+    const usedCredit = creditDetails?.used_credit ?? Math.abs(currentBalance);
+    const currentDebt = creditDetails?.current_debt ?? currentBalance;
+    const totalPaid = creditDetails?.total_paid ?? 0;
     
     return (
       <CardDetail
@@ -379,19 +381,19 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
               };
 
               const creditDetails = account.credit_card_details;
-              const creditLimitInCents = creditDetails?.credit_limit ?? account.credit_limit ?? 0;
-              const currentBalanceInCents = account.current_balance ?? 0;
+              // credit_limit y current_balance vienen en PESOS desde el backend (DecimalField), NO en centavos
+              const creditLimit = creditDetails?.credit_limit ?? account.credit_limit ?? 0;
+              const currentBalance = account.current_balance ?? 0;
               
-              const creditLimit = creditLimitInCents / 100;
-              const currentBalance = currentBalanceInCents / 100;
-              
-              const usedCredit = creditDetails?.used_credit ? creditDetails.used_credit / 100 : Math.abs(currentBalance);
+              // creditDetails.used_credit viene en PESOS (Decimal), NO en centavos
+              const usedCredit = creditDetails?.used_credit ?? Math.abs(currentBalance);
               const currentDebt = creditDetails?.current_debt ? creditDetails.current_debt / 100 : currentBalance;
               const totalPaid = creditDetails?.total_paid ? creditDetails.total_paid / 100 : 0;
               
+              // creditDetails.available_credit viene en PESOS (Decimal), NO en centavos
               let available = 0;
               if (creditDetails?.available_credit !== undefined && creditDetails.available_credit !== null) {
-                available = creditDetails.available_credit / 100;
+                available = creditDetails.available_credit;
               } else if (creditLimit > 0) {
                 available = Math.max(0, creditLimit + currentBalance);
               }

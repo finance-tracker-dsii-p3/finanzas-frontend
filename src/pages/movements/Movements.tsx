@@ -56,6 +56,8 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   const [filterAccount, setFilterAccount] = useState<number | ''>('');
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
+  const [filterCurrency, setFilterCurrency] = useState<Currency | 'all'>('COP'); // Filtro de moneda para las tarjetas (por defecto COP)
+  const [filterCurrencyTable, setFilterCurrencyTable] = useState<Currency | 'all'>('all'); // Filtro de moneda para la tabla de movimientos
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -73,10 +75,33 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
     onConfirm: () => {},
   });
   
-  const [summary, setSummary] = useState({
+  const [summary, setSummary] = useState<{
+    income: number;
+    expenses: number;
+    maxIncome: number; // Mayor ingreso individual
+    maxExpense: number; // Mayor gasto individual
+    balance: number;
+    currency: Currency; // Moneda de los valores del summary
+  }>({
     income: 0,
     expenses: 0,
+    maxIncome: 0,
+    maxExpense: 0,
     balance: 0,
+    currency: 'COP', // Por defecto COP
+  });
+
+  // Summary por moneda (cuando se selecciona "Todas")
+  const [summaryByCurrency, setSummaryByCurrency] = useState<Record<Currency, {
+    income: number;
+    expenses: number;
+    maxIncome: number; // Mayor ingreso individual
+    maxExpense: number; // Mayor gasto individual
+    balance: number;
+  }>>({
+    COP: { income: 0, expenses: 0, maxIncome: 0, maxExpense: 0, balance: 0 },
+    USD: { income: 0, expenses: 0, maxIncome: 0, maxExpense: 0, balance: 0 },
+    EUR: { income: 0, expenses: 0, maxIncome: 0, maxExpense: 0, balance: 0 },
   });
 
   useEffect(() => {
@@ -89,7 +114,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   useEffect(() => {
     setCurrentPage(1);
     setSelectedIds([]);
-  }, [filterType, filterCategory, filterAccount, filterStartDate, filterEndDate, debouncedSearchTerm]);
+  }, [filterType, filterCategory, filterAccount, filterStartDate, filterEndDate, filterCurrencyTable, debouncedSearchTerm]);
 
   const loadData = useCallback(async () => {
     try {
@@ -107,7 +132,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
         start_date?: string;
         end_date?: string;
       } = {
-        ordering: '-date',
+        ordering: '-created_at', // Ordenar por fecha y hora de creación (más reciente primero)
         page: currentPage,
         page_size: pageSize,
       };
@@ -137,7 +162,12 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
       } catch {
         paginatedResponse = await transactionService.listPaginated(filters);
         if (Array.isArray(paginatedResponse.results)) {
-          paginatedResponse.results.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          // Ordenar por fecha y hora de creación (más reciente primero)
+          paginatedResponse.results.sort((a, b) => {
+            const dateA = new Date(a.created_at || a.date).getTime();
+            const dateB = new Date(b.created_at || b.date).getTime();
+            return dateB - dateA; // Más reciente primero
+          });
         }
       }
       
@@ -154,29 +184,99 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
       
       const accountsData = await accountService.getAllAccounts();
       
-      setMovements(transactionsData);
+      // Función auxiliar para obtener la moneda de una transacción
+      const getTransactionCurrency = (t: Transaction): Currency => {
+        if (t.origin_account_currency) {
+          return t.origin_account_currency;
+        }
+        const account = accountsData.find(acc => acc.id === t.origin_account);
+        return account?.currency || 'COP';
+      };
+      
+      // Filtrar por moneda si se seleccionó un filtro de moneda para la tabla
+      let filteredTransactionsData = transactionsData;
+      if (filterCurrencyTable !== 'all') {
+        filteredTransactionsData = transactionsData.filter(t => getTransactionCurrency(t) === filterCurrencyTable);
+      }
+      
+      setMovements(filteredTransactionsData);
       const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
       setAccounts(activeAccounts);
       
-      const income = transactionsData
-        .filter(t => t && t.type === 1 && typeof t.total_amount === 'number')
-        .reduce((sum, t) => sum + (t.total_amount / 100), 0);
-      const expenses = transactionsData
-        .filter(t => t && t.type === 2 && typeof t.total_amount === 'number')
-        .reduce((sum, t) => sum + (t.total_amount / 100), 0);
+      // Calcular summary por moneda (usar los datos filtrados por moneda de tabla si aplica)
+      const dataForSummary = filterCurrencyTable !== 'all' ? filteredTransactionsData : transactionsData;
       
-      setSummary({
-        income,
-        expenses,
-        balance: income - expenses,
+      const summariesByCurrency: Record<Currency, { 
+        income: number; 
+        expenses: number; 
+        maxIncome: number;
+        maxExpense: number;
+        balance: number;
+      }> = {
+        COP: { income: 0, expenses: 0, maxIncome: 0, maxExpense: 0, balance: 0 },
+        USD: { income: 0, expenses: 0, maxIncome: 0, maxExpense: 0, balance: 0 },
+        EUR: { income: 0, expenses: 0, maxIncome: 0, maxExpense: 0, balance: 0 },
+      };
+      
+      dataForSummary.forEach(t => {
+        if (!t || typeof t.total_amount !== 'number') return;
+        
+        const currency = getTransactionCurrency(t);
+        const amountInPesos = t.total_amount / 100;
+        
+        if (t.type === 1) { // Income
+          summariesByCurrency[currency].income += amountInPesos;
+          // Actualizar mayor ingreso si este es mayor
+          if (amountInPesos > summariesByCurrency[currency].maxIncome) {
+            summariesByCurrency[currency].maxIncome = amountInPesos;
+          }
+        } else if (t.type === 2) { // Expense
+          summariesByCurrency[currency].expenses += amountInPesos;
+          // Actualizar mayor gasto si este es mayor
+          if (amountInPesos > summariesByCurrency[currency].maxExpense) {
+            summariesByCurrency[currency].maxExpense = amountInPesos;
+          }
+        }
       });
+      
+      // Calcular balance para cada moneda
+      Object.keys(summariesByCurrency).forEach(currency => {
+        const summary = summariesByCurrency[currency as Currency];
+        summary.balance = summary.income - summary.expenses;
+      });
+      
+      setSummaryByCurrency(summariesByCurrency);
+      
+      // Calcular summary según el filtro seleccionado
+      if (filterCurrency === 'all') {
+        // Cuando es "Todas", usar COP como referencia (pero las tarjetas se mostrarán por moneda)
+        setSummary({
+          income: summariesByCurrency.COP.income,
+          expenses: summariesByCurrency.COP.expenses,
+          maxIncome: summariesByCurrency.COP.maxIncome,
+          maxExpense: summariesByCurrency.COP.maxExpense,
+          balance: summariesByCurrency.COP.balance,
+          currency: 'COP',
+        });
+      } else {
+        // Cuando se selecciona una moneda específica
+        const selectedSummary = summariesByCurrency[filterCurrency];
+        setSummary({
+          income: selectedSummary.income,
+          expenses: selectedSummary.expenses,
+          maxIncome: selectedSummary.maxIncome,
+          maxExpense: selectedSummary.maxExpense,
+          balance: selectedSummary.balance,
+          currency: filterCurrency,
+        });
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar movimientos';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, filterType, filterCategory, filterAccount, filterStartDate, filterEndDate, debouncedSearchTerm, pageSize]);
+  }, [currentPage, filterType, filterCategory, filterAccount, filterStartDate, filterEndDate, filterCurrencyTable, debouncedSearchTerm, filterCurrency, pageSize]);
 
   useEffect(() => {
     loadData();
@@ -320,11 +420,12 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
     setFilterAccount('');
     setFilterStartDate('');
     setFilterEndDate('');
+    setFilterCurrencyTable('all');
     setSelectedIds([]);
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = searchTerm || filterType !== 'all' || filterCategory || filterAccount || filterStartDate || filterEndDate;
+  const hasActiveFilters = searchTerm || filterType !== 'all' || filterCategory || filterAccount || filterStartDate || filterEndDate || filterCurrencyTable !== 'all';
 
   const handleDuplicate = (transaction: Transaction) => {
     setMovementToDuplicate(transaction);
@@ -450,7 +551,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3">
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as 1 | 2 | 3 | 4 | 'all')}
@@ -461,6 +562,17 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
             <option value={2}>Gastos</option>
             <option value={3}>Transferencias</option>
             <option value={4}>Ahorros</option>
+          </select>
+          
+          <select
+            value={filterCurrencyTable}
+            onChange={(e) => setFilterCurrencyTable(e.target.value as Currency | 'all')}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="all">Todas las monedas</option>
+            <option value="COP">COP</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
           </select>
 
           <select
@@ -539,7 +651,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
         <label className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm cursor-pointer hover:bg-gray-200 transition-colors">
           <input 
             type="checkbox" 
@@ -549,53 +661,131 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
           />
           Mostrar desglose fiscal
         </label>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingDown className="w-4 h-4 text-red-600" />
-            <p className="text-xs font-medium text-gray-600">Mayor Gasto</p>
-          </div>
-          <p className="text-xl font-bold text-red-600">
-            {summary.expenses > 0 ? formatCurrency(Math.round(summary.expenses * 100), 'COP') : 'Sin gastos'}
-          </p>
-          {summary.expenses > 0 && (
-            <p className="text-xs text-gray-500 mt-1">Este mes</p>
-          )}
-        </div>
-
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-4 h-4 text-green-600" />
-            <p className="text-xs font-medium text-gray-600">Mayor Ingreso</p>
-          </div>
-          <p className="text-xl font-bold text-green-600">
-            {summary.income > 0 ? formatCurrency(Math.round(summary.income * 100), 'COP') : 'Sin ingresos'}
-          </p>
-          {summary.income > 0 && (
-            <p className="text-xs text-gray-500 mt-1">Este mes</p>
-          )}
-        </div>
-
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-          <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="w-4 h-4 text-purple-600" />
-            <p className="text-xs font-medium text-gray-600">Total Gastado</p>
-          </div>
-          <p className="text-xl font-bold text-purple-600">{formatCurrency(Math.round(summary.expenses * 100), 'COP')}</p>
-          <p className="text-xs text-gray-500 mt-1">Período actual</p>
-        </div>
-
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-4 h-4 text-blue-600" />
-            <p className="text-xs font-medium text-gray-600">Total Recibido</p>
-          </div>
-          <p className="text-xl font-bold text-blue-600">{formatCurrency(Math.round(summary.income * 100), 'COP')}</p>
-          <p className="text-xs text-gray-500 mt-1">Período actual</p>
+        
+        {/* Filtro de moneda para las tarjetas */}
+        <div className="flex items-center gap-2 px-3 py-1 bg-white border border-gray-300 rounded-full text-sm">
+          <span className="text-gray-600 font-medium">Moneda:</span>
+          <select
+            value={filterCurrency}
+            onChange={(e) => setFilterCurrency(e.target.value as Currency | 'all')}
+            className="bg-transparent border-none outline-none text-gray-700 font-medium cursor-pointer"
+          >
+            <option value="all">Todas</option>
+            <option value="COP">COP</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+          </select>
         </div>
       </div>
+
+      {/* Tarjetas de resumen */}
+      {filterCurrency === 'all' ? (
+        // Mostrar tarjetas por cada moneda cuando se selecciona "Todas"
+        (['COP', 'USD', 'EUR'] as Currency[]).map(currency => {
+          const currencySummary = summaryByCurrency[currency];
+          const hasData = currencySummary.income > 0 || currencySummary.expenses > 0;
+          
+          if (!hasData) return null;
+          
+          return (
+            <div key={currency} className="mb-6">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">{currency} - Resumen</h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingDown className="w-4 h-4 text-red-600" />
+                    <p className="text-xs font-medium text-gray-600">Mayor Gasto</p>
+                  </div>
+                  <p className="text-xl font-bold text-red-600">
+                    {currencySummary.maxExpense > 0 ? formatCurrency(Math.round(currencySummary.maxExpense * 100), currency) : 'Sin gastos'}
+                  </p>
+                  {currencySummary.maxExpense > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">Este mes</p>
+                  )}
+                </div>
+
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-4 h-4 text-green-600" />
+                    <p className="text-xs font-medium text-gray-600">Mayor Ingreso</p>
+                  </div>
+                  <p className="text-xl font-bold text-green-600">
+                    {currencySummary.maxIncome > 0 ? formatCurrency(Math.round(currencySummary.maxIncome * 100), currency) : 'Sin ingresos'}
+                  </p>
+                  {currencySummary.maxIncome > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">Este mes</p>
+                  )}
+                </div>
+
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <DollarSign className="w-4 h-4 text-purple-600" />
+                    <p className="text-xs font-medium text-gray-600">Total Gastado</p>
+                  </div>
+                  <p className="text-xl font-bold text-purple-600">{formatCurrency(Math.round(currencySummary.expenses * 100), currency)}</p>
+                  <p className="text-xs text-gray-500 mt-1">Período actual</p>
+                </div>
+
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-4 h-4 text-blue-600" />
+                    <p className="text-xs font-medium text-gray-600">Total Recibido</p>
+                  </div>
+                  <p className="text-xl font-bold text-blue-600">{formatCurrency(Math.round(currencySummary.income * 100), currency)}</p>
+                  <p className="text-xs text-gray-500 mt-1">Período actual</p>
+                </div>
+              </div>
+            </div>
+          );
+        })
+      ) : (
+        // Mostrar tarjetas de una sola moneda cuando se selecciona una moneda específica
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingDown className="w-4 h-4 text-red-600" />
+              <p className="text-xs font-medium text-gray-600">Mayor Gasto</p>
+            </div>
+            <p className="text-xl font-bold text-red-600">
+              {summary.maxExpense > 0 ? formatCurrency(Math.round(summary.maxExpense * 100), summary.currency) : 'Sin gastos'}
+            </p>
+            {summary.maxExpense > 0 && (
+              <p className="text-xs text-gray-500 mt-1">Este mes</p>
+            )}
+          </div>
+
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-4 h-4 text-green-600" />
+              <p className="text-xs font-medium text-gray-600">Mayor Ingreso</p>
+            </div>
+            <p className="text-xl font-bold text-green-600">
+              {summary.maxIncome > 0 ? formatCurrency(Math.round(summary.maxIncome * 100), summary.currency) : 'Sin ingresos'}
+            </p>
+            {summary.maxIncome > 0 && (
+              <p className="text-xs text-gray-500 mt-1">Este mes</p>
+            )}
+          </div>
+
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="w-4 h-4 text-purple-600" />
+              <p className="text-xs font-medium text-gray-600">Total Gastado</p>
+            </div>
+            <p className="text-xl font-bold text-purple-600">{formatCurrency(Math.round(summary.expenses * 100), summary.currency)}</p>
+            <p className="text-xs text-gray-500 mt-1">Período actual</p>
+          </div>
+
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-4 h-4 text-blue-600" />
+              <p className="text-xs font-medium text-gray-600">Total Recibido</p>
+            </div>
+            <p className="text-xl font-bold text-blue-600">{formatCurrency(Math.round(summary.income * 100), summary.currency)}</p>
+            <p className="text-xs text-gray-500 mt-1">Período actual</p>
+          </div>
+        </div>
+      )}
 
       <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto movements-table-container">
