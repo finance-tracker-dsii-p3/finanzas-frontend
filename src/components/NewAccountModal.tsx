@@ -183,6 +183,11 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
     return formatMoneyFromPesos(Math.abs(amount), currency);
   };
 
+  const handleWheel = (e: React.WheelEvent<HTMLInputElement>) => {
+    // Prevenir que la rueda del mouse cambie el valor del input
+    e.currentTarget.blur();
+  };
+
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
     const category = localTypeToCategory(formData.type);
@@ -190,6 +195,21 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
     
     if (!formData.name.trim()) {
       newErrors.name = 'El nombre de la cuenta es requerido';
+    }
+    
+    // Validar número de cuenta: obligatorio con mínimo de dígitos según moneda
+    const accountNumberDigits = formData.accountNumber.replace(/\D/g, ''); // Solo dígitos
+    const minDigitsByCurrency: Record<Account['currency'], number> = {
+      'COP': 10,
+      'USD': 7,
+      'EUR': 8
+    };
+    const minDigits = minDigitsByCurrency[formData.currency] || 10;
+    
+    if (!formData.accountNumber.trim()) {
+      newErrors.accountNumber = 'El número de cuenta es requerido';
+    } else if (accountNumberDigits.length < minDigits) {
+      newErrors.accountNumber = `El número de cuenta debe tener al menos ${minDigits} dígitos para cuentas en ${formData.currency}`;
     }
     
     if (isCreditCard) {
@@ -238,9 +258,10 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
       current_balance: balance,
       description: formData.description.trim() || undefined,
       is_active: formData.isActive,
-      gmf_exempt: formData.gmfExempt,
+      // GMF no aplica a tarjetas de crédito ni efectivo, siempre false para ellas
+      gmf_exempt: (formData.type === 'credit_card' || formData.type === 'cash') ? false : formData.gmfExempt,
       bank_name: formData.bankName.trim() || undefined,
-      account_number: formData.accountNumber.trim() || undefined
+      account_number: formData.accountNumber.trim()
     };
     
     if (isCreditCard) {
@@ -458,12 +479,22 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                     const value = e.target.value;
                     if (value.length <= 50) {
                       setFormData({ ...formData, accountNumber: value });
+                      // Limpiar error si existe
+                      if (errors.accountNumber) {
+                        setErrors({ ...errors, accountNumber: '' });
+                      }
                     }
                   }}
                   placeholder={formData.type === 'credit_card' ? 'Ej: 1234 5678 9012 3456' : 'Ej: 123456789'}
                   maxLength={50}
-                  className="newaccountmodal-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
+                  required
+                  className={`newaccountmodal-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono ${
+                    errors.accountNumber ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
+                {errors.accountNumber && (
+                  <p className="text-xs text-red-600 mt-1">{errors.accountNumber}</p>
+                )}
               </div>
             )}
 
@@ -490,6 +521,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                           }
                         }
                       }}
+                      onWheel={handleWheel}
                       placeholder="0"
                       step="1000"
                       min="0"
@@ -557,6 +589,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                         }
                       }
                     }}
+                    onWheel={handleWheel}
                     placeholder="0"
                     step="1000"
                     className={`newaccountmodal-input w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -622,7 +655,8 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
               </p>
             </div>
 
-            {formData.currency === 'COP' && (
+            {/* GMF solo aplica a cuentas en COP que NO sean tarjetas de crédito ni efectivo */}
+            {formData.currency === 'COP' && formData.type !== 'credit_card' && formData.type !== 'cash' && (
               <div className="newaccountmodal-form-group">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input

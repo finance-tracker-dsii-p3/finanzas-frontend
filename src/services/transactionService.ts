@@ -1,5 +1,7 @@
 import { checkAndHandleAuthError } from '../utils/authErrorHandler';
 
+import { Currency } from '../utils/currencyUtils';
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
 
 export type TransactionType = 1 | 2 | 3 | 4;
@@ -8,6 +10,7 @@ export interface Transaction {
   id: number;
   origin_account: number;
   origin_account_name?: string;
+  origin_account_currency?: Currency; // Moneda de la cuenta de origen
   destination_account: number | null;
   destination_account_name?: string;
   type: TransactionType;
@@ -20,6 +23,8 @@ export interface Transaction {
   capital_amount?: number | null;
   interest_amount?: number | null;
   date: string;
+  created_at?: string; // Fecha y hora de creación (del servidor)
+  updated_at?: string; // Fecha y hora de última actualización
   category?: number | null;
   category_name?: string;
   category_color?: string;
@@ -28,8 +33,6 @@ export interface Transaction {
   note?: string | null;
   applied_rule?: number | null;
   applied_rule_name?: string | null;
-  created_at?: string;
-  updated_at?: string;
   created_by?: number;
   updated_by?: number;
 }

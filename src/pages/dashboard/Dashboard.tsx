@@ -50,12 +50,28 @@ interface CategoryData {
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'categories' | 'goals' | 'rules' | 'analytics'>('dashboard');
+  
+  // Restaurar la última vista desde localStorage, o usar 'dashboard' por defecto
+  const getInitialView = (): 'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'categories' | 'goals' | 'rules' | 'analytics' => {
+    const savedView = localStorage.getItem('dashboard_last_view');
+    const validViews: Array<'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'categories' | 'goals' | 'rules' | 'analytics'> = ['dashboard', 'movements', 'budgets', 'reports', 'accounts', 'categories', 'goals', 'rules', 'analytics'];
+    if (savedView && validViews.includes(savedView as typeof validViews[number])) {
+      return savedView as typeof validViews[number];
+    }
+    return 'dashboard';
+  };
+  
+  const [currentView, setCurrentView] = useState<'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'categories' | 'goals' | 'rules' | 'analytics'>(getInitialView());
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [includePending, setIncludePending] = useState(false);
   const [showTaxes, setShowTaxes] = useState(true);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  
+  // Guardar la vista actual en localStorage cuando cambie
+  useEffect(() => {
+    localStorage.setItem('dashboard_last_view', currentView);
+  }, [currentView]);
 
   const [monthData] = useState<MonthData>({
     income: 0,
