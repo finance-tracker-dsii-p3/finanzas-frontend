@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Loader2, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import { analyticsService, IndicatorsResponse } from '../services/analyticsService';
+import { formatMoney, Currency } from '../utils/currencyUtils';
 import './AnalyticsIndicators.css';
 
 interface AnalyticsIndicatorsProps {
@@ -30,6 +31,18 @@ const AnalyticsIndicators: React.FC<AnalyticsIndicatorsProps> = ({ period, mode 
 
   useEffect(() => {
     loadIndicators();
+  }, [loadIndicators]);
+
+  useEffect(() => {
+    const handleCurrencyChange = () => {
+      loadIndicators();
+    };
+
+    window.addEventListener('currency-changed', handleCurrencyChange);
+
+    return () => {
+      window.removeEventListener('currency-changed', handleCurrencyChange);
+    };
   }, [loadIndicators]);
 
   if (loading) {
@@ -68,7 +81,7 @@ const AnalyticsIndicators: React.FC<AnalyticsIndicatorsProps> = ({ period, mode 
           <span className="indicator-label">Ingresos</span>
         </div>
         <div className="indicator-amount income-amount">
-          {indicators.income.formatted}
+          {formatMoney(indicators.income.amount, indicators.currency as Currency)}
         </div>
         <div className="indicator-count">
           {indicators.income.count} transacciones
@@ -81,7 +94,7 @@ const AnalyticsIndicators: React.FC<AnalyticsIndicatorsProps> = ({ period, mode 
           <span className="indicator-label">Gastos</span>
         </div>
         <div className="indicator-amount expenses-amount">
-          {indicators.expenses.formatted}
+          {formatMoney(indicators.expenses.amount, indicators.currency as Currency)}
         </div>
         <div className="indicator-count">
           {indicators.expenses.count} transacciones
@@ -94,7 +107,7 @@ const AnalyticsIndicators: React.FC<AnalyticsIndicatorsProps> = ({ period, mode 
           <span className="indicator-label">Balance</span>
         </div>
         <div className={`indicator-amount ${indicators.balance.is_positive ? 'balance-positive' : 'balance-negative'}`}>
-          {indicators.balance.formatted}
+          {formatMoney(indicators.balance.amount, indicators.currency as Currency)}
         </div>
         <div className="indicator-count">
           {indicators.period.days} días

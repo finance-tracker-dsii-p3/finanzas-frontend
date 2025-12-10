@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Loader2 } from 'lucide-react';
 import { analyticsService, ExpensesChartResponse, ChartCategoryData } from '../services/analyticsService';
+import { formatMoney, Currency } from '../utils/currencyUtils';
 import './ExpensesDonutChart.css';
 
 interface ExpensesDonutChartProps {
@@ -63,6 +64,18 @@ const ExpensesDonutChart: React.FC<ExpensesDonutChartProps> = ({ period, mode, o
     loadChartData();
   }, [loadChartData]);
 
+  useEffect(() => {
+    const handleCurrencyChange = () => {
+      loadChartData();
+    };
+
+    window.addEventListener('currency-changed', handleCurrencyChange);
+
+    return () => {
+      window.removeEventListener('currency-changed', handleCurrencyChange);
+    };
+  }, [loadChartData]);
+
   const handleClick = (data: PieDataItem) => {
     if (onCategoryClick && data.categoryId !== 'others' && data.categoryId !== 'uncategorized') {
       onCategoryClick(data.categoryId);
@@ -72,10 +85,11 @@ const ExpensesDonutChart: React.FC<ExpensesDonutChartProps> = ({ period, mode, o
   const CustomTooltip = ({ active, payload }: TooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload as PieDataItem;
+      const currency = (chartData?.currency as Currency) || 'COP';
       return (
         <div className="chart-tooltip">
           <p className="tooltip-name">{data.name}</p>
-          <p className="tooltip-amount">{data.formatted_amount}</p>
+          <p className="tooltip-amount">{formatMoney(data.value, currency)}</p>
           <p className="tooltip-percentage">{data.percentage.toFixed(1)}%</p>
         </div>
       );
@@ -149,7 +163,7 @@ const ExpensesDonutChart: React.FC<ExpensesDonutChartProps> = ({ period, mode, o
       <div className="chart-header">
         <h3 className="chart-title">Gastos por Categoría</h3>
         <p className="chart-subtitle">
-          {chartData.period_summary} • Total: {chartData.total_expenses.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })}
+          {chartData.period_summary} • Total: {formatMoney(chartData.total_expenses, (chartData.currency as Currency) || 'COP')}
         </p>
       </div>
 
@@ -204,7 +218,7 @@ const ExpensesDonutChart: React.FC<ExpensesDonutChartProps> = ({ period, mode, o
             {chartData.others_data.map((item: ChartCategoryData) => (
               <li key={item.category_id} className="others-item">
                 <span className="others-name">{item.name}</span>
-                <span className="others-amount">{item.formatted_amount}</span>
+                <span className="others-amount">{formatMoney(item.amount, (chartData.currency as Currency) || 'COP')}</span>
               </li>
             ))}
           </ul>

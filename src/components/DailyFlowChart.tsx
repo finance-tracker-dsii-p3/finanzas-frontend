@@ -53,18 +53,31 @@ const DailyFlowChart: React.FC<DailyFlowChartProps> = ({ period, mode }) => {
     loadChartData();
   }, [loadChartData]);
 
+  useEffect(() => {
+    const handleCurrencyChange = () => {
+      loadChartData();
+    };
+
+    window.addEventListener('currency-changed', handleCurrencyChange);
+
+    return () => {
+      window.removeEventListener('currency-changed', handleCurrencyChange);
+    };
+  }, [loadChartData]);
+
   const formatCurrency = (value: number, currency: Currency = 'COP'): string => {
     return formatMoney(value, currency);
   };
 
   const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
     if (active && payload && payload.length) {
+      const currency = (chartData?.currency as Currency) || 'COP';
       return (
         <div className="chart-tooltip">
           <p className="tooltip-label">{`Fecha: ${label}`}</p>
             {payload.map((entry: TooltipPayload, index: number) => (
             <p key={index} style={{ color: entry.color }} className="tooltip-item">
-              {`${entry.name}: ${formatCurrency(entry.value)}`}
+              {`${entry.name}: ${formatCurrency(entry.value, currency)}`}
             </p>
           ))}
         </div>
@@ -119,19 +132,19 @@ const DailyFlowChart: React.FC<DailyFlowChartProps> = ({ period, mode }) => {
           <div className="summary-item">
             <span className="summary-label">Ingresos totales: </span>
             <span className="summary-value income-value">
-              {formatCurrency(chartData.summary.total_income)}
+              {formatCurrency(chartData.summary.total_income, (chartData.currency as Currency) || 'COP')}
             </span>
           </div>
           <div className="summary-item">
             <span className="summary-label">Gastos totales: </span>
             <span className="summary-value expenses-value">
-              {formatCurrency(chartData.summary.total_expenses)}
+              {formatCurrency(chartData.summary.total_expenses, (chartData.currency as Currency) || 'COP')}
             </span>
           </div>
           <div className="summary-item">
             <span className="summary-label">Balance final: </span>
             <span className={`summary-value ${chartData.summary.final_balance >= 0 ? 'balance-positive' : 'balance-negative'}`}>
-              {formatCurrency(chartData.summary.final_balance)}
+              {formatCurrency(chartData.summary.final_balance, (chartData.currency as Currency) || 'COP')}
             </span>
           </div>
         </div>
