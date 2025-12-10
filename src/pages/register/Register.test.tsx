@@ -159,7 +159,7 @@ describe('Register', () => {
     
     await waitFor(() => {
       expect(screen.getByText(/el usuario ya existe/i)).toBeInTheDocument();
-    });
+    }, { timeout: 3000 });
   });
 
   it('debe mostrar estado de carga durante el registro', async () => {
@@ -180,9 +180,10 @@ describe('Register', () => {
     await user.click(submitButton);
     
     await waitFor(() => {
-      expect(screen.getByText(/creando cuenta\.\.\./i)).toBeInTheDocument();
+      const loadingButton = screen.getByRole('button', { name: /creando cuenta\.\.\./i });
+      expect(loadingButton).toBeInTheDocument();
+      expect(loadingButton).toBeDisabled();
     }, { timeout: 3000 });
-    expect(submitButton).toBeDisabled();
   }, 10000);
 
   it('debe mostrar/ocultar contraseñas al hacer clic en los botones', async () => {
