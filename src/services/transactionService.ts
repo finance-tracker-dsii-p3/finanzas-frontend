@@ -35,6 +35,14 @@ export interface Transaction {
   applied_rule_name?: string | null;
   created_by?: number;
   updated_by?: number;
+  // Campos de conversión a moneda base (HU-17)
+  transaction_currency?: Currency | null;
+  exchange_rate?: number | null;
+  original_amount?: number | null;
+  base_currency?: Currency;
+  base_equivalent_amount?: number | null; // En centavos
+  base_exchange_rate?: number | null;
+  base_exchange_rate_warning?: string | null;
 }
 
 export interface CreateTransactionData {

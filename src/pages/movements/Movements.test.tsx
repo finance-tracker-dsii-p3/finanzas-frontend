@@ -279,7 +279,9 @@ describe('Movements', () => {
     );
     
     await waitFor(() => {
-      expect(screen.getByText(/base/i)).toBeInTheDocument();
+      // Buscar específicamente el encabezado "Base" de la columna de desglose fiscal
+      const baseHeaders = screen.getAllByText(/^base$/i);
+      expect(baseHeaders.length).toBeGreaterThan(0);
       expect(screen.getByText(/iva/i)).toBeInTheDocument();
     });
   });
