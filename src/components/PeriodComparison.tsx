@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Loader2, TrendingUp, TrendingDown, AlertCircle, ArrowRight } from 'lucide-react';
 import { analyticsService } from '../services/analyticsService';
+import { formatMoney, Currency } from '../utils/currencyUtils';
 import './PeriodComparison.css';
 
 interface PeriodComparisonProps {
@@ -67,6 +68,9 @@ const PeriodComparison: React.FC<PeriodComparisonProps> = ({
       alert_level: 'info' | 'warning' | 'success' | 'error';
       has_significant_changes: boolean;
     };
+    metadata?: {
+      currency?: string;
+    };
   } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,6 +102,18 @@ const PeriodComparison: React.FC<PeriodComparisonProps> = ({
 
   useEffect(() => {
     loadComparison();
+  }, [loadComparison]);
+
+  useEffect(() => {
+    const handleCurrencyChange = () => {
+      loadComparison();
+    };
+
+    window.addEventListener('currency-changed', handleCurrencyChange);
+
+    return () => {
+      window.removeEventListener('currency-changed', handleCurrencyChange);
+    };
   }, [loadComparison]);
 
   const handleModeToggle = () => {
@@ -210,19 +226,19 @@ const PeriodComparison: React.FC<PeriodComparisonProps> = ({
                 <div className="metric-item">
                   <span className="metric-label">Ingresos:</span>
                   <span className="metric-value income-value">
-                    {comparison.period_data.period1.income.formatted}
+                    {formatMoney(comparison.period_data.period1.income.amount, (comparison.metadata?.currency as Currency) || 'COP')}
                   </span>
                 </div>
                 <div className="metric-item">
                   <span className="metric-label">Gastos:</span>
                   <span className="metric-value expenses-value">
-                    {comparison.period_data.period1.expenses.formatted}
+                    {formatMoney(comparison.period_data.period1.expenses.amount, (comparison.metadata?.currency as Currency) || 'COP')}
                   </span>
                 </div>
                 <div className="metric-item">
                   <span className="metric-label">Balance:</span>
                   <span className={`metric-value ${comparison.period_data.period1.balance.is_positive ? 'balance-positive' : 'balance-negative'}`}>
-                    {comparison.period_data.period1.balance.formatted}
+                    {formatMoney(comparison.period_data.period1.balance.amount, (comparison.metadata?.currency as Currency) || 'COP')}
                   </span>
                 </div>
                 <div className="metric-count">
@@ -238,19 +254,19 @@ const PeriodComparison: React.FC<PeriodComparisonProps> = ({
                 <div className="metric-item">
                   <span className="metric-label">Ingresos:</span>
                   <span className="metric-value income-value">
-                    {comparison.period_data.period2.income.formatted}
+                    {formatMoney(comparison.period_data.period2.income.amount, (comparison.metadata?.currency as Currency) || 'COP')}
                   </span>
                 </div>
                 <div className="metric-item">
                   <span className="metric-label">Gastos:</span>
                   <span className="metric-value expenses-value">
-                    {comparison.period_data.period2.expenses.formatted}
+                    {formatMoney(comparison.period_data.period2.expenses.amount, (comparison.metadata?.currency as Currency) || 'COP')}
                   </span>
                 </div>
                 <div className="metric-item">
                   <span className="metric-label">Balance:</span>
                   <span className={`metric-value ${comparison.period_data.period2.balance.is_positive ? 'balance-positive' : 'balance-negative'}`}>
-                    {comparison.period_data.period2.balance.formatted}
+                    {formatMoney(comparison.period_data.period2.balance.amount, (comparison.metadata?.currency as Currency) || 'COP')}
                   </span>
                 </div>
                 <div className="metric-count">
@@ -267,17 +283,20 @@ const PeriodComparison: React.FC<PeriodComparisonProps> = ({
                 label="Ingresos"
                 difference={comparison.differences.income}
                 positiveColor="green"
+                currency={(comparison.metadata?.currency as Currency) || 'COP'}
               />
               <ComparisonMetric
                 label="Gastos"
                 difference={comparison.differences.expenses}
                 positiveColor="red"
                 invertLogic
+                currency={(comparison.metadata?.currency as Currency) || 'COP'}
               />
               <ComparisonMetric
                 label="Balance"
                 difference={comparison.differences.balance}
                 positiveColor="blue"
+                currency={(comparison.metadata?.currency as Currency) || 'COP'}
               />
             </div>
           </div>
@@ -312,6 +331,7 @@ interface ComparisonMetricProps {
   };
   positiveColor: 'green' | 'red' | 'blue';
   invertLogic?: boolean;
+  currency: Currency;
 }
 
 const ComparisonMetric: React.FC<ComparisonMetricProps> = ({
@@ -319,6 +339,7 @@ const ComparisonMetric: React.FC<ComparisonMetricProps> = ({
   difference,
   positiveColor,
   invertLogic = false,
+  currency,
 }) => {
   const isPositive = invertLogic ? !difference.is_increase : difference.is_increase;
   
@@ -364,7 +385,7 @@ const ComparisonMetric: React.FC<ComparisonMetricProps> = ({
       </div>
       <div className={`difference-absolute ${colorClass}`}>
         {difference.is_increase ? '+' : '-'}
-        {difference.formatted_absolute}
+        {formatMoney(Math.abs(difference.absolute), currency)}
       </div>
       {difference.is_significant && (
         <div className="difference-significant">Cambio significativo</div>
