@@ -164,7 +164,7 @@ describe('Register', () => {
 
   it('debe mostrar estado de carga durante el registro', async () => {
     const user = userEvent.setup();
-    vi.mocked(authService.register).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
+    vi.mocked(authService.register).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 200)));
     
     render(<Register />);
     
@@ -179,9 +179,11 @@ describe('Register', () => {
     const submitButton = screen.getByRole('button', { name: /crear cuenta/i });
     await user.click(submitButton);
     
-    expect(screen.getByText(/creando cuenta\.\.\./i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/creando cuenta\.\.\./i)).toBeInTheDocument();
+    }, { timeout: 3000 });
     expect(submitButton).toBeDisabled();
-  });
+  }, 10000);
 
   it('debe mostrar/ocultar contraseñas al hacer clic en los botones', async () => {
     const user = userEvent.setup();

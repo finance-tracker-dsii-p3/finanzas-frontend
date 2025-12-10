@@ -134,8 +134,11 @@ describe('Login', () => {
     await user.type(passwordInput, 'password123');
     await user.click(submitButton);
     
-    expect(screen.getByText(/iniciando sesión/i)).toBeInTheDocument();
-    expect(submitButton).toBeDisabled();
+    await waitFor(() => {
+      expect(screen.getByText(/iniciando sesión\.\.\./i)).toBeInTheDocument();
+      const button = screen.getByRole('button', { name: /iniciando sesión\.\.\./i });
+      expect(button).toBeDisabled();
+    });
   });
 
   it('debe mostrar enlace a registro', () => {

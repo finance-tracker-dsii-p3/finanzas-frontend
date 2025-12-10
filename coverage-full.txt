@@ -1,0 +1,259 @@
+﻿
+> finanzas-frontend@1.0.0 test
+> vitest --run --coverage
+
+
+ RUN  v2.1.9 C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend
+      Coverage enabled with v8
+
+stdout | src/services/transactionService.test.ts > transactionService > create > debe crear una transacci├│n de gasto
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 119000,
+  category: 1,
+  tax_percentage: 19,
+  tag: 'almuerzo',
+  note: 'Almuerzo con amigos'
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create > debe crear una transferencia
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 3,
+  date: '2025-01-15',
+  total_amount: 50000,
+  destination_account: 2,
+  note: 'Transferencia'
+}
+[DEBUG] total_amount tipo: number valor: 50000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create > debe crear un pago a tarjeta de cr├®dito con capital e intereses
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 3,
+  date: '2025-01-15',
+  total_amount: 450000,
+  destination_account: 3,
+  note: 'Pago tarjeta'
+}
+[DEBUG] total_amount tipo: number valor: 450000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create > debe redondear montos a enteros
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 119000
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > duplicate > debe duplicar una transacci├│n
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-12-10',
+  total_amount: 119000,
+  tax_percentage: 19,
+  tag: 'almuerzo',
+  note: 'Almuerzo con amigos (duplicado)'
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > parseError > debe parsear errores de campos espec├¡ficos
+[DEBUG] Enviando al backend: { origin_account: 1, type: 2, date: '2025-01-15', total_amount: 1000 }
+[DEBUG] total_amount tipo: number valor: 1000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+ Ô£ô src/services/transactionService.test.ts (24 tests) 52ms
+ Ô£ô src/services/categoryService.test.ts (14 tests) 35ms
+stdout | src/components/NewMovementModal.test.tsx > NewMovementModal > debe crear un movimiento de gasto correctamente
+[DEBUG] Total sin GMF en pesos: 100000, Total en centavos: 10000000, GMF estimado: 400
+
+ Ô£ô src/components/NewMovementModal.test.tsx (17 tests) 8356ms
+   Ô£ô NewMovementModal > debe permitir seleccionar el tipo de movimiento 341ms
+   Ô£ô NewMovementModal > debe permitir escribir en el campo de monto 458ms
+   Ô£ô NewMovementModal > debe permitir escribir en el campo de nota 654ms
+   Ô£ô NewMovementModal > debe permitir escribir en el campo de etiqueta 440ms
+   Ô£ô NewMovementModal > debe cerrar el modal al hacer clic en cancelar 364ms
+   Ô£ô NewMovementModal > debe validar que se seleccione una cuenta origen 409ms
+   Ô£ô NewMovementModal > debe validar que el monto sea mayor a cero 730ms
+   Ô£ô NewMovementModal > debe crear un movimiento de gasto correctamente 2414ms
+   Ô£ô NewMovementModal > debe calcular el total cuando se ingresa base e IVA 1141ms
+ Ô£ô src/pages/movements/Movements.test.tsx (16 tests) 8430ms
+   Ô£ô Movements > debe renderizar la p├ígina de movimientos 460ms
+   Ô£ô Movements > debe mostrar el bot├│n de nuevo movimiento 525ms
+   Ô£ô Movements > debe abrir el modal de nuevo movimiento al hacer clic 791ms
+   Ô£ô Movements > debe filtrar movimientos por tipo 666ms
+   Ô£ô Movements > debe buscar movimientos por t├®rmino de b├║squeda 1320ms
+   Ô£ô Movements > debe eliminar un movimiento 1081ms
+   Ô£ô Movements > debe duplicar un movimiento 879ms
+   Ô£ô Movements > debe mostrar el bot├│n de volver 712ms
+ Ô£ô src/services/exchangeRateService.test.ts (12 tests) 38ms
+ Ô£ô src/components/MovementDetailModal.test.tsx (14 tests) 1509ms
+   Ô£ô MovementDetailModal > debe cerrar el modal al hacer clic fuera 326ms
+ Ô£ô src/services/accountService.test.ts (12 tests) 35ms
+ Ô£ô src/services/alertService.test.ts (10 tests) 30ms
+ Ô£ô src/pages/categories/Categories.test.tsx (12 tests) 2124ms
+   Ô£ô CategoriesPage > debe llamar onBack cuando se hace clic en el bot├│n de volver 408ms
+   Ô£ô CategoriesPage > debe abrir el modal al hacer clic en nueva categor├¡a 360ms
+ Ô£ô src/pages/register/Register.test.tsx (10 tests) 15585ms
+   Ô£ô Register > debe mostrar validaci├│n de contrase├▒a en tiempo real 1056ms
+   Ô£ô Register > debe validar que la contrase├▒a tenga may├║scula, min├║scula, n├║mero y car├ícter especial 1023ms
+   Ô£ô Register > debe mostrar error si las contrase├▒as no coinciden 1451ms
+   Ô£ô Register > debe registrar usuario exitosamente con datos v├ílidos 3765ms
+   Ô£ô Register > debe mostrar error si el registro falla 3777ms
+   Ô£ô Register > debe mostrar estado de carga durante el registro 3686ms
+ Ô£ô src/pages/accounts/Accounts.test.tsx (11 tests) 2031ms
+   Ô£ô Accounts > debe renderizar el componente de cuentas 424ms
+   Ô£ô Accounts > debe llamar a onBack cuando se hace clic en volver 420ms
+   Ô£ô Accounts > debe abrir el modal al hacer clic en nueva cuenta 325ms
+ Ô£ô src/components/NewAccountModal.test.tsx (9 tests) 2963ms
+   Ô£ô NewAccountModal > debe renderizar el modal de nueva cuenta 556ms
+   Ô£ô NewAccountModal > debe permitir escribir en el campo de nombre 539ms
+   Ô£ô NewAccountModal > debe cerrar el modal al hacer clic en cancelar 300ms
+   Ô£ô NewAccountModal > debe permitir seleccionar la moneda 334ms
+ Ô£ô src/pages/login/Login.test.tsx (9 tests) 4579ms
+   Ô£ô Login > debe renderizar el formulario de login 577ms
+   Ô£ô Login > debe permitir escribir en los campos 1038ms
+   Ô£ô Login > debe mostrar error cuando el login falla 868ms
+   Ô£ô Login > debe llamar a login con las credenciales correctas 925ms
+   Ô£ô Login > debe mostrar estado de carga durante el login 737ms
+ Ô£ô src/utils/financingCategoryUtils.test.ts (9 tests) 21ms
+ Ô£ô src/utils/cookieUtils.test.ts (12 tests) 19ms
+ Ô£ô src/utils/currencyUtils.test.ts (13 tests) 53ms
+ Ô£ô src/services/authService.test.ts (7 tests) 27ms
+ Ô£ô src/utils/authErrorHandler.test.ts (8 tests) 20ms
+ Ô£ô src/services/baseCurrencyService.test.ts (5 tests) 25ms
+ Ô£ô src/components/ProtectedRoute.test.tsx (3 tests) 192ms
+ Ô£ô src/components/ConfirmModal.test.tsx (5 tests) 734ms
+   Ô£ô ConfirmModal > debe llamar onConfirm cuando se hace clic en confirmar 318ms
+ Ô£ô src/components/AlertCenter.test.tsx (2 tests) 189ms
+ Ô£ô src/components/BaseCurrencySettings.test.tsx (2 tests) 180ms
+
+ Test Files  23 passed (23)
+      Tests  236 passed (236)
+   Start at  23:21:42
+   Duration  57.08s (transform 4.62s, setup 16.77s, collect 11.89s, tests 47.23s, environment 57.97s, prepare 8.92s)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |    46.5 |    71.17 |   51.89 |    46.5 |                   
+ finanzas-frontend |       0 |        0 |       0 |       0 |                   
+  .eslintrc.cjs    |       0 |        0 |       0 |       0 | 1-14              
+ ...s-frontend/src |       0 |        0 |       0 |       0 |                   
+  App.tsx          |       0 |        0 |       0 |       0 | 1-73              
+  main.tsx         |       0 |        0 |       0 |       0 | 1-14              
+ ...src/components |   39.59 |    66.66 |   45.08 |   39.59 |                   
+  ...nter.test.tsx |     100 |      100 |     100 |     100 |                   
+  AlertCenter.tsx  |   18.67 |    57.14 |    7.69 |   18.67 | ...13-123,145-310 
+  ...ndicators.tsx |       0 |        0 |       0 |       0 | 1-107             
+  ...ings.test.tsx |     100 |      100 |     100 |     100 |                   
+  ...ySettings.tsx |   71.15 |    66.66 |      50 |   71.15 | ...02-105,117-123 
+  ...ionsModal.tsx |       0 |        0 |       0 |       0 | 1-136             
+  ...odal.test.tsx |     100 |      100 |     100 |     100 |                   
+  ConfirmModal.tsx |   86.84 |    71.42 |     100 |   86.84 | 31-35,37-41       
+  ...PlanModal.tsx |    2.76 |      100 |       0 |    2.76 | 17-387            
+  ...FlowChart.tsx |       0 |        0 |       0 |       0 | 1-210             
+  ...PlanModal.tsx |       0 |        0 |       0 |       0 | 1-347             
+  ...onutChart.tsx |       0 |        0 |       0 |       0 | 1-217             
+  ...Animation.tsx |       0 |        0 |       0 |       0 | 1-53              
+  ...tCalendar.tsx |       0 |        0 |       0 |       0 | 1-255             
+  ...odal.test.tsx |     100 |      100 |     100 |     100 |                   
+  ...tailModal.tsx |   71.49 |       56 |     100 |   71.49 | ...55,198-234,257 
+  ...odal.test.tsx |     100 |      100 |     100 |     100 |                   
+  ...ountModal.tsx |   72.11 |    59.34 |   34.48 |   72.11 | ...91,601,643-647 
+  ...dgetModal.tsx |       0 |        0 |       0 |       0 | 1-336             
+  NewGoalModal.tsx |       0 |        0 |       0 |       0 | 1-307             
+  ...odal.test.tsx |   99.19 |    92.64 |     100 |   99.19 | 298,350-351       
+  ...mentModal.tsx |   53.87 |    60.57 |   58.82 |   53.87 | ...1750,1776-1956 
+  ...mentModal.tsx |       0 |        0 |       0 |       0 | 1-331             
+  ...omparison.tsx |       0 |        0 |       0 |       0 | 1-376             
+  ...oute.test.tsx |     100 |      100 |     100 |     100 |                   
+  ...ctedRoute.tsx |     100 |      100 |     100 |     100 |                   
+  RuleForm.tsx     |       0 |        0 |       0 |       0 | 1-373             
+ ...nd/src/context |   50.55 |     62.5 |   53.33 |   50.55 |                   
+  AlertContext.tsx |   44.34 |    66.66 |      50 |   44.34 | ...08-115,140-145 
+  AuthContext.tsx  |   51.02 |    55.55 |   33.33 |   51.02 | ...09-119,140-141 
+  ...etContext.tsx |   48.91 |    58.33 |   66.66 |   48.91 | ...80-188,231-232 
+  ...ryContext.tsx |   57.55 |       75 |      75 |   57.55 | ...36-138,182-183 
+ ...rc/pages/about |       0 |        0 |       0 |       0 |                   
+  AboutPage.tsx    |       0 |        0 |       0 |       0 | 1-13              
+ ...pages/accounts |   67.15 |    57.85 |      25 |   67.15 |                   
+  ...unts.test.tsx |     100 |    96.42 |     100 |     100 | 135               
+  Accounts.tsx     |   60.75 |    48.21 |      25 |   60.75 | ...71-785,809-811 
+ ...ages/analytics |       0 |        0 |       0 |       0 |                   
+  Analytics.tsx    |       0 |        0 |       0 |       0 | 1-136             
+ .../pages/budgets |       0 |        0 |       0 |       0 |                   
+  Budgets.tsx      |       0 |        0 |       0 |       0 | 1-606             
+ ...rc/pages/cards |       0 |        0 |       0 |       0 |                   
+  CardDetail.tsx   |       0 |        0 |       0 |       0 | 1-361             
+ ...ges/categories |   74.77 |    69.91 |   30.76 |   74.77 |                   
+  ...ries.test.tsx |     100 |      100 |     100 |     100 |                   
+  Categories.tsx   |   69.83 |       63 |   30.76 |   69.83 | ...7,970-990,1015 
+ ...ages/dashboard |       0 |        0 |       0 |       0 |                   
+  Dashboard.tsx    |       0 |        0 |       0 |       0 | 1-974             
+ ...orgot-password |       0 |        0 |       0 |       0 |                   
+  ...tPassword.tsx |       0 |        0 |       0 |       0 | 1-108             
+ ...rc/pages/goals |       0 |        0 |       0 |       0 |                   
+  Goals.tsx        |       0 |        0 |       0 |       0 | 1-308             
+ ...src/pages/home |       0 |        0 |       0 |       0 |                   
+  HomePage.tsx     |       0 |        0 |       0 |       0 | 1-226             
+ ...rc/pages/login |   96.93 |     85.1 |   83.33 |   96.93 |                   
+  Login.test.tsx   |     100 |      100 |     100 |     100 |                   
+  Login.tsx        |   94.83 |    77.41 |   83.33 |   94.83 | ...28-29,33-35,47 
+ ...ages/movements |   76.96 |    72.88 |   41.53 |   76.96 |                   
+  ...ents.test.tsx |   96.88 |       85 |      90 |   96.88 | 358-363,418-426   
+  Movements.tsx    |   68.33 |    68.48 |   32.72 |   68.33 | ...1263,1276-1283 
+ .../pages/profile |       0 |        0 |       0 |       0 |                   
+  ProfilePage.tsx  |       0 |        0 |       0 |       0 | 1-682             
+ ...pages/register |   97.35 |    95.91 |   92.85 |   97.35 |                   
+  ...ster.test.tsx |     100 |      100 |     100 |     100 |                   
+  Register.tsx     |   95.91 |     94.8 |    92.3 |   95.91 | ...,58-60,216-218 
+ .../pages/reports |       0 |        0 |       0 |       0 |                   
+  Reports.tsx      |       0 |        0 |       0 |       0 | 1-238             
+ ...reset-password |       0 |        0 |       0 |       0 |                   
+  ...tPassword.tsx |       0 |        0 |       0 |       0 | 1-292             
+ ...rc/pages/rules |       0 |        0 |       0 |       0 |                   
+  Rules.tsx        |       0 |        0 |       0 |       0 | 1-332             
+ .../pages/success |       0 |        0 |       0 |       0 |                   
+  Success.tsx      |       0 |        0 |       0 |       0 | 1-73              
+ ...d/src/services |   59.54 |    71.36 |   62.37 |   59.54 |                   
+  ...rvice.test.ts |     100 |      100 |   83.33 |     100 |                   
+  ...untService.ts |   64.48 |    43.39 |   91.66 |   64.48 | ...26-327,341-342 
+  ...rvice.test.ts |     100 |      100 |      75 |     100 |                   
+  alertService.ts  |   58.23 |    57.14 |     100 |   58.23 | ...16,220-222,234 
+  ...icsService.ts |       0 |        0 |       0 |       0 | 1-466             
+  ...rvice.test.ts |     100 |      100 |     100 |     100 |                   
+  authService.ts   |      19 |       80 |   28.57 |      19 | ...32-350,353-376 
+  ...rvice.test.ts |     100 |      100 |     100 |     100 |                   
+  ...ncyService.ts |   91.66 |    60.86 |     100 |   91.66 | 19-20,27-29       
+  budgetService.ts |   15.64 |    42.85 |   23.07 |   15.64 | ...23-444,447-462 
+  ...rvice.test.ts |     100 |      100 |   72.72 |     100 |                   
+  ...oryService.ts |   70.38 |    59.32 |     100 |   70.38 | ...87-288,301-302 
+  ...lanService.ts |    6.25 |      100 |       0 |    6.25 | ...60-381,384-400 
+  ...rvice.test.ts |     100 |      100 |     100 |     100 |                   
+  ...ateService.ts |      83 |     65.3 |   88.88 |      83 | ...17-218,220-221 
+  goalService.ts   |   19.88 |       30 |    37.5 |   19.88 | ...09-225,228-241 
+  ruleService.ts   |       0 |        0 |       0 |       0 | 1-400             
+  ...rvice.test.ts |   99.16 |      100 |   38.09 |   99.16 | 359-360,532-533   
+  ...ionService.ts |   57.95 |    60.11 |   83.33 |   57.95 | ...80,592,600-616 
+ ...tend/src/utils |   98.75 |    94.73 |     100 |   98.75 |                   
+  ...ndler.test.ts |     100 |      100 |     100 |     100 |                   
+  ...rorHandler.ts |     100 |      100 |     100 |     100 |                   
+  ...Utils.test.ts |     100 |      100 |     100 |     100 |                   
+  cookieUtils.ts   |     100 |      100 |     100 |     100 |                   
+  ...Utils.test.ts |     100 |      100 |     100 |     100 |                   
+  currencyUtils.ts |   92.52 |    58.33 |     100 |   92.52 | ...06-107,128-129 
+  ...Utils.test.ts |     100 |      100 |     100 |     100 |                   
+  ...egoryUtils.ts |     100 |     92.3 |     100 |     100 | 38                
+-------------------|---------|----------|---------|---------|-------------------

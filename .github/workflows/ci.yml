@@ -48,11 +48,17 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
       
-      - name: Ejecutar tests
-        run: npm run test:run
+      - name: Ejecutar tests con cobertura
+        run: npm run test:coverage
       
-      - name: Generar reporte de cobertura
-        run: npm run test:coverage || echo "Cobertura no disponible"
+      - name: Subir reporte de cobertura
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+          fail_ci_if_error: false
         continue-on-error: true
 
   build:
@@ -100,6 +106,5 @@ jobs:
           cache: 'npm'
       
       - name: Auditoría de seguridad npm
-        run: npm audit --audit-level=moderate || true
-        continue-on-error: true
+        run: npm audit --audit-level=moderate
 

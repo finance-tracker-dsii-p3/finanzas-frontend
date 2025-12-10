@@ -11,7 +11,7 @@ export default defineConfig({
     css: true,
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
         'node_modules/',
         'src/test/',
@@ -20,6 +20,14 @@ export default defineConfig({
         '**/mockData/**',
         'dist/',
       ],
+      thresholds: {
+        // Umbral mínimo: 45% (objetivo: 70%)
+        // Nota: Muchos componentes aún no tienen tests completos
+        lines: 45,
+        functions: 45,
+        branches: 45,
+        statements: 45,
+      },
     },
   },
   resolve: {

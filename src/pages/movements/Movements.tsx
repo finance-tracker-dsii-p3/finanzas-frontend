@@ -18,6 +18,7 @@ interface Movement {
   tag?: string | null;
   origin_account: number;
   origin_account_name?: string;
+  origin_account_currency?: Currency;
   destination_account: number | null;
   destination_account_name?: string;
   type: 1 | 2 | 3 | 4;
@@ -29,6 +30,14 @@ interface Movement {
   interest_amount?: number | null;
   gmf_amount?: number | null;
   taxed_amount?: number | null;
+  // Campos de conversión a moneda base (HU-17)
+  transaction_currency?: Currency | null;
+  exchange_rate?: number | null;
+  original_amount?: number | null;
+  base_currency?: Currency;
+  base_equivalent_amount?: number | null; // En centavos
+  base_exchange_rate?: number | null;
+  base_exchange_rate_warning?: string | null;
 }
 
 interface MovementsProps {
@@ -812,6 +821,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
                 </>
               )}
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Total</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">En moneda base</th>
               <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Estado</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap sticky right-0 bg-gray-50 z-10 border-l border-gray-200">Acciones</th>
             </tr>
@@ -819,7 +829,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
           <tbody className="divide-y divide-gray-200">
             {isLoading ? (
               <tr>
-                <td colSpan={showTaxes ? 11 : 8} className="px-4 py-12">
+                <td colSpan={showTaxes ? 12 : 9} className="px-4 py-12">
                   <div className="text-center">
                     <p className="text-gray-600">Cargando movimientos...</p>
                   </div>
@@ -827,7 +837,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={showTaxes ? 11 : 8} className="px-4 py-12">
+                <td colSpan={showTaxes ? 12 : 9} className="px-4 py-12">
                   <div className="text-center">
                     <p className="text-red-600">{error}</p>
                     <button
@@ -841,7 +851,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
               </tr>
             ) : filteredMovements.length === 0 ? (
               <tr>
-                <td colSpan={showTaxes ? 11 : 8} className="px-4 py-12">
+                <td colSpan={showTaxes ? 12 : 9} className="px-4 py-12">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
                       <FileText className="w-8 h-8 text-white" />
@@ -925,6 +935,28 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
                 )}
                 <td className={`px-4 py-4 text-sm font-semibold text-right whitespace-nowrap ${getTypeColor(mov.type)}`}>
                   {mov.type === 1 ? '+' : mov.type === 2 ? '-' : ''}{formatCurrency(mov.total_amount, getAccountCurrency(mov.origin_account))}
+                  <span className="ml-1 text-xs text-gray-500">({getAccountCurrency(mov.origin_account)})</span>
+                </td>
+                <td className="px-4 py-4 text-sm text-gray-600 text-right whitespace-nowrap">
+                  {mov.base_currency && mov.base_equivalent_amount !== null && mov.base_equivalent_amount !== undefined ? (
+                    <div className="flex flex-col items-end">
+                      <span className="font-medium text-indigo-600">
+                        {formatCurrency(mov.base_equivalent_amount, mov.base_currency)}
+                      </span>
+                      {mov.base_exchange_rate && mov.base_exchange_rate !== 1 && (
+                        <span className="text-xs text-gray-500">
+                          TC: {mov.base_exchange_rate.toFixed(4)}
+                        </span>
+                      )}
+                      {mov.base_exchange_rate_warning && (
+                        <span className="text-xs text-amber-600" title={mov.base_exchange_rate_warning}>
+                          ⚠️
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
                 </td>
                 <td className="px-4 py-4 text-center whitespace-nowrap">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
