@@ -4,6 +4,11 @@ on:
   pull_request:
     branches: [ main, develop, master ]
 
+permissions:
+  issues: write
+  pull-requests: write
+  contents: read
+
 jobs:
   quality:
     name: Verificación de Calidad
@@ -41,19 +46,25 @@ jobs:
       - name: Comentar resultado en PR
         uses: actions/github-script@v7
         if: always()
+        continue-on-error: true
         with:
           script: |
-            const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
-            const message = status === '✅' 
-              ? 'Todas las verificaciones de calidad pasaron correctamente.'
-              : 'Algunas verificaciones de calidad fallaron. Revisa los logs.';
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## Verificación de Calidad ${status}\n\n${message}`
-            })
+            try {
+              const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
+              const message = status === '✅' 
+                ? 'Todas las verificaciones de calidad pasaron correctamente.'
+                : 'Algunas verificaciones de calidad fallaron. Revisa los logs.';
+              
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## Verificación de Calidad ${status}\n\n${message}`
+              });
+            } catch (error) {
+              console.log('No se pudo comentar en el PR (puede ser un PR de Dependabot o bot externo):', error.message);
+              // No lanzar el error para que el workflow continúe
+            }
 
 
 
