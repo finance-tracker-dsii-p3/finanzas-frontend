@@ -126,3 +126,5 @@ Estos servicios tienen archivos `.test.ts` pero muestran 0% en CI:
 3. **Estrategia recomendada**: Enfocarse en Fase 1 (Quick Wins) para alcanzar el 45% rápidamente, luego continuar con las demás fases según necesidad.
 
 
+
+
