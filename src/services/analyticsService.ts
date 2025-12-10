@@ -55,6 +55,7 @@ export interface ExpensesChartResponse {
   mode: string;
   period_summary: string;
   categories_count: number;
+  currency?: string;
 }
 
 export interface SeriesData {
@@ -91,6 +92,7 @@ export interface DailyFlowChartResponse {
     start: string;
     end: string;
   };
+  currency?: string;
 }
 
 export interface DashboardResponse {

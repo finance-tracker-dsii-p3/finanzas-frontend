@@ -16,7 +16,7 @@ import {
 import { useBudgets } from '../../context/BudgetContext';
 import { BudgetListItem, BudgetDetail } from '../../services/budgetService';
 import NewBudgetModal from '../../components/NewBudgetModal';
-import { formatMoney, Currency } from '../../utils/currencyUtils';
+import { formatMoneyFromPesos, Currency } from '../../utils/currencyUtils';
 import './budgets.css';
 
 interface BudgetsProps {
@@ -82,8 +82,8 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
 
   const formatCurrency = (amount: string | number, currency: Currency = 'COP'): string => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-    if (isNaN(numAmount)) return formatMoney(0, currency);
-    return formatMoney(Math.abs(numAmount), currency);
+    if (isNaN(numAmount)) return formatMoneyFromPesos(0, currency);
+    return formatMoneyFromPesos(Math.abs(numAmount), currency);
   };
 
   const formatPercentage = (value: string | number): string => {

@@ -5,6 +5,7 @@ import ExpensesDonutChart from '../../components/ExpensesDonutChart';
 import DailyFlowChart from '../../components/DailyFlowChart';
 import CategoryTransactionsModal from '../../components/CategoryTransactionsModal';
 import PeriodComparison from '../../components/PeriodComparison';
+import BaseCurrencySelector from '../../components/BaseCurrencySelector';
 import './analytics.css';
 
 interface AnalyticsPageProps {
@@ -16,6 +17,7 @@ const Analytics: React.FC<AnalyticsPageProps> = ({ onBack }) => {
   const [mode, setMode] = useState<'base' | 'total'>('total');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showTransactionsModal, setShowTransactionsModal] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleCategoryClick = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -28,6 +30,11 @@ const Analytics: React.FC<AnalyticsPageProps> = ({ onBack }) => {
 
   const handleModeToggle = () => {
     setMode(mode === 'base' ? 'total' : 'base');
+  };
+
+  const handleCurrencyChange = () => {
+    // Incrementar la key para forzar re-render de los componentes
+    setRefreshKey(prev => prev + 1);
   };
 
   return (
@@ -81,6 +88,10 @@ const Analytics: React.FC<AnalyticsPageProps> = ({ onBack }) => {
           </div>
         </div>
 
+        <div className="control-group">
+          <BaseCurrencySelector onCurrencyChange={handleCurrencyChange} />
+        </div>
+
         <div className="mode-description">
           {mode === 'base'
             ? 'Mostrando montos base (sin impuestos)'
@@ -90,12 +101,13 @@ const Analytics: React.FC<AnalyticsPageProps> = ({ onBack }) => {
 
       <div className="analytics-content">
         <div className="indicators-section">
-          <AnalyticsIndicators period={period} mode={mode} />
+          <AnalyticsIndicators key={`indicators-${refreshKey}`} period={period} mode={mode} />
         </div>
 
         <div className="charts-section">
           <div className="chart-card">
             <ExpensesDonutChart
+              key={`expenses-${refreshKey}`}
               period={period}
               mode={mode}
               onCategoryClick={handleCategoryClick}
@@ -103,13 +115,14 @@ const Analytics: React.FC<AnalyticsPageProps> = ({ onBack }) => {
           </div>
 
           <div className="chart-card">
-            <DailyFlowChart period={period} mode={mode} />
+            <DailyFlowChart key={`daily-${refreshKey}`} period={period} mode={mode} />
           </div>
         </div>
 
         <div className="comparison-section">
           <div className="chart-card">
             <PeriodComparison
+              key={`comparison-${refreshKey}`}
               defaultPeriod1="last_month"
               defaultPeriod2="current_month"
               defaultMode={mode}
