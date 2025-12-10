@@ -4,6 +4,11 @@ on:
   pull_request:
     branches: [ main, develop, master ]
 
+permissions:
+  issues: write
+  pull-requests: write
+  contents: read
+
 jobs:
   preview:
     name: Preview del PR
@@ -29,14 +34,20 @@ jobs:
       
       - name: Comentar en el PR
         uses: actions/github-script@v7
+        continue-on-error: true
         with:
           script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '✅ Build exitoso. El preview estará disponible cuando se despliegue en Vercel.'
-            })
+            try {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '✅ Build exitoso. El preview estará disponible cuando se despliegue en Vercel.'
+              });
+            } catch (error) {
+              console.log('No se pudo comentar en el PR (puede ser un PR de Dependabot o bot externo):', error.message);
+              // No lanzar el error para que el workflow continúe
+            }
 
 
 
