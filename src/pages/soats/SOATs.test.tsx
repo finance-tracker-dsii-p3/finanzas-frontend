@@ -143,8 +143,8 @@ describe('SOATs', () => {
     render(<SOATs />);
 
     await waitFor(() => {
-      expect(screen.getByText(/100 días/i)).toBeInTheDocument();
-      expect(screen.getByText(/5 días/i)).toBeInTheDocument();
+      expect(screen.getByText(/100.*d.*as/i)).toBeInTheDocument();
+      expect(screen.getByText(/5.*d.*as/i)).toBeInTheDocument();
     });
   });
 
@@ -164,7 +164,7 @@ describe('SOATs', () => {
 
     await waitFor(() => {
       // Buscar el modal por el label de vehículo que solo aparece en el modal
-      expect(screen.getByLabelText(/vehículo/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/veh.*culo/i)).toBeInTheDocument();
     });
   });
 

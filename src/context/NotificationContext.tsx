@@ -99,9 +99,17 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     try {
       const prefs = await notificationService.getPreferences();
       setPreferences(prefs);
+      // Limpiar error si se cargaron preferencias exitosamente (incluso si son por defecto)
+      setError(null);
     } catch (err) {
+      // Solo mostrar error si no es un 404 (endpoint no existe)
       const message = err instanceof Error ? err.message : 'No se pudieron cargar las preferencias';
-      setError(message);
+      if (!message.includes('404') && !message.includes('No estás autenticado')) {
+        setError(message);
+      } else {
+        // Si es 404 o error de auth, usar preferencias por defecto
+        setPreferences(null);
+      }
     }
   }, [isAuthenticated]);
 

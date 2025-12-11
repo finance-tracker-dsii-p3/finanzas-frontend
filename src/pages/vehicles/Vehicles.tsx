@@ -147,7 +147,7 @@ const Vehicles: React.FC = () => {
             Vehículos
           </h1>
           <button
-            className="btn btn-primary"
+            className="btn btn-primary action-button"
             onClick={() => setShowCreateModal(true)}
           >
             <Plus className="w-4 h-4" />
@@ -178,8 +178,8 @@ const Vehicles: React.FC = () => {
         </div>
       ) : (
         <div className="vehicles-grid">
-          {vehicles.map((vehicle) => (
-            <div key={vehicle.id} className="vehicle-card">
+          {vehicles.map((vehicle, index) => (
+            <div key={vehicle.id} className="vehicle-card stagger-item" style={{ animationDelay: `${index * 0.05}s` }}>
               <div className="vehicle-card-header">
                 <div className="vehicle-info">
                   <h3 className="vehicle-plate">{vehicle.plate}</h3>
@@ -323,9 +323,16 @@ const VehicleModal: React.FC<VehicleModalProps> = ({ vehicle, onClose, onSave })
               id="plate"
               type="text"
               value={formData.plate}
-              onChange={(e) => setFormData({ ...formData, plate: e.target.value.toUpperCase() })}
+              onChange={(e) => {
+                const value = e.target.value.toUpperCase();
+                if (value.length <= 10) {
+                  setFormData({ ...formData, plate: value });
+                }
+              }}
               placeholder="ABC123"
+              maxLength={10}
               required
+              aria-required="true"
             />
           </div>
 
@@ -335,8 +342,14 @@ const VehicleModal: React.FC<VehicleModalProps> = ({ vehicle, onClose, onSave })
               id="brand"
               type="text"
               value={formData.brand}
-              onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= 50) {
+                  setFormData({ ...formData, brand: value });
+                }
+              }}
               placeholder="Toyota"
+              maxLength={50}
             />
           </div>
 
@@ -346,8 +359,14 @@ const VehicleModal: React.FC<VehicleModalProps> = ({ vehicle, onClose, onSave })
               id="model"
               type="text"
               value={formData.model}
-              onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= 50) {
+                  setFormData({ ...formData, model: value });
+                }
+              }}
               placeholder="Corolla"
+              maxLength={50}
             />
           </div>
 

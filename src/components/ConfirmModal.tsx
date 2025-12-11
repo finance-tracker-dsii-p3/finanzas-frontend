@@ -53,7 +53,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   return (
     <div className="confirm-modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={onCancel}>
       <div
-        className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4"
+        className="confirm-modal-content bg-white rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-4">
@@ -79,14 +79,14 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           {cancelText !== undefined && (
             <button
               onClick={onCancel}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="confirm-modal-button px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
             >
               {cancelText}
             </button>
           )}
           <button
             onClick={onConfirm}
-            className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors ${styles.buttonBg}`}
+            className={`confirm-modal-button px-4 py-2 text-sm font-medium text-white rounded-lg ${styles.buttonBg}`}
           >
             {confirmText}
           </button>

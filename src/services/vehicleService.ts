@@ -127,39 +127,14 @@ const getAuthHeaders = () => {
   };
 };
 
+import { parseBackendError, handleFetchError } from '../utils/errorHandler';
+
 const parseError = async (response: Response): Promise<string> => {
   try {
-    const error = await response.json();
-    
-    if (error.error) {
-      return typeof error.error === 'string' ? error.error : error.error[0] || 'Error desconocido';
-    }
-    
-    if (error.message) {
-      return error.message;
-    }
-    
-    if (error.detail) {
-      return error.detail;
-    }
-    
-    // Errores de campos específicos
-    const fieldErrors: string[] = [];
-    for (const [field, value] of Object.entries(error)) {
-      if (Array.isArray(value)) {
-        fieldErrors.push(`${field}: ${value[0]}`);
-      } else if (typeof value === 'string') {
-        fieldErrors.push(`${field}: ${value}`);
-      }
-    }
-    
-    if (fieldErrors.length > 0) {
-      return fieldErrors.join('. ');
-    }
-    
-    return `Error ${response.status}: ${response.statusText}`;
-  } catch {
-    return `Error ${response.status}: ${response.statusText}`;
+    const error = await parseBackendError(response, 'Error en la operación de vehículos');
+    return error.message;
+  } catch (err) {
+    return err instanceof Error ? err.message : `Error ${response.status}: ${response.statusText}`;
   }
 };
 
@@ -168,19 +143,24 @@ export const vehicleService = {
    * Listar vehículos del usuario
    */
   async listVehicles(): Promise<Vehicle[]> {
-    const response = await fetch(`${API_BASE_URL}/api/vehicles/`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/vehicles/`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      if (!response.ok) {
+        const error = await parseError(response);
+        throw new Error(error);
+      }
+
+      const data = await response.json();
+      // Manejar paginación si existe
+      return Array.isArray(data) ? data : (data.results || []);
+    } catch (error) {
+      handleFetchError(error);
+      throw error;
     }
-
-    const data = await response.json();
-    // Manejar paginación si existe
-    return Array.isArray(data) ? data : (data.results || []);
   },
 
   /**
