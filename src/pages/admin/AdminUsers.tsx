@@ -205,8 +205,15 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
                 id="first_name"
                 className="form-input"
                 value={formData.first_name}
-                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.length <= 150) {
+                    setFormData({ ...formData, first_name: value });
+                  }
+                }}
+                maxLength={150}
                 required
+                aria-required="true"
               />
             </div>
 
@@ -219,8 +226,15 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
                 id="last_name"
                 className="form-input"
                 value={formData.last_name}
-                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.length <= 150) {
+                    setFormData({ ...formData, last_name: value });
+                  }
+                }}
+                maxLength={150}
                 required
+                aria-required="true"
               />
             </div>
           </div>
@@ -234,8 +248,15 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
               id="email"
               className="form-input"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= 254) {
+                  setFormData({ ...formData, email: value });
+                }
+              }}
+              maxLength={254}
               required
+              aria-required="true"
             />
           </div>
 
@@ -247,6 +268,17 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
               <input
                 type="text"
                 id="identification"
+                className="form-input"
+                value={formData.identification}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '');
+                  if (value.length <= 20) {
+                    setFormData({ ...formData, identification: value });
+                  }
+                }}
+                maxLength={20}
+                required
+                aria-required="true"
                 className="form-input"
                 value={formData.identification}
                 onChange={(e) => setFormData({ ...formData, identification: e.target.value })}

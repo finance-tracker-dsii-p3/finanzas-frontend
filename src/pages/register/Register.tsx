@@ -88,15 +88,15 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="register-container min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="register-container min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <div className="max-w-md w-full">
-        <div className="register-form-container bg-white rounded-2xl shadow-xl p-8">
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-4">
-              <img src="/logo.png" alt="eBalance" className="h-16 w-auto" />
+        <div className="register-form-container bg-white rounded-xl sm:rounded-2xl shadow-xl p-6 sm:p-8">
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="flex justify-center mb-3 sm:mb-4">
+              <img src="/logo.png" alt="eBalance" className="h-12 sm:h-16 w-auto" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Crea tu cuenta</h3>
-            <p className="text-gray-600">Comienza a gestionar tus finanzas hoy</p>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">Crea tu cuenta</h3>
+            <p className="text-sm sm:text-base text-gray-600">Comienza a gestionar tus finanzas hoy</p>
           </div>
 
           {error && (
@@ -106,7 +106,7 @@ const Register: React.FC = () => {
           )}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="register-form-group grid grid-cols-2 gap-4">
+            <div className="register-form-group grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
                   Nombre
@@ -117,8 +117,14 @@ const Register: React.FC = () => {
                     id="firstName"
                     type="text"
                     value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value.length <= 150) {
+                        setFormData({ ...formData, firstName: value });
+                      }
+                    }}
                     placeholder="Juan"
+                    maxLength={150}
                     className={`register-form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${error ? 'register-form-input-error' : ''}`}
                     required
                     aria-required="true"
@@ -135,8 +141,14 @@ const Register: React.FC = () => {
                     id="lastName"
                     type="text"
                     value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value.length <= 150) {
+                        setFormData({ ...formData, lastName: value });
+                      }
+                    }}
                     placeholder="Pérez"
+                    maxLength={150}
                     className={`register-form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${error ? 'register-form-input-error' : ''}`}
                     required
                     aria-required="true"
@@ -157,11 +169,15 @@ const Register: React.FC = () => {
                   value={formData.identification}
                   onChange={(e) => {
                     const value = e.target.value.replace(/\D/g, '');
-                    setFormData({ ...formData, identification: value });
+                    if (value.length <= 20) {
+                      setFormData({ ...formData, identification: value });
+                    }
                   }}
                   placeholder="1234567890"
+                  maxLength={20}
                   className={`register-form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${error ? 'register-form-input-error' : ''}`}
                   required
+                  aria-required="true"
                 />
               </div>
             </div>
@@ -176,10 +192,17 @@ const Register: React.FC = () => {
                   id="username"
                   type="text"
                   value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value.length <= 150) {
+                      setFormData({ ...formData, username: value });
+                    }
+                  }}
                   placeholder="usuario123"
+                  maxLength={150}
                   className={`register-form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${error ? 'register-form-input-error' : ''}`}
                   required
+                  aria-required="true"
                 />
               </div>
             </div>
@@ -194,10 +217,17 @@ const Register: React.FC = () => {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value.length <= 254) {
+                      setFormData({ ...formData, email: value });
+                    }
+                  }}
                   placeholder="tu@email.com"
+                  maxLength={254}
                   className={`register-form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${error ? 'register-form-input-error' : ''}`}
                   required
+                  aria-required="true"
                 />
               </div>
             </div>
@@ -214,9 +244,12 @@ const Register: React.FC = () => {
                   value={formData.phone}
                   onChange={(e) => {
                     const value = e.target.value.replace(/\D/g, '');
-                    setFormData({ ...formData, phone: value });
+                    if (value.length <= 20) {
+                      setFormData({ ...formData, phone: value });
+                    }
                   }}
                   placeholder="3001234567"
+                  maxLength={20}
                   className="register-form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 />
               </div>

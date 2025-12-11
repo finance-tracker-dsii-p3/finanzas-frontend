@@ -276,7 +276,7 @@ const Bills: React.FC = () => {
           <h2>No hay facturas registradas</h2>
           <p>Comienza agregando tu primera factura</p>
           <button
-            className="btn btn-primary"
+            className="btn btn-primary action-button"
             onClick={() => setShowCreateModal(true)}
           >
             <Plus className="w-4 h-4" />
@@ -285,8 +285,8 @@ const Bills: React.FC = () => {
         </div>
       ) : (
         <div className="bills-grid">
-          {bills.map((bill) => (
-            <div key={bill.id} className="bill-card">
+          {bills.map((bill, index) => (
+            <div key={bill.id} className="bill-card stagger-item" style={{ animationDelay: `${index * 0.05}s` }}>
               <div className="bill-card-header">
                 <div className="bill-info">
                   <h3 className="bill-provider">{bill.provider}</h3>
@@ -499,9 +499,16 @@ const BillModal: React.FC<BillModalProps> = ({ bill, accounts, categories, onClo
               id="provider"
               type="text"
               value={formData.provider}
-              onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= 100) {
+                  setFormData({ ...formData, provider: value });
+                }
+              }}
               placeholder="Netflix, EPM, Claro, etc."
+              maxLength={100}
               required
+              aria-required="true"
             />
           </div>
 
@@ -511,10 +518,20 @@ const BillModal: React.FC<BillModalProps> = ({ bill, accounts, categories, onClo
               id="amount"
               type="number"
               value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                  const numValue = parseFloat(value) || 0;
+                  if (value === '' || (!isNaN(numValue) && numValue >= 0 && numValue <= 999999999999)) {
+                    setFormData({ ...formData, amount: numValue });
+                  }
+                }
+              }}
               required
               min="0"
+              max="999999999999"
               step="0.01"
+              aria-required="true"
             />
             <small className="form-help">El monto se ingresa en pesos colombianos (ej: 95000)</small>
           </div>
@@ -580,10 +597,17 @@ const BillModal: React.FC<BillModalProps> = ({ bill, accounts, categories, onClo
             <textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= 500) {
+                  setFormData({ ...formData, description: value });
+                }
+              }}
               rows={3}
               placeholder="Notas adicionales sobre la factura"
+              maxLength={500}
             />
+            <small className="form-help">{formData.description.length}/500 caracteres</small>
           </div>
 
           <div className="form-group checkbox-group">

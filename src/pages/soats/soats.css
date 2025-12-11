@@ -1,12 +1,33 @@
 .soats-page {
-  padding: 2rem;
+  padding: 1rem;
   max-width: 1400px;
   margin: 0 auto;
 }
 
+@media (min-width: 640px) {
+  .soats-page {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .soats-page {
+    padding: 2rem;
+  }
+}
+
 .header-actions {
   display: flex;
+  flex-direction: column;
   gap: 1rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .header-actions {
+    flex-direction: row;
+    width: auto;
+  }
 }
 
 .filters-panel {
@@ -16,8 +37,16 @@
   padding: 1rem;
   margin-bottom: 1.5rem;
   display: flex;
+  flex-direction: column;
   gap: 1rem;
-  align-items: flex-end;
+  align-items: stretch;
+}
+
+@media (min-width: 640px) {
+  .filters-panel {
+    flex-direction: row;
+    align-items: flex-end;
+  }
 }
 
 .filter-group {
@@ -41,8 +70,21 @@
 
 .soats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .soats-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .soats-grid {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  }
 }
 
 .soat-card {
@@ -51,18 +93,29 @@
   border-radius: 0.75rem;
   padding: 1.5rem;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeInUp 0.4s ease-out;
 }
 
 .soat-card:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transform: translateY(-4px);
 }
 
 .soat-card-header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 0.5rem;
   margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+  .soat-card-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0;
+  }
 }
 
 .soat-info {
@@ -70,10 +123,16 @@
 }
 
 .soat-vehicle {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: #1f2937;
   margin-bottom: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .soat-vehicle {
+    font-size: 1.25rem;
+  }
 }
 
 .soat-vehicle-details {
@@ -82,7 +141,15 @@
 }
 
 .soat-status {
-  margin-left: 1rem;
+  margin-left: 0;
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .soat-status {
+    margin-left: 1rem;
+    margin-top: 0;
+  }
 }
 
 .soat-details {
@@ -135,15 +202,27 @@
 .btn-sm {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-danger {
   background: #dc2626;
   color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-danger:hover:not(:disabled) {
   background: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+.btn-danger:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .payment-info {

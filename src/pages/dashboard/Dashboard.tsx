@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DollarSign, Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, CreditCard, AlertCircle, User, LogOut, Clock, Users, Car, ReceiptText } from 'lucide-react';
+import { DollarSign, Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, CreditCard, AlertCircle, User, LogOut, Clock, Users, Car, ReceiptText, Menu, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useBudgets } from '../../context/BudgetContext';
 import { MonthlySummaryResponse } from '../../services/budgetService';
@@ -16,6 +16,9 @@ const CategoriesPage = lazy(() => import('../categories/Categories'));
 const Goals = lazy(() => import('../goals/Goals'));
 const Rules = lazy(() => import('../rules/Rules'));
 const Analytics = lazy(() => import('../analytics/Analytics'));
+const Vehicles = lazy(() => import('../vehicles/Vehicles'));
+const SOATs = lazy(() => import('../soats/SOATs'));
+const Bills = lazy(() => import('../bills/Bills'));
 
 const ViewLoadingFallback = () => (
   <div className="flex items-center justify-center min-h-[400px]">
@@ -25,7 +28,6 @@ const ViewLoadingFallback = () => (
     </div>
   </div>
 );
-import AlertCenter from '../../components/AlertCenter';
 import NotificationCenter from '../../components/NotificationCenter';
 import './dashboard.css';
 
@@ -48,25 +50,28 @@ interface CategoryData {
   percentage: number;
 }
 
+type ViewType = 'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'categories' | 'goals' | 'rules' | 'analytics' | 'vehicles' | 'soats' | 'bills';
+
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
   
   // Restaurar la última vista desde localStorage, o usar 'dashboard' por defecto
-  const getInitialView = (): 'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'categories' | 'goals' | 'rules' | 'analytics' => {
+  const getInitialView = (): ViewType => {
     const savedView = localStorage.getItem('dashboard_last_view');
-    const validViews: Array<'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'categories' | 'goals' | 'rules' | 'analytics'> = ['dashboard', 'movements', 'budgets', 'reports', 'accounts', 'categories', 'goals', 'rules', 'analytics'];
-    if (savedView && validViews.includes(savedView as typeof validViews[number])) {
-      return savedView as typeof validViews[number];
+    const validViews: ViewType[] = ['dashboard', 'movements', 'budgets', 'reports', 'accounts', 'categories', 'goals', 'rules', 'analytics', 'vehicles', 'soats', 'bills'];
+    if (savedView && validViews.includes(savedView as ViewType)) {
+      return savedView as ViewType;
     }
     return 'dashboard';
   };
   
-  const [currentView, setCurrentView] = useState<'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'categories' | 'goals' | 'rules' | 'analytics'>(getInitialView());
+  const [currentView, setCurrentView] = useState<ViewType>(getInitialView());
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [includePending, setIncludePending] = useState(false);
   const [showTaxes, setShowTaxes] = useState(true);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   
   // Guardar la vista actual en localStorage cuando cambie
@@ -115,12 +120,23 @@ const Dashboard: React.FC = () => {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-8">
-              <img src="/logo.png" alt="eBalance" className="h-8 w-auto" />
-              <nav className="hidden md:flex gap-6">
+            <div className="flex items-center gap-4 md:gap-8">
+              <img src="/logo.png" alt="eBalance" className="h-6 md:h-8 w-auto" />
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                aria-label="Toggle menu"
+              >
+                {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+              {/* Desktop Navigation - Always visible on md+ */}
+              <nav className="nav-tabs-responsive desktop-nav hidden md:flex md:flex-row md:relative md:bg-transparent md:border-0 md:p-0 md:shadow-none md:z-auto md:max-h-none md:overflow-visible gap-4 lg:gap-6">
                 <button
-                  onClick={() => setCurrentView('dashboard')}
-                  className={`text-sm font-medium transition-colors ${
+                  onClick={() => {
+                    setCurrentView('dashboard');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
                     currentView === 'dashboard' 
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                       : 'text-gray-600 hover:text-gray-900'
@@ -129,8 +145,11 @@ const Dashboard: React.FC = () => {
                   Dashboard
                 </button>
                 <button
-                  onClick={() => setCurrentView('movements')}
-                  className={`text-sm font-medium transition-colors ${
+                  onClick={() => {
+                    setCurrentView('movements');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
                     currentView === 'movements' 
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                       : 'text-gray-600 hover:text-gray-900'
@@ -139,8 +158,11 @@ const Dashboard: React.FC = () => {
                   Movimientos
                 </button>
                 <button
-                  onClick={() => setCurrentView('budgets')}
-                  className={`text-sm font-medium transition-colors ${
+                  onClick={() => {
+                    setCurrentView('budgets');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
                     currentView === 'budgets' 
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                       : 'text-gray-600 hover:text-gray-900'
@@ -149,8 +171,11 @@ const Dashboard: React.FC = () => {
                   Presupuestos
                 </button>
                 <button
-                  onClick={() => setCurrentView('reports')}
-                  className={`text-sm font-medium transition-colors ${
+                  onClick={() => {
+                    setCurrentView('reports');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
                     currentView === 'reports' 
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                       : 'text-gray-600 hover:text-gray-900'
@@ -159,8 +184,11 @@ const Dashboard: React.FC = () => {
                   Reportes
                 </button>
                 <button
-                  onClick={() => setCurrentView('accounts')}
-                  className={`text-sm font-medium transition-colors ${
+                  onClick={() => {
+                    setCurrentView('accounts');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
                     currentView === 'accounts' 
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                       : 'text-gray-600 hover:text-gray-900'
@@ -169,8 +197,11 @@ const Dashboard: React.FC = () => {
                   Cuentas
                 </button>
                 <button
-                  onClick={() => setCurrentView('categories')}
-                  className={`text-sm font-medium transition-colors ${
+                  onClick={() => {
+                    setCurrentView('categories');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
                     currentView === 'categories'
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1'
                       : 'text-gray-600 hover:text-gray-900'
@@ -179,8 +210,11 @@ const Dashboard: React.FC = () => {
                   Categorías
                 </button>
                 <button
-                  onClick={() => setCurrentView('goals')}
-                  className={`text-sm font-medium transition-colors ${
+                  onClick={() => {
+                    setCurrentView('goals');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
                     currentView === 'goals'
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1'
                       : 'text-gray-600 hover:text-gray-900'
@@ -189,8 +223,11 @@ const Dashboard: React.FC = () => {
                   Metas
                 </button>
                 <button
-                  onClick={() => setCurrentView('rules')}
-                  className={`text-sm font-medium transition-colors ${
+                  onClick={() => {
+                    setCurrentView('rules');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
                     currentView === 'rules'
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1'
                       : 'text-gray-600 hover:text-gray-900'
@@ -199,8 +236,11 @@ const Dashboard: React.FC = () => {
                   Reglas
                 </button>
                 <button
-                  onClick={() => setCurrentView('analytics')}
-                  className={`text-sm font-medium transition-colors ${
+                  onClick={() => {
+                    setCurrentView('analytics');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
                     currentView === 'analytics'
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1'
                       : 'text-gray-600 hover:text-gray-900'
@@ -209,35 +249,218 @@ const Dashboard: React.FC = () => {
                   Analytics
                 </button>
                 <button
-                  onClick={() => navigate('/vehicles')}
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1"
+                  onClick={() => {
+                    setCurrentView('vehicles');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press flex items-center gap-1 whitespace-nowrap ${
+                    currentView === 'vehicles' 
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
                 >
-                  <Car className="w-4 h-4" />
-                  Vehículos
+                  <Car className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                  <span>Vehículos</span>
                 </button>
                 <button
-                  onClick={() => navigate('/soats')}
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1"
+                  onClick={() => {
+                    setCurrentView('soats');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press flex items-center gap-1 whitespace-nowrap ${
+                    currentView === 'soats' 
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
                 >
-                  <Car className="w-4 h-4" />
-                  SOATs
+                  <Car className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                  <span>SOATs</span>
                 </button>
                 <button
-                  onClick={() => navigate('/bills')}
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1"
+                  onClick={() => {
+                    setCurrentView('bills');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press flex items-center gap-1 whitespace-nowrap ${
+                    currentView === 'bills' 
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
                 >
-                  <ReceiptText className="w-4 h-4" />
-                  Facturas
+                  <ReceiptText className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                  <span>Facturas</span>
                 </button>
               </nav>
+
+              {/* Mobile Navigation - Only visible when menu is open */}
+              {showMobileMenu && (
+                <nav className="nav-tabs-responsive mobile-nav md:hidden flex flex-col absolute top-16 left-0 right-0 bg-white border-b border-gray-200 p-4 shadow-lg z-50 max-h-[calc(100vh-4rem)] overflow-y-auto gap-4">
+                <button
+                  onClick={() => {
+                    setCurrentView('dashboard');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
+                    currentView === 'dashboard' 
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentView('movements');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
+                    currentView === 'movements' 
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Movimientos
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentView('budgets');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
+                    currentView === 'budgets' 
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Presupuestos
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentView('reports');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
+                    currentView === 'reports' 
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Reportes
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentView('accounts');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
+                    currentView === 'accounts' 
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Cuentas
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentView('categories');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
+                    currentView === 'categories'
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Categorías
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentView('goals');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
+                    currentView === 'goals'
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Metas
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentView('rules');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
+                    currentView === 'rules'
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Reglas
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentView('analytics');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
+                    currentView === 'analytics'
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Analytics
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentView('vehicles');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press flex items-center gap-1 whitespace-nowrap ${
+                    currentView === 'vehicles' 
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Car className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                  <span>Vehículos</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentView('soats');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press flex items-center gap-1 whitespace-nowrap ${
+                    currentView === 'soats' 
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Car className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                  <span>SOATs</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentView('bills');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press flex items-center gap-1 whitespace-nowrap ${
+                    currentView === 'bills' 
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <ReceiptText className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                  <span>Facturas</span>
+                </button>
+                </nav>
+              )}
             </div>
-            <div className="flex items-center gap-4">
-              <AlertCenter
-                onViewBudget={() => {
-                  setCurrentView('budgets');
-                }}
-              />
-              <NotificationCenter />
+            <div className="flex items-center gap-2 md:gap-4">
+              <div className="hidden sm:block">
+                <NotificationCenter />
+              </div>
               <div className="relative" ref={profileMenuRef}>
                     <button 
                       onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -249,7 +472,7 @@ const Dashboard: React.FC = () => {
                     </button>
                 
                 {showProfileMenu && (
-                  <div className="profile-menu absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <div className="profile-menu-responsive absolute right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
                     <button
                       onClick={handleViewProfile}
                       className="profile-menu-item w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
@@ -284,7 +507,7 @@ const Dashboard: React.FC = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 page-enter">
         {currentView === 'dashboard' && (
           <DashboardView
             user={user}
@@ -344,6 +567,21 @@ const Dashboard: React.FC = () => {
             <Analytics onBack={() => setCurrentView('dashboard')} />
           </Suspense>
         )}
+        {currentView === 'vehicles' && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <Vehicles />
+          </Suspense>
+        )}
+        {currentView === 'soats' && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <SOATs />
+          </Suspense>
+        )}
+        {currentView === 'bills' && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <Bills />
+          </Suspense>
+        )}
       </main>
     </div>
   );
@@ -359,7 +597,7 @@ interface DashboardViewProps {
   setSelectedMonth: (month: string) => void;
   setIncludePending: (value: boolean) => void;
   setShowTaxes: (value: boolean) => void;
-  setCurrentView: (view: 'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' | 'goals' | 'rules' | 'analytics') => void;
+  setCurrentView: (view: ViewType) => void;
 }
 
 const DashboardView: React.FC<DashboardViewProps> = ({
@@ -451,31 +689,31 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+      <div className="mb-4 sm:mb-6">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
           ¡Bienvenido de vuelta, {userName}!
         </h2>
-        <p className="text-gray-600">
+        <p className="text-sm sm:text-base text-gray-600">
           Aquí tienes un resumen rápido de tu cuenta — todo listo para continuar.
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-4 items-center justify-between">
-        <div className="flex gap-3 items-center flex-wrap">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-gray-400" />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
             <select 
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-1 sm:flex-none px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
             </select>
           </div>
-          <select className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+          <select className="w-full sm:w-auto px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
             <option>Todas las cuentas</option>
           </select>
         </div>
-        <div className="flex gap-3 items-center">
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full sm:w-auto">
           <label className="flex items-center gap-2 cursor-pointer">
             <input 
               type="checkbox" 
@@ -497,15 +735,15 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start mb-4">
+      <div className="stats-grid-responsive">
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 hover-lift card-enter">
+            <div className="flex justify-between items-start mb-3 sm:mb-4">
               <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-green-600" />
-                <p className="text-sm font-medium text-gray-700">Total Ingresos</p>
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+                <p className="text-xs sm:text-sm font-medium text-gray-700">Total Ingresos</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-green-600 mb-3">{formatCurrency(monthData.income)}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-green-600 mb-2 sm:mb-3">{formatCurrency(monthData.income)}</p>
             {incomeGoal > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
@@ -514,7 +752,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
-                    className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full transition-all"
+                    className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full transition-all progress-animated"
                     style={{ width: `${Math.min(incomeProgress, 100)}%` }}
                   ></div>
                 </div>
@@ -527,14 +765,14 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             )}
           </div>
           
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start mb-4">
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 hover-lift card-enter" style={{ animationDelay: '0.1s' }}>
+            <div className="flex justify-between items-start mb-3 sm:mb-4">
               <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-red-600" />
-                <p className="text-sm font-medium text-gray-700">Total Gastos</p>
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 flex-shrink-0" />
+                <p className="text-xs sm:text-sm font-medium text-gray-700">Total Gastos</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-red-600 mb-3">{formatCurrency(monthData.expenses)}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-red-600 mb-2 sm:mb-3">{formatCurrency(monthData.expenses)}</p>
             {showTaxes && monthData.ivaCompras > 0 && (
               <p className="text-xs text-gray-500 mb-3">IVA: {formatCurrency(monthData.ivaCompras)}</p>
             )}
@@ -546,7 +784,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
-                    className="bg-gradient-to-r from-red-500 to-red-600 h-2 rounded-full transition-all"
+                    className="bg-gradient-to-r from-red-500 to-red-600 h-2 rounded-full transition-all progress-animated"
                     style={{ width: `${Math.min(expenseProgress, 100)}%` }}
                   ></div>
                 </div>
@@ -563,14 +801,14 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             )}
           </div>
           
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start mb-4">
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 hover-lift card-enter" style={{ animationDelay: '0.2s' }}>
+            <div className="flex justify-between items-start mb-3 sm:mb-4">
               <div className="flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-blue-600" />
-                <p className="text-sm font-medium text-gray-700">Total Ahorros</p>
+                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+                <p className="text-xs sm:text-sm font-medium text-gray-700">Total Ahorros</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-blue-600 mb-3">{formatCurrency(monthData.balance)}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-blue-600 mb-2 sm:mb-3">{formatCurrency(monthData.balance)}</p>
             {savingsGoal > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
@@ -579,7 +817,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all"
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all progress-animated"
                     style={{ width: `${Math.min(savingsProgress, 100)}%` }}
                   ></div>
                 </div>
@@ -595,21 +833,21 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* Resumen de Presupuestos */}
       {budgetSummary && budgetSummary.budgets && budgetSummary.budgets.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4">
             <div className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Resumen de Presupuestos</h3>
+              <Target className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">Resumen de Presupuestos</h3>
             </div>
             <button
               onClick={() => setCurrentView('budgets')}
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+              className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
             >
               Ver todos
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
             </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {budgetSummary.budgets.slice(0, 6).map((budget) => {
               const spentPercentage = parseFloat(budget.spent_percentage);
               const statusColor =
@@ -628,11 +866,11 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               return (
                 <div
                   key={budget.budget_id}
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow"
                 >
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-2 mb-2 sm:mb-3">
                     <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm"
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white text-xs sm:text-sm flex-shrink-0"
                       style={{ backgroundColor: budget.category_color }}
                     >
                       {budget.category_icon ? (
@@ -642,17 +880,17 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{budget.category_name}</p>
+                      <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">{budget.category_name}</p>
                     </div>
                   </div>
-                  <div className="mb-3">
+                  <div className="mb-2 sm:mb-3">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs text-gray-600">Progreso</span>
                       <span className={`text-xs font-semibold ${statusTextColor}`}>
                         {formatPercentage(budget.spent_percentage)}
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2">
                       <div
                         className={`h-full rounded-full transition-all ${statusColor}`}
                         style={{ width: `${Math.min(spentPercentage, 100)}%` }}
@@ -661,16 +899,16 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <p className="text-gray-500">Límite</p>
-                      <p className="font-semibold text-gray-900">{formatCurrency(budget.amount)}</p>
+                      <p className="text-gray-500 text-xs">Límite</p>
+                      <p className="font-semibold text-gray-900 text-xs sm:text-sm">{formatCurrency(budget.amount)}</p>
                     </div>
                     <div>
-                      <p className="text-gray-500">Gastado</p>
-                      <p className="font-semibold text-red-600">{formatCurrency(budget.spent_amount)}</p>
+                      <p className="text-gray-500 text-xs">Gastado</p>
+                      <p className="font-semibold text-red-600 text-xs sm:text-sm">{formatCurrency(budget.spent_amount)}</p>
                     </div>
                   </div>
                   {budget.projection && budget.projection.will_exceed && (
-                    <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
+                    <div className="mt-2 sm:mt-3 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
                       <p className="font-semibold">⚠️ Proyección: Excederá el límite</p>
                       <p className="text-amber-700">
                         Estimado: {formatCurrency(budget.projection.projected_amount)}
@@ -695,58 +933,58 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       )}
 
       {showTaxes && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl">
+        <div className="stats-grid-responsive">
+          <div className="bg-amber-50 border border-amber-200 p-3 sm:p-4 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
-              <Receipt className="w-5 h-5 text-amber-600" />
-              <p className="text-sm font-medium text-amber-900">IVA Compras</p>
+              <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0" />
+              <p className="text-xs sm:text-sm font-medium text-amber-900">IVA Compras</p>
             </div>
-            <p className="text-xl font-bold text-amber-900">{formatCurrency(monthData.ivaCompras)}</p>
+            <p className="text-lg sm:text-xl font-bold text-amber-900">{formatCurrency(monthData.ivaCompras)}</p>
           </div>
           
-          <div className="bg-orange-50 border border-orange-200 p-4 rounded-xl">
+          <div className="bg-orange-50 border border-orange-200 p-3 sm:p-4 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
-              <Percent className="w-5 h-5 text-orange-600" />
-              <p className="text-sm font-medium text-orange-900">GMF (4×1000)</p>
+              <Percent className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 flex-shrink-0" />
+              <p className="text-xs sm:text-sm font-medium text-orange-900">GMF (4×1000)</p>
             </div>
-            <p className="text-xl font-bold text-orange-900">{formatCurrency(monthData.gmf)}</p>
+            <p className="text-lg sm:text-xl font-bold text-orange-900">{formatCurrency(monthData.gmf)}</p>
           </div>
           
-          <div className="bg-red-50 border border-red-200 p-4 rounded-xl">
+          <div className="bg-red-50 border border-red-200 p-3 sm:p-4 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
-              <CreditCard className="w-5 h-5 text-red-600" />
-              <p className="text-sm font-medium text-red-900">Intereses Tarjetas</p>
+              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 flex-shrink-0" />
+              <p className="text-xs sm:text-sm font-medium text-red-900">Intereses Tarjetas</p>
             </div>
-            <p className="text-xl font-bold text-red-900">{formatCurrency(monthData.creditCardInterests)}</p>
+            <p className="text-lg sm:text-xl font-bold text-red-900">{formatCurrency(monthData.creditCardInterests)}</p>
           </div>
         </div>
       )}
 
       {/* Sección de Tarjetas de Crédito */}
       {(upcomingPayments.length > 0 || monthlySummary) && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4">
             <div className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-purple-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Tarjetas de Crédito</h3>
+              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0" />
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">Tarjetas de Crédito</h3>
             </div>
             <button
               onClick={() => setCurrentView('accounts')}
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+              className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
             >
               Ver todas
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
             </button>
           </div>
 
           {monthlySummary && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <div className="stats-grid-responsive mb-4 sm:mb-6">
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="w-5 h-5 text-purple-600" />
-                  <p className="text-sm font-medium text-purple-900">Cuotas del mes</p>
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0" />
+                  <p className="text-xs sm:text-sm font-medium text-purple-900">Cuotas del mes</p>
                 </div>
-                <p className="text-2xl font-bold text-purple-900">
+                <p className="text-xl sm:text-2xl font-bold text-purple-900">
                   {formatMoneyFromPesos(monthlySummary.total_amount / 100, 'COP')}
                 </p>
                 <p className="text-xs text-purple-700 mt-1">
@@ -754,21 +992,21 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                 </p>
               </div>
 
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Target className="w-5 h-5 text-green-600" />
-                  <p className="text-sm font-medium text-green-900">Pagadas</p>
+                  <Target className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+                  <p className="text-xs sm:text-sm font-medium text-green-900">Pagadas</p>
                 </div>
-                <p className="text-2xl font-bold text-green-900">{monthlySummary.paid_installments}</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-900">{monthlySummary.paid_installments}</p>
                 <p className="text-xs text-green-700 mt-1">de {monthlySummary.total_installments} cuotas</p>
               </div>
 
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-5 h-5 text-amber-600" />
-                  <p className="text-sm font-medium text-amber-900">Pendientes</p>
+                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0" />
+                  <p className="text-xs sm:text-sm font-medium text-amber-900">Pendientes</p>
                 </div>
-                <p className="text-2xl font-bold text-amber-900">{monthlySummary.pending_installments}</p>
+                <p className="text-xl sm:text-2xl font-bold text-amber-900">{monthlySummary.pending_installments}</p>
                 <p className="text-xs text-amber-700 mt-1">cuotas por pagar</p>
               </div>
             </div>
@@ -776,7 +1014,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
           {upcomingPayments.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-gray-900 mb-3">Próximos pagos (30 días)</h4>
+              <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-3">Próximos pagos (30 días)</h4>
               <div className="space-y-2">
                 {upcomingPayments.slice(0, 5).map((payment) => {
                   const dueDate = new Date(payment.due_date);
@@ -785,20 +1023,20 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                   return (
                     <div
                       key={`${payment.plan_id}-${payment.installment_number}`}
-                      className={`flex items-center justify-between p-3 rounded-lg border ${
+                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 p-3 rounded-lg border ${
                         isOverdue
                           ? 'bg-red-50 border-red-200'
                           : 'bg-gray-50 border-gray-200'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                           isOverdue ? 'bg-red-500' : 'bg-purple-500'
                         }`}>
-                          <CreditCard className="w-5 h-5 text-white" />
+                          <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                         </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">{payment.credit_card}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">{payment.credit_card}</p>
                           <p className="text-xs text-gray-600">
                             Cuota {payment.installment_number} - {dueDate.toLocaleDateString('es-CO', {
                               day: '2-digit',
@@ -808,7 +1046,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-left sm:text-right w-full sm:w-auto">
                         <p className={`text-sm font-bold ${isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
                           {formatMoneyFromPesos(payment.installment_amount / 100, 'COP')}
                         </p>
@@ -835,27 +1073,27 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
           {upcomingPayments.length === 0 && !isLoadingCreditCards && (
             <div className="text-center py-8 text-gray-500">
-              <CreditCard className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-              <p className="text-sm">No hay pagos próximos en los próximos 30 días</p>
+              <CreditCard className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-gray-400" />
+              <p className="text-xs sm:text-sm">No hay pagos próximos en los próximos 30 días</p>
             </div>
           )}
 
           {isLoadingCreditCards && (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-              <p className="text-sm text-gray-600 mt-2">Cargando información de tarjetas...</p>
+            <div className="text-center py-6 sm:py-8">
+              <div className="inline-block animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-purple-600"></div>
+              <p className="text-xs sm:text-sm text-gray-600 mt-2">Cargando información de tarjetas...</p>
             </div>
           )}
         </div>
       )}
 
       {categoryData.length === 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="font-semibold text-amber-900 mb-2">Alertas de presupuesto</h3>
-              <div className="text-sm text-amber-800">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 sm:p-4">
+          <div className="flex items-start gap-2 sm:gap-3">
+            <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm sm:text-base font-semibold text-amber-900 mb-1 sm:mb-2">Alertas de presupuesto</h3>
+              <div className="text-xs sm:text-sm text-amber-800">
                 No hay alertas disponibles
               </div>
             </div>
@@ -863,25 +1101,25 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <PieChart className="w-5 h-5" />
-              Distribución de gastos
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-4">
+            <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+              <PieChart className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span>Distribución de gastos</span>
             </h3>
             {showTaxes && (
               <span className="text-xs text-gray-500">Con impuestos</span>
             )}
           </div>
           {categoryData.length === 0 ? (
-            <div className="h-64 flex items-center justify-center text-gray-400">
-              <p className="text-sm">No hay datos disponibles</p>
+            <div className="h-48 sm:h-64 flex items-center justify-center text-gray-400">
+              <p className="text-xs sm:text-sm">No hay datos disponibles</p>
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-center mb-4">
-                <svg width="200" height="200" viewBox="0 0 200 200">
+              <div className="flex items-center justify-center mb-4 overflow-x-auto">
+                <svg className="w-full max-w-[200px] h-auto" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
                   {categoryData.map((cat, idx) => {
                     const prevPercentages = categoryData.slice(0, idx).reduce((sum, c) => sum + c.percentage, 0);
                     const startAngle = (prevPercentages / 100) * 360 - 90;
@@ -931,15 +1169,15 @@ const DashboardView: React.FC<DashboardViewProps> = ({
           )}
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Activity className="w-5 h-5" />
-            Ingreso vs Gasto diario
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
+          <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+            <Activity className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+            <span>Ingreso vs Gasto diario</span>
           </h3>
-          <div className="h-64 flex items-center justify-center text-gray-400">
-            <p className="text-sm">No hay datos disponibles</p>
+          <div className="h-48 sm:h-64 flex items-center justify-center text-gray-400">
+            <p className="text-xs sm:text-sm">No hay datos disponibles</p>
           </div>
-          <div className="flex justify-center gap-4 mt-4 text-sm">
+          <div className="flex justify-center gap-4 mt-4 text-xs sm:text-sm">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-green-500 rounded"></div>
               <span>Ingresos</span>
@@ -952,54 +1190,56 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="cards-grid">
         <button 
           onClick={() => setCurrentView('movements')}
-          className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all text-left group"
+          className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 hover-lift transition-smooth text-left group card-enter"
         >
           <div className="flex items-center justify-between mb-2">
-            <FileText className="w-6 h-6 text-blue-600" />
-            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+            <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 flex-shrink-0" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0" />
           </div>
-          <h4 className="font-semibold text-gray-900 mb-1">Ver Movimientos</h4>
-          <p className="text-sm text-gray-600">Revisa todos tus ingresos y gastos</p>
+          <h4 className="text-sm sm:text-base font-semibold text-gray-900 mb-1">Ver Movimientos</h4>
+          <p className="text-xs sm:text-sm text-gray-600">Revisa todos tus ingresos y gastos</p>
         </button>
 
         <button 
-          className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all text-left group"
+          className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 hover-lift transition-smooth text-left group card-enter"
+          style={{ animationDelay: '0.1s' }}
         >
           <div className="flex items-center justify-between mb-2">
-            <Upload className="w-6 h-6 text-purple-600" />
-            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
+            <Upload className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 flex-shrink-0" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-purple-600 transition-colors flex-shrink-0" />
           </div>
-          <h4 className="font-semibold text-gray-900 mb-1">Importar Extracto</h4>
-          <p className="text-sm text-gray-600">Carga tu extracto bancario</p>
+          <h4 className="text-sm sm:text-base font-semibold text-gray-900 mb-1">Importar Extracto</h4>
+          <p className="text-xs sm:text-sm text-gray-600">Carga tu extracto bancario</p>
         </button>
 
         <button 
           onClick={() => setCurrentView('budgets')}
-          className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all text-left group"
+          className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 hover-lift transition-smooth text-left group card-enter"
+          style={{ animationDelay: '0.2s' }}
         >
           <div className="flex items-center justify-between mb-2">
-            <Target className="w-6 h-6 text-amber-600" />
-            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-amber-600 transition-colors" />
+            <Target className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 flex-shrink-0" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-amber-600 transition-colors flex-shrink-0" />
           </div>
-          <h4 className="font-semibold text-gray-900 mb-1">Presupuestos</h4>
-          <p className="text-sm text-gray-600">Gestiona tus límites mensuales</p>
+          <h4 className="text-sm sm:text-base font-semibold text-gray-900 mb-1">Presupuestos</h4>
+          <p className="text-xs sm:text-sm text-gray-600">Gestiona tus límites mensuales</p>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+      <div className="cards-grid mt-4">
         <button 
           onClick={() => setCurrentView('goals')}
-          className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all text-left group"
+          className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 hover-lift transition-smooth text-left group card-enter"
         >
           <div className="flex items-center justify-between mb-2">
-            <Target className="w-6 h-6 text-purple-600" />
-            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
+            <Target className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 flex-shrink-0" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-purple-600 transition-colors flex-shrink-0" />
           </div>
-          <h4 className="font-semibold text-gray-900 mb-1">Metas de Ahorro</h4>
-          <p className="text-sm text-gray-600">Define y alcanza tus objetivos financieros</p>
+          <h4 className="text-sm sm:text-base font-semibold text-gray-900 mb-1">Metas de Ahorro</h4>
+          <p className="text-xs sm:text-sm text-gray-600">Define y alcanza tus objetivos financieros</p>
         </button>
       </div>
     </div>

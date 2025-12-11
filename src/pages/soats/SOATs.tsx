@@ -235,7 +235,7 @@ const SOATs: React.FC = () => {
       ) : (
         <div className="soats-grid">
           {filteredSOATs.map((soat) => (
-            <div key={soat.id} className="soat-card">
+            <div key={soat.id} className="soat-card stagger-item" style={{ animationDelay: `${index * 0.05}s` }}>
               <div className="soat-card-header">
                 <div className="soat-info">
                   <h3 className="soat-vehicle">{soat.vehicle_plate}</h3>
@@ -488,9 +488,19 @@ const SOATModal: React.FC<SOATModalProps> = ({ soat, vehicles, onClose, onSave }
               id="cost"
               type="number"
               value={formData.cost}
-              onChange={(e) => setFormData({ ...formData, cost: parseInt(e.target.value) || 0 })}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '' || /^\d+$/.test(value)) {
+                  const numValue = parseInt(value) || 0;
+                  if (value === '' || (!isNaN(numValue) && numValue >= 0 && numValue <= 99999999999999)) {
+                    setFormData({ ...formData, cost: numValue });
+                  }
+                }
+              }}
               required
               min="0"
+              max="99999999999999"
+              aria-required="true"
             />
             <small className="form-help">El costo se ingresa en centavos (ej: 500000 = $5,000.00)</small>
           </div>
@@ -501,8 +511,14 @@ const SOATModal: React.FC<SOATModalProps> = ({ soat, vehicles, onClose, onSave }
               id="insurance_company"
               type="text"
               value={formData.insurance_company}
-              onChange={(e) => setFormData({ ...formData, insurance_company: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= 100) {
+                  setFormData({ ...formData, insurance_company: value });
+                }
+              }}
               placeholder="Nombre de la aseguradora"
+              maxLength={100}
             />
           </div>
 
@@ -512,8 +528,14 @@ const SOATModal: React.FC<SOATModalProps> = ({ soat, vehicles, onClose, onSave }
               id="policy_number"
               type="text"
               value={formData.policy_number}
-              onChange={(e) => setFormData({ ...formData, policy_number: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= 50) {
+                  setFormData({ ...formData, policy_number: value });
+                }
+              }}
               placeholder="Número de póliza"
+              maxLength={50}
             />
           </div>
 
@@ -522,10 +544,17 @@ const SOATModal: React.FC<SOATModalProps> = ({ soat, vehicles, onClose, onSave }
             <textarea
               id="notes"
               value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= 500) {
+                  setFormData({ ...formData, notes: value });
+                }
+              }}
               rows={3}
               placeholder="Notas adicionales"
+              maxLength={500}
             />
+            <small className="form-help">{formData.notes.length}/500 caracteres</small>
           </div>
 
           <div className="modal-actions">
