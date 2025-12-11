@@ -322,10 +322,10 @@ const Bills: React.FC = () => {
                   <div className="bill-detail-item">
                     <AlertCircle className="w-4 h-4" />
                     <div>
-                      <span className="detail-label">DÃ­as restantes:</span>
+                      <span className="detail-label">Días restantes:</span>
                       <span className={`detail-value ${bill.days_until_due <= 3 && bill.days_until_due >= 0 ? 'text-warning' : ''} ${bill.days_until_due < 0 ? 'text-danger' : ''}`}>
                         {bill.days_until_due > 0
-                          ? `${bill.days_until_due} dÃ­as`
+                          ? `${bill.days_until_due} días`
                           : bill.days_until_due === 0
                           ? 'Vence hoy'
                           : `Vencida hace ${Math.abs(bill.days_until_due)} dÃ­as`}
@@ -483,7 +483,7 @@ const BillModal: React.FC<BillModalProps> = ({ bill, accounts, categories, onClo
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{bill ? 'Editar Factura' : 'Nueva Factura'}</h2>
-          <button className="modal-close" onClick={onClose}>Ã—</button>
+          <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
         {error && (
@@ -564,7 +564,7 @@ const BillModal: React.FC<BillModalProps> = ({ bill, accounts, categories, onClo
           </div>
 
           <div className="form-group">
-            <label htmlFor="category">CategorÃ­a</label>
+            <label htmlFor="category">Categoría</label>
             <select
               id="category"
               value={formData.category || ''}
@@ -580,7 +580,7 @@ const BillModal: React.FC<BillModalProps> = ({ bill, accounts, categories, onClo
           </div>
 
           <div className="form-group">
-            <label htmlFor="reminder_days_before">DÃ­as de Recordatorio</label>
+            <label htmlFor="reminder_days_before">Días antes del vencimiento</label>
             <input
               id="reminder_days_before"
               type="number"
@@ -589,11 +589,11 @@ const BillModal: React.FC<BillModalProps> = ({ bill, accounts, categories, onClo
               min="1"
               max="365"
             />
-            <small className="form-help">DÃ­as antes del vencimiento para crear recordatorio</small>
+            <small className="form-help">Días antes del vencimiento para crear recordatorio</small>
           </div>
 
           <div className="form-group">
-            <label htmlFor="description">DescripciÃ³n</label>
+            <label htmlFor="description">Descripción</label>
             <textarea
               id="description"
               value={formData.description}
@@ -678,7 +678,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ bill, accounts, onClose, on
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>Registrar Pago de Factura</h2>
-          <button className="modal-close" onClick={onClose}>Ã—</button>
+          <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
         <div className="payment-info">
