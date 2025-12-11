@@ -127,7 +127,7 @@ const Rules: React.FC<RulesPageProps> = ({ onBack }) => {
     setConfirmModal({
       isOpen: true,
       title: 'Eliminar Tipo de Cambio',
-      message: `¿Estás seguro de que deseas eliminar la tasa ${rate.base_currency}/${rate.currency} de ${MONTHS[rate.month - 1].label} ${rate.year}? Se volverá a usar la tasa predeterminada del sistema.`,
+      message: `¿Estás seguro de que deseas eliminar la tasa ${rate.currency}/${rate.base_currency} de ${MONTHS[rate.month - 1].label} ${rate.year}? Se volverá a usar la tasa predeterminada del sistema.`,
       onConfirm: async () => {
         setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: () => {} });
         try {
@@ -303,7 +303,7 @@ const Rules: React.FC<RulesPageProps> = ({ onBack }) => {
               <div className="rate-card-header">
                 <div className="currency-pair">
                   <DollarSign className="w-5 h-5" />
-                  <span className="pair-text">{rate.base_currency} / {rate.currency}</span>
+                  <span className="pair-text">{rate.currency} / {rate.base_currency}</span>
                 </div>
                 <div className="rate-actions">
                   <button
@@ -338,7 +338,7 @@ const Rules: React.FC<RulesPageProps> = ({ onBack }) => {
                   </div>
                   <div className="info-item">
                     <span className="info-label">Conversión:</span>
-                    <span className="info-value">1 {rate.base_currency} = {parseFloat(rate.rate).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 6 })} {rate.currency}</span>
+                    <span className="info-value">1 {rate.currency} = {parseFloat(rate.rate).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 6 })} {rate.base_currency}</span>
                   </div>
                 </div>
               </div>
