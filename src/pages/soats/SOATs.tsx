@@ -273,10 +273,10 @@ const SOATs: React.FC = () => {
                   <div className="soat-detail-item">
                     <AlertCircle className="w-4 h-4" />
                     <div>
-                      <span className="detail-label">DÃ­as restantes:</span>
+                      <span className="detail-label">Días restantes:</span>
                       <span className={`detail-value ${soat.days_until_expiry <= 7 ? 'text-warning' : ''} ${soat.days_until_expiry < 0 ? 'text-danger' : ''}`}>
                         {soat.days_until_expiry > 0
-                          ? `${soat.days_until_expiry} dÃ­as`
+                          ? `${soat.days_until_expiry} días`
                           : soat.days_until_expiry === 0
                           ? 'Vence hoy'
                           : `Vencido hace ${Math.abs(soat.days_until_expiry)} dÃ­as`}
@@ -421,7 +421,7 @@ const SOATModal: React.FC<SOATModalProps> = ({ soat, vehicles, onClose, onSave }
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{soat ? 'Editar SOAT' : 'Nuevo SOAT'}</h2>
-          <button className="modal-close" onClick={onClose}>Ã—</button>
+          <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
         {error && (
@@ -432,7 +432,7 @@ const SOATModal: React.FC<SOATModalProps> = ({ soat, vehicles, onClose, onSave }
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="vehicle">VehÃ­culo *</label>
+            <label htmlFor="vehicle">Vehículo *</label>
             <select
               id="vehicle"
               value={formData.vehicle}
@@ -449,7 +449,7 @@ const SOATModal: React.FC<SOATModalProps> = ({ soat, vehicles, onClose, onSave }
           </div>
 
           <div className="form-group">
-            <label htmlFor="issue_date">Fecha de EmisiÃ³n *</label>
+            <label htmlFor="issue_date">Fecha de Emisión *</label>
             <input
               id="issue_date"
               type="date"
@@ -471,7 +471,7 @@ const SOATModal: React.FC<SOATModalProps> = ({ soat, vehicles, onClose, onSave }
           </div>
 
           <div className="form-group">
-            <label htmlFor="alert_days_before">DÃ­as de Alerta</label>
+            <label htmlFor="alert_days_before">Días antes del vencimiento</label>
             <input
               id="alert_days_before"
               type="number"
@@ -480,6 +480,7 @@ const SOATModal: React.FC<SOATModalProps> = ({ soat, vehicles, onClose, onSave }
               min="1"
               max="365"
             />
+            <small className="form-help">Días antes del vencimiento para crear alerta</small>
           </div>
 
           <div className="form-group">
@@ -523,7 +524,7 @@ const SOATModal: React.FC<SOATModalProps> = ({ soat, vehicles, onClose, onSave }
           </div>
 
           <div className="form-group">
-            <label htmlFor="policy_number">NÃºmero de PÃ³liza</label>
+            <label htmlFor="policy_number">Número de Póliza</label>
             <input
               id="policy_number"
               type="text"
@@ -611,7 +612,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ soat, accounts, onClose, on
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>Registrar Pago de SOAT</h2>
-          <button className="modal-close" onClick={onClose}>Ã—</button>
+          <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
         <div className="payment-info">
