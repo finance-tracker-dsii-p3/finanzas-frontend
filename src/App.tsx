@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { CategoryProvider } from './context/CategoryContext';
 import { BudgetProvider } from './context/BudgetContext';
 import { AlertProvider } from './context/AlertContext';
+import { NotificationProvider } from './context/NotificationContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { HomePage } from './pages/home/HomePage';
 import { AboutPage } from './pages/about/AboutPage';
@@ -15,6 +16,7 @@ import Success from './pages/success/Success';
 
 const ProfilePage = lazy(() => import('./pages/profile/ProfilePage').then(module => ({ default: module.ProfilePage })));
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
+const Notifications = lazy(() => import('./pages/notifications/Notifications'));
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -32,6 +34,7 @@ const App: React.FC = () => {
                 <CategoryProvider>
                     <BudgetProvider>
                         <AlertProvider>
+                            <NotificationProvider>
                         <main>
                         <Routes>
                             <Route path="/" element={<HomePage />} />
@@ -61,8 +64,19 @@ const App: React.FC = () => {
                                     </ProtectedRoute>
                                 } 
                             />
+                            <Route 
+                                path="/notifications" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Suspense fallback={<LoadingFallback />}>
+                                            <Notifications />
+                                        </Suspense>
+                                    </ProtectedRoute>
+                                } 
+                            />
                         </Routes>
                     </main>
+                            </NotificationProvider>
                         </AlertProvider>
                     </BudgetProvider>
                 </CategoryProvider>

@@ -5,6 +5,7 @@ import { AuthProvider } from '../../context/AuthContext';
 import { CategoryProvider } from '../../context/CategoryContext';
 import { BudgetProvider } from '../../context/BudgetContext';
 import { AlertProvider } from '../../context/AlertContext';
+import { NotificationProvider } from '../../context/NotificationContext';
 
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -13,7 +14,9 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
         <CategoryProvider>
           <BudgetProvider>
             <AlertProvider>
-              {children}
+              <NotificationProvider>
+                {children}
+              </NotificationProvider>
             </AlertProvider>
           </BudgetProvider>
         </CategoryProvider>
