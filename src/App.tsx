@@ -19,6 +19,8 @@ const ProfilePage = lazy(() => import('./pages/profile/ProfilePage').then(module
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
 const Notifications = lazy(() => import('./pages/notifications/Notifications'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
+const Vehicles = lazy(() => import('./pages/vehicles/Vehicles'));
+const SOATs = lazy(() => import('./pages/soats/SOATs'));
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -84,6 +86,26 @@ const App: React.FC = () => {
                                             <AdminUsers />
                                         </Suspense>
                                     </ProtectedAdminRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/vehicles" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Suspense fallback={<LoadingFallback />}>
+                                            <Vehicles />
+                                        </Suspense>
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/soats" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Suspense fallback={<LoadingFallback />}>
+                                            <SOATs />
+                                        </Suspense>
+                                    </ProtectedRoute>
                                 } 
                             />
                         </Routes>

@@ -5,7 +5,22 @@ export const handleAuthError = (): void => {
   window.dispatchEvent(new CustomEvent('auth:logout'));
   
   if (window.location.pathname !== '/login') {
-    window.location.href = '/login';
+    // En entorno de pruebas, usar history.pushState en lugar de location.href
+    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+      try {
+        window.history.pushState({}, '', '/login');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      } catch {
+        // Si pushState falla, intentar con href (puede generar warning en jsdom)
+        try {
+          window.location.href = '/login';
+        } catch {
+          // Ignorar errores de navigation en entorno de pruebas
+        }
+      }
+    } else {
+      window.location.href = '/login';
+    }
   }
 };
 

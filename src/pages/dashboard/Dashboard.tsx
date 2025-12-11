@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DollarSign, Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, CreditCard, AlertCircle, User, LogOut, Clock, Users } from 'lucide-react';
+import { DollarSign, Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, CreditCard, AlertCircle, User, LogOut, Clock, Users, Car } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useBudgets } from '../../context/BudgetContext';
 import { MonthlySummaryResponse } from '../../services/budgetService';
@@ -207,6 +207,20 @@ const Dashboard: React.FC = () => {
                   }`}
                 >
                   Analytics
+                </button>
+                <button
+                  onClick={() => navigate('/vehicles')}
+                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1"
+                >
+                  <Car className="w-4 h-4" />
+                  Vehículos
+                </button>
+                <button
+                  onClick={() => navigate('/soats')}
+                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1"
+                >
+                  <Car className="w-4 h-4" />
+                  SOATs
                 </button>
               </nav>
             </div>
