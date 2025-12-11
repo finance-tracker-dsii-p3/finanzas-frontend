@@ -1,0 +1,221 @@
+.bills-page {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.filters-panel {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 150px;
+}
+
+.filter-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.filter-group input,
+.filter-group select {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.bills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.bill-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+}
+
+.bill-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.bill-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.bill-info {
+  flex: 1;
+}
+
+.bill-provider {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.bill-recurring-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.bill-status {
+  margin-left: 1rem;
+}
+
+.bill-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.bill-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.bill-detail-item svg {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #6b7280;
+  margin-right: 0.5rem;
+}
+
+.detail-value {
+  color: #1f2937;
+}
+
+.detail-value.text-warning {
+  color: #d97706;
+  font-weight: 600;
+}
+
+.detail-value.text-danger {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.bill-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.payment-info {
+  background: #f3f4f6;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.payment-info p {
+  margin: 0.25rem 0;
+  color: #374151;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 0.5rem;
+}
+
+/* Reutilizar estilos de soats.css */
+.bills-page .loading-container,
+.bills-page .error-banner,
+.bills-page .empty-state,
+.bills-page .page-header,
+.bills-page .page-title,
+.bills-page .modal-overlay,
+.bills-page .modal-content,
+.bills-page .modal-header,
+.bills-page .modal-close,
+.bills-page .modal-error,
+.bills-page .form-group,
+.bills-page .form-group label,
+.bills-page .form-group input,
+.bills-page .form-group select,
+.bills-page .form-group textarea,
+.bills-page .form-help,
+.bills-page .modal-actions,
+.bills-page .btn,
+.bills-page .btn-primary,
+.bills-page .btn-secondary,
+.bills-page .badge,
+.bills-page .badge-success,
+.bills-page .badge-warning,
+.bills-page .badge-danger {
+  /* Estilos compartidos con soats.css y vehicles.css */
+}
+

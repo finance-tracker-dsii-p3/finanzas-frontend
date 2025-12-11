@@ -21,6 +21,7 @@ const Notifications = lazy(() => import('./pages/notifications/Notifications'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
 const Vehicles = lazy(() => import('./pages/vehicles/Vehicles'));
 const SOATs = lazy(() => import('./pages/soats/SOATs'));
+const Bills = lazy(() => import('./pages/bills/Bills'));
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -104,6 +105,16 @@ const App: React.FC = () => {
                                     <ProtectedRoute>
                                         <Suspense fallback={<LoadingFallback />}>
                                             <SOATs />
+                                        </Suspense>
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/bills" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Suspense fallback={<LoadingFallback />}>
+                                            <Bills />
                                         </Suspense>
                                     </ProtectedRoute>
                                 } 
