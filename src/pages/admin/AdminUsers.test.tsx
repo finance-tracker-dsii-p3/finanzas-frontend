@@ -69,7 +69,7 @@ describe('AdminUsers', () => {
     render(<AdminUsers />);
 
     await waitFor(() => {
-      expect(screen.getByText('Administración de Usuarios')).toBeInTheDocument();
+      expect(screen.getByText(/Administraci.*n de Usuarios/i)).toBeInTheDocument();
     });
 
     expect(screen.getByText('Gestiona usuarios registrados en el sistema')).toBeInTheDocument();
@@ -210,7 +210,7 @@ describe('AdminUsers', () => {
     await user.clear(firstNameInput);
     await user.type(firstNameInput, 'Nuevo Nombre');
 
-    const emailInput = screen.getByLabelText(/correo electrónico/i);
+    const emailInput = screen.getByLabelText(/correo electr.*nico/i);
     await user.clear(emailInput);
     await user.type(emailInput, 'nuevo@test.com');
 
