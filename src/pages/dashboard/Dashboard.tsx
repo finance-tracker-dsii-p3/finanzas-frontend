@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DollarSign, Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, CreditCard, AlertCircle, User, LogOut, Clock } from 'lucide-react';
+import { DollarSign, Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, CreditCard, AlertCircle, User, LogOut, Clock, Users } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useBudgets } from '../../context/BudgetContext';
 import { MonthlySummaryResponse } from '../../services/budgetService';
@@ -236,6 +236,18 @@ const Dashboard: React.FC = () => {
                       <User className="w-4 h-4" />
                       Ver perfil
                     </button>
+                    {user?.role === 'admin' && (
+                      <button
+                        onClick={() => {
+                          navigate('/admin/users');
+                          setShowProfileMenu(false);
+                        }}
+                        className="profile-menu-item w-full flex items-center gap-2 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
+                      >
+                        <Users className="w-4 h-4" />
+                        Administrar Usuarios
+                      </button>
+                    )}
                     <button
                       onClick={handleLogout}
                       className="profile-menu-item w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"

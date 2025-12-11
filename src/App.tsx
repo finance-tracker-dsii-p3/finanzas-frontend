@@ -6,6 +6,7 @@ import { BudgetProvider } from './context/BudgetContext';
 import { AlertProvider } from './context/AlertContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { ProtectedAdminRoute } from './components/ProtectedAdminRoute';
 import { HomePage } from './pages/home/HomePage';
 import { AboutPage } from './pages/about/AboutPage';
 import Login from './pages/login/Login';
@@ -17,6 +18,7 @@ import Success from './pages/success/Success';
 const ProfilePage = lazy(() => import('./pages/profile/ProfilePage').then(module => ({ default: module.ProfilePage })));
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
 const Notifications = lazy(() => import('./pages/notifications/Notifications'));
+const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -72,6 +74,16 @@ const App: React.FC = () => {
                                             <Notifications />
                                         </Suspense>
                                     </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/admin/users" 
+                                element={
+                                    <ProtectedAdminRoute>
+                                        <Suspense fallback={<LoadingFallback />}>
+                                            <AdminUsers />
+                                        </Suspense>
+                                    </ProtectedAdminRoute>
                                 } 
                             />
                         </Routes>
