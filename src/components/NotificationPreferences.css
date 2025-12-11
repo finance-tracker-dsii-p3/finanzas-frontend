@@ -1,0 +1,236 @@
+.preferences-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.preferences-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.preferences-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.preferences-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.preferences-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.preferences-alert-error {
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.preferences-alert-success {
+  background-color: #d1fae5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.preferences-loading,
+.preferences-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.preferences-form {
+  background: white;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.preferences-section {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.preferences-section:last-of-type {
+  border-bottom: none;
+}
+
+.preferences-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.preferences-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.preferences-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.preferences-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.preferences-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background: white;
+  color: #111827;
+  transition: all 0.2s;
+}
+
+.preferences-select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.preferences-help {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+.preferences-toggle-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.preferences-toggle-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.preferences-toggle-item:hover {
+  background-color: #f3f4f6;
+}
+
+.preferences-toggle-info {
+  flex: 1;
+}
+
+.preferences-toggle-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 0.25rem;
+  cursor: pointer;
+}
+
+.preferences-toggle-description {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.preferences-switch {
+  position: relative;
+  display: inline-block;
+  width: 3rem;
+  height: 1.5rem;
+  margin-left: 1rem;
+}
+
+.preferences-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.preferences-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: 0.3s;
+  border-radius: 1.5rem;
+}
+
+.preferences-slider:before {
+  position: absolute;
+  content: '';
+  height: 1.125rem;
+  width: 1.125rem;
+  left: 0.1875rem;
+  bottom: 0.1875rem;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.preferences-switch input:checked + .preferences-slider {
+  background-color: #2563eb;
+}
+
+.preferences-switch input:checked + .preferences-slider:before {
+  transform: translateX(1.5rem);
+}
+
+.preferences-actions {
+  padding: 1.5rem;
+  background-color: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.preferences-save-btn {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background-color: #2563eb;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preferences-save-btn:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.preferences-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+

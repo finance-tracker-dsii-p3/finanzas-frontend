@@ -26,6 +26,7 @@ const ViewLoadingFallback = () => (
   </div>
 );
 import AlertCenter from '../../components/AlertCenter';
+import NotificationCenter from '../../components/NotificationCenter';
 import './dashboard.css';
 
 interface MonthData {
@@ -215,6 +216,7 @@ const Dashboard: React.FC = () => {
                   setCurrentView('budgets');
                 }}
               />
+              <NotificationCenter />
               <div className="relative" ref={profileMenuRef}>
                     <button 
                       onClick={() => setShowProfileMenu(!showProfileMenu)}
