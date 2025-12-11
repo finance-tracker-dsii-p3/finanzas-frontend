@@ -57,12 +57,12 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="login-container min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+    <div className="login-container min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center">
         <div className="login-left-panel hidden lg:block">
           <div className="space-y-6">
-            <div className="flex items-center justify-center mb-8">
-              <img src="/horizontal.png" alt="eBalance" className="w-auto" style={{ height: '7.8rem' }} />
+            <div className="flex items-center justify-center mb-6 lg:mb-8">
+              <img src="/horizontal.png" alt="eBalance" className="w-auto max-w-full" style={{ height: '7.8rem' }} />
             </div>
             
             <div className="w-full h-64 flex items-center justify-center">
@@ -71,10 +71,10 @@ const Login: React.FC = () => {
           </div>
         </div>
 
-        <div className="login-form-container bg-white rounded-2xl shadow-xl p-8 lg:p-10">
-          <div className="mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Bienvenido de nuevo</h3>
-            <p className="text-gray-600">Ingresa tus credenciales para continuar</p>
+        <div className="login-form-container bg-white rounded-xl lg:rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10 w-full">
+          <div className="mb-6 sm:mb-8">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">Bienvenido de nuevo</h3>
+            <p className="text-sm sm:text-base text-gray-600">Ingresa tus credenciales para continuar</p>
           </div>
 
           {error && (
@@ -94,8 +94,14 @@ const Login: React.FC = () => {
                   id="username"
                   type="text"
                   value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value.length <= 150) {
+                      setFormData({ ...formData, username: value });
+                    }
+                  }}
                   placeholder="usuario123"
+                  maxLength={150}
                   className={`login-form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${error ? 'login-form-input-error' : ''}`}
                   required
                   aria-required="true"

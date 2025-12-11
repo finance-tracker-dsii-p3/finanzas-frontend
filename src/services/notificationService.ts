@@ -428,17 +428,51 @@ export const notificationService = {
   // Preferences
   async getPreferences(): Promise<NotificationPreferences> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users/preferences/`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/preferences/`, {
         method: 'GET',
         headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
+        // Si el endpoint no existe (404), retornar preferencias por defecto
+        if (response.status === 404) {
+          return {
+            id: 0,
+            timezone: 'America/Bogota',
+            timezone_display: 'America/Bogota',
+            language: 'es',
+            language_display: 'Español',
+            enable_budget_alerts: true,
+            enable_bill_reminders: true,
+            enable_soat_reminders: true,
+            enable_month_end_reminders: true,
+            enable_custom_reminders: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+        }
         await parseError(response);
       }
 
       return response.json();
     } catch (error) {
+      // Si es un error de red o el endpoint no existe, retornar preferencias por defecto
+      if (error instanceof Error && (error.message.includes('404') || error.message.includes('fetch'))) {
+        return {
+          id: 0,
+          timezone: 'America/Bogota',
+          timezone_display: 'America/Bogota',
+          language: 'es',
+          language_display: 'Español',
+          enable_budget_alerts: true,
+          enable_bill_reminders: true,
+          enable_soat_reminders: true,
+          enable_month_end_reminders: true,
+          enable_custom_reminders: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+      }
       handleFetchError(error);
       throw error;
     }
@@ -448,7 +482,7 @@ export const notificationService = {
     try {
       const prefs = await this.getPreferences();
       
-      const response = await fetch(`${API_BASE_URL}/api/users/preferences/${prefs.id}/`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/preferences/${prefs.id}/`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
         body: JSON.stringify(data),
@@ -467,7 +501,7 @@ export const notificationService = {
 
   async getTimezones(): Promise<Array<{ value: string; label: string }>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users/preferences/timezones/`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/preferences/timezones/`, {
         method: 'GET',
         headers: getAuthHeaders(),
       });

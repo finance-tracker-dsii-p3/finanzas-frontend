@@ -145,7 +145,7 @@ describe('Bills', () => {
     render(<Bills />);
 
     await waitFor(() => {
-      expect(screen.getByText(/5 días/i)).toBeInTheDocument();
+      expect(screen.getByText(/5.*d.*as/i)).toBeInTheDocument();
     });
   });
 

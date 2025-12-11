@@ -200,3 +200,69 @@
   transform: translateX(4px);
 }
 
+/* Responsive Grid Utilities */
+.stats-grid-responsive {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .stats-grid-responsive {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .stats-grid-responsive {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Mobile Menu Improvements */
+@media (max-width: 767px) {
+  /* Force hide desktop navigation on mobile */
+  nav.nav-tabs-responsive.desktop-nav {
+    display: none !important;
+  }
+  
+  /* Style mobile menu when visible */
+  nav.nav-tabs-responsive.mobile-nav {
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+  }
+  
+  nav.nav-tabs-responsive.mobile-nav button {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    width: 100%;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  nav.nav-tabs-responsive.mobile-nav button:last-child {
+    border-bottom: none;
+  }
+}
+

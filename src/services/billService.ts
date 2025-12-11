@@ -91,39 +91,14 @@ const getAuthHeaders = () => {
   };
 };
 
+import { parseBackendError, handleFetchError } from '../utils/errorHandler';
+
 const parseError = async (response: Response): Promise<string> => {
   try {
-    const error = await response.json();
-    
-    if (error.error) {
-      return typeof error.error === 'string' ? error.error : error.error[0] || 'Error desconocido';
-    }
-    
-    if (error.message) {
-      return error.message;
-    }
-    
-    if (error.detail) {
-      return error.detail;
-    }
-    
-    // Errores de campos específicos
-    const fieldErrors: string[] = [];
-    for (const [field, value] of Object.entries(error)) {
-      if (Array.isArray(value)) {
-        fieldErrors.push(`${field}: ${value[0]}`);
-      } else if (typeof value === 'string') {
-        fieldErrors.push(`${field}: ${value}`);
-      }
-    }
-    
-    if (fieldErrors.length > 0) {
-      return fieldErrors.join('. ');
-    }
-    
-    return `Error ${response.status}: ${response.statusText}`;
-  } catch {
-    return `Error ${response.status}: ${response.statusText}`;
+    const error = await parseBackendError(response, 'Error en la operación de facturas');
+    return error.message;
+  } catch (err) {
+    return err instanceof Error ? err.message : `Error ${response.status}: ${response.statusText}`;
   }
 };
 
@@ -140,28 +115,33 @@ export const billService = {
     due_date_from?: string;
     due_date_to?: string;
   }): Promise<Bill[]> {
-    const queryParams = new URLSearchParams();
-    if (filters?.status) queryParams.append('status', filters.status);
-    if (filters?.provider) queryParams.append('provider', filters.provider);
-    if (filters?.is_recurring !== undefined) queryParams.append('is_recurring', filters.is_recurring.toString());
-    if (filters?.is_paid !== undefined) queryParams.append('is_paid', filters.is_paid.toString());
-    if (filters?.due_date) queryParams.append('due_date', filters.due_date);
-    if (filters?.due_date_from) queryParams.append('due_date_from', filters.due_date_from);
-    if (filters?.due_date_to) queryParams.append('due_date_to', filters.due_date_to);
+    try {
+      const queryParams = new URLSearchParams();
+      if (filters?.status) queryParams.append('status', filters.status);
+      if (filters?.provider) queryParams.append('provider', filters.provider);
+      if (filters?.is_recurring !== undefined) queryParams.append('is_recurring', filters.is_recurring.toString());
+      if (filters?.is_paid !== undefined) queryParams.append('is_paid', filters.is_paid.toString());
+      if (filters?.due_date) queryParams.append('due_date', filters.due_date);
+      if (filters?.due_date_from) queryParams.append('due_date_from', filters.due_date_from);
+      if (filters?.due_date_to) queryParams.append('due_date_to', filters.due_date_to);
 
-    const url = `${API_BASE_URL}/api/bills/${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
+      const url = `${API_BASE_URL}/api/bills/${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      if (!response.ok) {
+        const error = await parseError(response);
+        throw new Error(error);
+      }
+
+      const data = await response.json();
+      return Array.isArray(data) ? data : (data.results || []);
+    } catch (error) {
+      handleFetchError(error);
+      throw error;
     }
-
-    const data = await response.json();
-    return Array.isArray(data) ? data : (data.results || []);
   },
 
   /**

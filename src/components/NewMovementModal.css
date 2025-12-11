@@ -65,6 +65,16 @@
 
 .newmovementmodal-container {
   animation: newmovementmodalSlideUp 0.4s ease-out;
+  width: 95%;
+  max-width: 700px;
+  margin: 1rem;
+}
+
+@media (min-width: 640px) {
+  .newmovementmodal-container {
+    width: 90%;
+    margin: 2rem;
+  }
 }
 
 .newmovementmodal-close-button {
