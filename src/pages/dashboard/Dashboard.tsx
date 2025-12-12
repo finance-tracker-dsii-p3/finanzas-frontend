@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DollarSign, Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, AlertCircle, User, LogOut, Clock, Users, Car, ReceiptText, Menu, X, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, AlertCircle, User, LogOut, Users, Car, ReceiptText, Menu, X, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useBudgets } from '../../context/BudgetContext';
 import { MonthlySummaryResponse } from '../../services/budgetService';
 import { dashboardService, FinancialDashboardData } from '../../services/dashboardService';
 import { accountService, Account } from '../../services/accountService';
-import { formatMoneyFromPesos, formatMoney, Currency } from '../../utils/currencyUtils';
+import { formatMoney, Currency } from '../../utils/currencyUtils';
 import { lazy, Suspense } from 'react';
 import RecentTransactions from '../../components/RecentTransactions';
 import UpcomingBills from '../../components/UpcomingBills';
