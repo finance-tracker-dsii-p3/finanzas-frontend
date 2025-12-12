@@ -1,0 +1,154 @@
+.recent-transactions {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.recent-transactions-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 20px 0;
+}
+
+.recent-transactions-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.recent-transactions-empty p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.recent-transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.recent-transaction-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.recent-transaction-item:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.transaction-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+.transaction-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.transaction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.transaction-description {
+  font-weight: 500;
+  color: #1f2937;
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.transaction-amount {
+  font-weight: 600;
+  font-size: 1rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.transaction-details {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.transaction-type {
+  font-weight: 500;
+}
+
+.transaction-separator {
+  color: #d1d5db;
+}
+
+.transaction-category {
+  font-weight: 500;
+}
+
+.transaction-date {
+  text-transform: capitalize;
+}
+
+.transaction-account {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+@media (max-width: 768px) {
+  .recent-transactions {
+    padding: 16px;
+  }
+
+  .recent-transactions-title {
+    font-size: 1.1rem;
+  }
+
+  .recent-transaction-item {
+    padding: 12px;
+  }
+
+  .transaction-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .transaction-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .transaction-description {
+    white-space: normal;
+  }
+
+  .transaction-amount {
+    font-size: 0.95rem;
+  }
+}
