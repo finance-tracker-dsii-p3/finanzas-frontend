@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DollarSign, Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, CreditCard, AlertCircle, User, LogOut, Clock, Users, Car, ReceiptText, Menu, X } from 'lucide-react';
+import { DollarSign, Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, AlertCircle, User, LogOut, Clock, Users, Car, ReceiptText, Menu, X, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useBudgets } from '../../context/BudgetContext';
 import { MonthlySummaryResponse } from '../../services/budgetService';
-import { creditCardPlanService, UpcomingPayment, MonthlySummary } from '../../services/creditCardPlanService';
+import { dashboardService, FinancialDashboardData } from '../../services/dashboardService';
+import { accountService, Account } from '../../services/accountService';
 import { formatMoneyFromPesos, formatMoney, Currency } from '../../utils/currencyUtils';
 import { lazy, Suspense } from 'react';
+import RecentTransactions from '../../components/RecentTransactions';
+import UpcomingBills from '../../components/UpcomingBills';
 
 const Movements = lazy(() => import('../movements/Movements'));
 const Budgets = lazy(() => import('../budgets/Budgets'));
@@ -68,11 +71,18 @@ const Dashboard: React.FC = () => {
   
   const [currentView, setCurrentView] = useState<ViewType>(getInitialView());
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [includePending, setIncludePending] = useState(false);
   const [showTaxes, setShowTaxes] = useState(true);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  
+  // Estado para el dashboard financiero
+  const [dashboardData, setDashboardData] = useState<FinancialDashboardData | null>(null);
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
+  const [dashboardError, setDashboardError] = useState<string | null>(null);
   
   // Guardar la vista actual en localStorage cuando cambie
   useEffect(() => {
@@ -105,6 +115,50 @@ const Dashboard: React.FC = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showProfileMenu]);
+
+  // Cargar lista de cuentas
+  useEffect(() => {
+    const loadAccounts = async () => {
+      try {
+        const accountsList = await accountService.getAllAccounts();
+        setAccounts(accountsList.filter(acc => acc.is_active !== false));
+      } catch (error) {
+        console.error('Error al cargar cuentas:', error);
+      }
+    };
+    loadAccounts();
+  }, []);
+
+  // Cargar datos del dashboard financiero
+  useEffect(() => {
+    const loadFinancialDashboard = async () => {
+      // Solo cargar si estamos en la vista dashboard
+      if (currentView !== 'dashboard') return;
+      
+      try {
+        setIsLoadingDashboard(true);
+        setDashboardError(null);
+        
+        // Extraer año y mes del selectedMonth (formato: "2025-12")
+        const [year, month] = selectedMonth.split('-').map(Number);
+        
+        const data = await dashboardService.getFinancialDashboard({
+          year,
+          month,
+          account_id: selectedAccountId || undefined,
+        });
+        
+        setDashboardData(data);
+      } catch (error) {
+        console.error('Error al cargar dashboard financiero:', error);
+        setDashboardError(error instanceof Error ? error.message : 'Error al cargar los datos');
+      } finally {
+        setIsLoadingDashboard(false);
+      }
+    };
+    
+    loadFinancialDashboard();
+  }, [selectedMonth, selectedAccountId, currentView]); // Recargar cuando cambie el mes, cuenta o vista
 
   const handleLogout = async () => {
     await logout();
@@ -515,11 +569,17 @@ const Dashboard: React.FC = () => {
             categoryData={categoryData}
             showTaxes={showTaxes}
             selectedMonth={selectedMonth}
+            selectedAccountId={selectedAccountId}
+            accounts={accounts}
             includePending={includePending}
             setSelectedMonth={setSelectedMonth}
+            setSelectedAccountId={setSelectedAccountId}
             setIncludePending={setIncludePending}
             setShowTaxes={setShowTaxes}
             setCurrentView={setCurrentView}
+            dashboardData={dashboardData}
+            isLoadingDashboard={isLoadingDashboard}
+            dashboardError={dashboardError}
           />
         )}
         {currentView === 'movements' && (
@@ -593,11 +653,17 @@ interface DashboardViewProps {
   categoryData: CategoryData[];
   showTaxes: boolean;
   selectedMonth: string;
+  selectedAccountId: number | null;
+  accounts: Account[];
   includePending: boolean;
   setSelectedMonth: (month: string) => void;
+  setSelectedAccountId: (id: number | null) => void;
   setIncludePending: (value: boolean) => void;
   setShowTaxes: (value: boolean) => void;
   setCurrentView: (view: ViewType) => void;
+  dashboardData: FinancialDashboardData | null;
+  isLoadingDashboard: boolean;
+  dashboardError: string | null;
 }
 
 const DashboardView: React.FC<DashboardViewProps> = ({
@@ -606,17 +672,20 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   categoryData,
   showTaxes,
   selectedMonth,
+  selectedAccountId,
+  accounts,
   includePending,
   setSelectedMonth,
+  setSelectedAccountId,
   setIncludePending,
   setShowTaxes,
-  setCurrentView
+  setCurrentView,
+  dashboardData,
+  isLoadingDashboard,
+  dashboardError
 }) => {
   const { getMonthlySummary } = useBudgets();
   const [budgetSummary, setBudgetSummary] = React.useState<MonthlySummaryResponse | null>(null);
-  const [upcomingPayments, setUpcomingPayments] = React.useState<UpcomingPayment[]>([]);
-  const [monthlySummary, setMonthlySummary] = React.useState<MonthlySummary | null>(null);
-  const [isLoadingCreditCards, setIsLoadingCreditCards] = React.useState(false);
 
   React.useEffect(() => {
     const loadBudgetSummary = async () => {
@@ -630,39 +699,6 @@ const DashboardView: React.FC<DashboardViewProps> = ({
     loadBudgetSummary();
   }, [getMonthlySummary]);
 
-  React.useEffect(() => {
-    const loadCreditCardData = async () => {
-      try {
-        setIsLoadingCreditCards(true);
-        const [payments, summary] = await Promise.all([
-          creditCardPlanService.getUpcomingPayments(30),
-          creditCardPlanService.getMonthlySummary()
-        ]);
-        setUpcomingPayments(payments);
-        setMonthlySummary(summary);
-      } catch (error) {
-        console.error('Error al cargar datos de tarjetas:', error);
-      } finally {
-        setIsLoadingCreditCards(false);
-      }
-    };
-    loadCreditCardData();
-    
-    const handleUpdate = () => {
-      loadCreditCardData();
-    };
-    
-    window.addEventListener('installmentPlanCreated', handleUpdate);
-    window.addEventListener('installmentPlanUpdated', handleUpdate);
-    window.addEventListener('installmentPaymentRecorded', handleUpdate);
-    
-    return () => {
-      window.removeEventListener('installmentPlanCreated', handleUpdate);
-      window.removeEventListener('installmentPlanUpdated', handleUpdate);
-      window.removeEventListener('installmentPaymentRecorded', handleUpdate);
-    };
-  }, []);
-
   const formatCurrency = (amount: number | string, currency: Currency = 'COP'): string => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
     if (isNaN(numAmount)) return formatMoney(0, currency);
@@ -675,6 +711,12 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   const userName = user?.username || user?.email?.split('@')[0] || 'Usuario';
+  
+  // Encontrar el nombre de la cuenta seleccionada
+  const selectedAccountName = selectedAccountId 
+    ? accounts.find(acc => acc.id === selectedAccountId)?.name 
+    : null;
+  
   const incomeGoal = monthData.income > 0 ? monthData.income * 1.2 : 0;
   const expenseGoal = monthData.expenses > 0 ? monthData.expenses * 1.1 : 0;
   const savingsGoal = monthData.balance > 0 ? monthData.balance * 1.5 : 0;
@@ -693,10 +735,30 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
           ¡Bienvenido de vuelta, {userName}!
         </h2>
-        <p className="text-sm sm:text-base text-gray-600">
-          Aquí tienes un resumen rápido de tu cuenta — todo listo para continuar.
-        </p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-sm sm:text-base text-gray-600">
+            Aquí tienes un resumen rápido de tu cuenta — todo listo para continuar.
+          </p>
+          {selectedAccountName && (
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              📊 {selectedAccountName}
+            </span>
+          )}
+        </div>
       </div>
+
+      {/* Mostrar error si lo hay */}
+      {dashboardError && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-3 sm:p-4">
+          <div className="flex items-start gap-2 sm:gap-3">
+            <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm sm:text-base font-semibold text-red-900 mb-1">Error al cargar el dashboard</h3>
+              <p className="text-xs sm:text-sm text-red-800">{dashboardError}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full sm:w-auto">
@@ -707,10 +769,40 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               onChange={(e) => setSelectedMonth(e.target.value)}
               className="flex-1 sm:flex-none px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
+              {(() => {
+                const months = [];
+                const currentDate = new Date();
+                const currentYear = currentDate.getFullYear();
+                const currentMonth = currentDate.getMonth();
+                
+                // Generar últimos 12 meses
+                for (let i = 0; i < 12; i++) {
+                  const date = new Date(currentYear, currentMonth - i, 1);
+                  const year = date.getFullYear();
+                  const month = date.getMonth() + 1;
+                  const value = `${year}-${month.toString().padStart(2, '0')}`;
+                  const label = date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+                  months.push(
+                    <option key={value} value={value}>
+                      {label.charAt(0).toUpperCase() + label.slice(1)}
+                    </option>
+                  );
+                }
+                return months;
+              })()}
             </select>
           </div>
-          <select className="w-full sm:w-auto px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-            <option>Todas las cuentas</option>
+          <select 
+            value={selectedAccountId || ''}
+            onChange={(e) => setSelectedAccountId(e.target.value ? parseInt(e.target.value) : null)}
+            className="w-full sm:w-auto px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Todas las cuentas</option>
+            {accounts.map(account => (
+              <option key={account.id} value={account.id}>
+                {account.name} ({account.currency})
+              </option>
+            ))}
           </select>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full sm:w-auto">
@@ -739,94 +831,132 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 hover-lift card-enter">
             <div className="flex justify-between items-start mb-3 sm:mb-4">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
                 <p className="text-xs sm:text-sm font-medium text-gray-700">Total Ingresos</p>
               </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-green-600 mb-2 sm:mb-3">{formatCurrency(monthData.income)}</p>
-            {incomeGoal > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Meta: {formatCurrency(incomeGoal)}</span>
-                  <span className="text-gray-600">{incomeProgress.toFixed(1)}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full transition-all progress-animated"
-                    style={{ width: `${Math.min(incomeProgress, 100)}%` }}
-                  ></div>
-                </div>
-                {incomeRemaining > 0 && (
-                  <p className="text-xs text-gray-600">
-                    {formatCurrency(incomeRemaining)} para completar el objetivo
-                  </p>
-                )}
+            {isLoadingDashboard ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
               </div>
+            ) : dashboardData ? (
+              <>
+                <p className="text-2xl sm:text-3xl font-bold text-green-600 mb-2 sm:mb-3">
+                  {formatMoney(dashboardData.summary.total_income)} {dashboardData.summary.currency}
+                </p>
+                {incomeGoal > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-600">Meta: {formatCurrency(incomeGoal)}</span>
+                      <span className="text-gray-600">{incomeProgress.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full transition-all progress-animated"
+                        style={{ width: `${Math.min(incomeProgress, 100)}%` }}
+                      ></div>
+                    </div>
+                    {incomeRemaining > 0 && (
+                      <p className="text-xs text-gray-600">
+                        {formatCurrency(incomeRemaining)} para completar el objetivo
+                      </p>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-2xl sm:text-3xl font-bold text-green-600">$0</p>
             )}
           </div>
           
           <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 hover-lift card-enter" style={{ animationDelay: '0.1s' }}>
             <div className="flex justify-between items-start mb-3 sm:mb-4">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 flex-shrink-0" />
+                <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 flex-shrink-0" />
                 <p className="text-xs sm:text-sm font-medium text-gray-700">Total Gastos</p>
               </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-red-600 mb-2 sm:mb-3">{formatCurrency(monthData.expenses)}</p>
-            {showTaxes && monthData.ivaCompras > 0 && (
-              <p className="text-xs text-gray-500 mb-3">IVA: {formatCurrency(monthData.ivaCompras)}</p>
-            )}
-            {expenseGoal > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Meta presupuesto: {formatCurrency(expenseGoal)}</span>
-                  <span className="text-gray-600">{expenseProgress.toFixed(1)}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-gradient-to-r from-red-500 to-red-600 h-2 rounded-full transition-all progress-animated"
-                    style={{ width: `${Math.min(expenseProgress, 100)}%` }}
-                  ></div>
-                </div>
-                {expenseRemaining > 0 ? (
-                  <p className="text-xs text-green-600">
-                    {formatCurrency(expenseRemaining)} restantes del presupuesto
-                  </p>
-                ) : (
-                  <p className="text-xs text-red-600">
-                    Presupuesto excedido por {formatCurrency(Math.abs(expenseRemaining))}
+            {isLoadingDashboard ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+              </div>
+            ) : dashboardData ? (
+              <>
+                <p className="text-2xl sm:text-3xl font-bold text-red-600 mb-2 sm:mb-3">
+                  {formatMoney(dashboardData.summary.total_expenses)} {dashboardData.summary.currency}
+                </p>
+                {showTaxes && dashboardData.summary.total_iva > 0 && (
+                  <p className="text-xs text-gray-500 mb-3">
+                    IVA: {formatMoney(dashboardData.summary.total_iva)} {dashboardData.summary.currency}
                   </p>
                 )}
-              </div>
+                {expenseGoal > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-600">Meta presupuesto: {formatCurrency(expenseGoal)}</span>
+                      <span className="text-gray-600">{expenseProgress.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-red-500 to-red-600 h-2 rounded-full transition-all progress-animated"
+                        style={{ width: `${Math.min(expenseProgress, 100)}%` }}
+                      ></div>
+                    </div>
+                    {expenseRemaining > 0 ? (
+                      <p className="text-xs text-green-600">
+                        {formatCurrency(expenseRemaining)} restantes del presupuesto
+                      </p>
+                    ) : (
+                      <p className="text-xs text-red-600">
+                        Presupuesto excedido por {formatCurrency(Math.abs(expenseRemaining))}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-2xl sm:text-3xl font-bold text-red-600">$0</p>
             )}
           </div>
           
           <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 hover-lift card-enter" style={{ animationDelay: '0.2s' }}>
             <div className="flex justify-between items-start mb-3 sm:mb-4">
               <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+                <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
                 <p className="text-xs sm:text-sm font-medium text-gray-700">Total Ahorros</p>
               </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-blue-600 mb-2 sm:mb-3">{formatCurrency(monthData.balance)}</p>
-            {savingsGoal > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Meta: {formatCurrency(savingsGoal)}</span>
-                  <span className="text-gray-600">{savingsProgress.toFixed(1)}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all progress-animated"
-                    style={{ width: `${Math.min(savingsProgress, 100)}%` }}
-                  ></div>
-                </div>
-                {savingsRemaining > 0 && (
-                  <p className="text-xs text-gray-600">
-                    {formatCurrency(savingsRemaining)} para completar el objetivo
-                  </p>
-                )}
+            {isLoadingDashboard ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
+            ) : dashboardData ? (
+              <>
+                <p className="text-2xl sm:text-3xl font-bold text-blue-600 mb-2 sm:mb-3">
+                  {formatMoney(dashboardData.summary.total_savings)} {dashboardData.summary.currency}
+                </p>
+                {savingsGoal > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-600">Meta: {formatCurrency(savingsGoal)}</span>
+                      <span className="text-gray-600">{savingsProgress.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all progress-animated"
+                        style={{ width: `${Math.min(savingsProgress, 100)}%` }}
+                      ></div>
+                    </div>
+                    {savingsRemaining > 0 && (
+                      <p className="text-xs text-gray-600">
+                        {formatCurrency(savingsRemaining)} para completar el objetivo
+                      </p>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-2xl sm:text-3xl font-bold text-blue-600">$0</p>
             )}
           </div>
         </div>
@@ -932,14 +1062,16 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       )}
 
-      {showTaxes && (
+      {showTaxes && dashboardData && (
         <div className="stats-grid-responsive">
           <div className="bg-amber-50 border border-amber-200 p-3 sm:p-4 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
               <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0" />
               <p className="text-xs sm:text-sm font-medium text-amber-900">IVA Compras</p>
             </div>
-            <p className="text-lg sm:text-xl font-bold text-amber-900">{formatCurrency(monthData.ivaCompras)}</p>
+            <p className="text-lg sm:text-xl font-bold text-amber-900">
+              {formatMoney(dashboardData.summary.total_iva)} {dashboardData.summary.currency}
+            </p>
           </div>
           
           <div className="bg-orange-50 border border-orange-200 p-3 sm:p-4 rounded-xl">
@@ -947,144 +1079,21 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               <Percent className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 flex-shrink-0" />
               <p className="text-xs sm:text-sm font-medium text-orange-900">GMF (4×1000)</p>
             </div>
-            <p className="text-lg sm:text-xl font-bold text-orange-900">{formatCurrency(monthData.gmf)}</p>
-          </div>
-          
-          <div className="bg-red-50 border border-red-200 p-3 sm:p-4 rounded-xl">
-            <div className="flex items-center gap-2 mb-2">
-              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 flex-shrink-0" />
-              <p className="text-xs sm:text-sm font-medium text-red-900">Intereses Tarjetas</p>
-            </div>
-            <p className="text-lg sm:text-xl font-bold text-red-900">{formatCurrency(monthData.creditCardInterests)}</p>
+            <p className="text-lg sm:text-xl font-bold text-orange-900">
+              {formatMoney(dashboardData.summary.total_gmf)} {dashboardData.summary.currency}
+            </p>
           </div>
         </div>
       )}
 
-      {/* Sección de Tarjetas de Crédito */}
-      {(upcomingPayments.length > 0 || monthlySummary) && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4">
-            <div className="flex items-center gap-2">
-              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0" />
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900">Tarjetas de Crédito</h3>
-            </div>
-            <button
-              onClick={() => setCurrentView('accounts')}
-              className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
-            >
-              Ver todas
-              <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
-            </button>
-          </div>
+      {/* Movimientos Recientes */}
+      {dashboardData && dashboardData.recent_transactions && dashboardData.recent_transactions.length > 0 && (
+        <RecentTransactions transactions={dashboardData.recent_transactions} />
+      )}
 
-          {monthlySummary && (
-            <div className="stats-grid-responsive mb-4 sm:mb-6">
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 sm:p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0" />
-                  <p className="text-xs sm:text-sm font-medium text-purple-900">Cuotas del mes</p>
-                </div>
-                <p className="text-xl sm:text-2xl font-bold text-purple-900">
-                  {formatMoneyFromPesos(monthlySummary.total_amount / 100, 'COP')}
-                </p>
-                <p className="text-xs text-purple-700 mt-1">
-                  {monthlySummary.total_installments} cuota{monthlySummary.total_installments !== 1 ? 's' : ''}
-                </p>
-              </div>
-
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Target className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
-                  <p className="text-xs sm:text-sm font-medium text-green-900">Pagadas</p>
-                </div>
-                <p className="text-xl sm:text-2xl font-bold text-green-900">{monthlySummary.paid_installments}</p>
-                <p className="text-xs text-green-700 mt-1">de {monthlySummary.total_installments} cuotas</p>
-              </div>
-
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 sm:p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0" />
-                  <p className="text-xs sm:text-sm font-medium text-amber-900">Pendientes</p>
-                </div>
-                <p className="text-xl sm:text-2xl font-bold text-amber-900">{monthlySummary.pending_installments}</p>
-                <p className="text-xs text-amber-700 mt-1">cuotas por pagar</p>
-              </div>
-            </div>
-          )}
-
-          {upcomingPayments.length > 0 && (
-            <div>
-              <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-3">Próximos pagos (30 días)</h4>
-              <div className="space-y-2">
-                {upcomingPayments.slice(0, 5).map((payment) => {
-                  const dueDate = new Date(payment.due_date);
-                  const isOverdue = dueDate < new Date() && payment.status === 'pending';
-                  
-                  return (
-                    <div
-                      key={`${payment.plan_id}-${payment.installment_number}`}
-                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 p-3 rounded-lg border ${
-                        isOverdue
-                          ? 'bg-red-50 border-red-200'
-                          : 'bg-gray-50 border-gray-200'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          isOverdue ? 'bg-red-500' : 'bg-purple-500'
-                        }`}>
-                          <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">{payment.credit_card}</p>
-                          <p className="text-xs text-gray-600">
-                            Cuota {payment.installment_number} - {dueDate.toLocaleDateString('es-CO', {
-                              day: '2-digit',
-                              month: 'short',
-                              year: 'numeric'
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-left sm:text-right w-full sm:w-auto">
-                        <p className={`text-sm font-bold ${isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
-                          {formatMoneyFromPesos(payment.installment_amount / 100, 'COP')}
-                        </p>
-                        {isOverdue && (
-                          <p className="text-xs text-red-600">Vencida</p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              {upcomingPayments.length > 5 && (
-                <div className="mt-4 text-center">
-                  <button
-                    onClick={() => setCurrentView('accounts')}
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    Ver {upcomingPayments.length - 5} pago{upcomingPayments.length - 5 !== 1 ? 's' : ''} más
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {upcomingPayments.length === 0 && !isLoadingCreditCards && (
-            <div className="text-center py-8 text-gray-500">
-              <CreditCard className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-gray-400" />
-              <p className="text-xs sm:text-sm">No hay pagos próximos en los próximos 30 días</p>
-            </div>
-          )}
-
-          {isLoadingCreditCards && (
-            <div className="text-center py-6 sm:py-8">
-              <div className="inline-block animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-purple-600"></div>
-              <p className="text-xs sm:text-sm text-gray-600 mt-2">Cargando información de tarjetas...</p>
-            </div>
-          )}
-        </div>
+      {/* Próximas Facturas a Vencer */}
+      {dashboardData && dashboardData.upcoming_bills && dashboardData.upcoming_bills.length > 0 && (
+        <UpcomingBills bills={dashboardData.upcoming_bills} />
       )}
 
       {categoryData.length === 0 && (
@@ -1102,6 +1111,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {/* Gráfico de Distribución de Gastos */}
         <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-4">
             <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
@@ -1112,7 +1122,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               <span className="text-xs text-gray-500">Con impuestos</span>
             )}
           </div>
-          {categoryData.length === 0 ? (
+          {!dashboardData || !dashboardData.charts.expense_distribution.has_data || dashboardData.charts.expense_distribution.categories.length === 0 ? (
             <div className="h-48 sm:h-64 flex items-center justify-center text-gray-400">
               <p className="text-xs sm:text-sm">No hay datos disponibles</p>
             </div>
@@ -1120,8 +1130,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             <>
               <div className="flex items-center justify-center mb-4 overflow-x-auto">
                 <svg className="w-full max-w-[200px] h-auto" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
-                  {categoryData.map((cat, idx) => {
-                    const prevPercentages = categoryData.slice(0, idx).reduce((sum, c) => sum + c.percentage, 0);
+                  {dashboardData.charts.expense_distribution.categories.map((cat, idx) => {
+                    const prevPercentages = dashboardData.charts.expense_distribution.categories.slice(0, idx).reduce((sum, c) => sum + c.percentage, 0);
                     const startAngle = (prevPercentages / 100) * 360 - 90;
                     const endAngle = ((prevPercentages + cat.percentage) / 100) * 360 - 90;
                     const largeArc = cat.percentage > 50 ? 1 : 0;
@@ -1147,36 +1157,74 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                 </svg>
               </div>
               <div className="space-y-2">
-                {categoryData.map((cat, idx) => (
-              <div key={idx} className="flex items-center justify-between text-sm hover:bg-gray-50 p-2 rounded cursor-pointer transition-colors" onClick={() => setCurrentView('movements')}>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }}></div>
-                  <span>{cat.name}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-gray-600">{cat.percentage}%</span>
-                  <div className="text-right">
-                    <div className="font-medium">{formatCurrency(showTaxes ? cat.value : cat.base)}</div>
-                    {showTaxes && cat.iva > 0 && (
-                      <div className="text-xs text-gray-500">IVA: {formatCurrency(cat.iva)}</div>
-                    )}
+                {dashboardData.charts.expense_distribution.categories.map((cat, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-sm hover:bg-gray-50 p-2 rounded cursor-pointer transition-colors" onClick={() => setCurrentView('movements')}>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }}></div>
+                      <span>{cat.icon && `${cat.icon} `}{cat.name}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-gray-600">{cat.percentage.toFixed(1)}%</span>
+                      <div className="text-right">
+                        <div className="font-medium">{formatMoney(cat.amount)} {dashboardData.summary.currency}</div>
+                        <div className="text-xs text-gray-500">{cat.count} transacciones</div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
                 ))}
               </div>
             </>
           )}
         </div>
 
+        {/* Gráfico de Flujo Diario */}
         <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
           <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
             <Activity className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
             <span>Ingreso vs Gasto diario</span>
           </h3>
-          <div className="h-48 sm:h-64 flex items-center justify-center text-gray-400">
-            <p className="text-xs sm:text-sm">No hay datos disponibles</p>
-          </div>
+          {!dashboardData || !dashboardData.charts.daily_flow.has_data || dashboardData.charts.daily_flow.dates.length === 0 ? (
+            <div className="h-48 sm:h-64 flex items-center justify-center text-gray-400">
+              <p className="text-xs sm:text-sm">No hay datos disponibles</p>
+            </div>
+          ) : (
+            <>
+              <div className="h-48 sm:h-64 relative">
+                <svg className="w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="none">
+                  {/* Línea de ingresos */}
+                  <polyline
+                    points={dashboardData.charts.daily_flow.dates.map((_, idx) => {
+                      const x = (idx / (dashboardData.charts.daily_flow.dates.length - 1)) * 380 + 10;
+                      const maxValue = Math.max(...dashboardData.charts.daily_flow.income, ...dashboardData.charts.daily_flow.expenses);
+                      const y = 190 - ((dashboardData.charts.daily_flow.income[idx] / maxValue) * 170);
+                      return `${x},${y}`;
+                    }).join(' ')}
+                    fill="none"
+                    stroke="#10b981"
+                    strokeWidth="2"
+                    className="transition-all"
+                  />
+                  {/* Línea de gastos */}
+                  <polyline
+                    points={dashboardData.charts.daily_flow.dates.map((_, idx) => {
+                      const x = (idx / (dashboardData.charts.daily_flow.dates.length - 1)) * 380 + 10;
+                      const maxValue = Math.max(...dashboardData.charts.daily_flow.income, ...dashboardData.charts.daily_flow.expenses);
+                      const y = 190 - ((dashboardData.charts.daily_flow.expenses[idx] / maxValue) * 170);
+                      return `${x},${y}`;
+                    }).join(' ')}
+                    fill="none"
+                    stroke="#ef4444"
+                    strokeWidth="2"
+                    className="transition-all"
+                  />
+                </svg>
+              </div>
+              <div className="mt-4 flex justify-between text-xs text-gray-600">
+                <span>{dashboardData.charts.daily_flow.dates[0]}</span>
+                <span>{dashboardData.charts.daily_flow.dates[dashboardData.charts.daily_flow.dates.length - 1]}</span>
+              </div>
+            </>
+          )}
           <div className="flex justify-center gap-4 mt-4 text-xs sm:text-sm">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-green-500 rounded"></div>
