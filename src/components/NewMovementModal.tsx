@@ -807,13 +807,30 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       } else {
         await transactionService.create(transactionData);
         
+        console.log('[DEBUG] Verificando asignación a meta:', {
+          type: formData.type,
+          selectedGoal,
+          goalAmount,
+          'selectedGoal existe': !!selectedGoal,
+          'goalAmount existe': !!goalAmount
+        });
+        
         if (formData.type === 'income' && selectedGoal && goalAmount) {
+            console.log('[DEBUG] ✓ Condiciones cumplidas, procediendo a crear transacción de ahorro');
             const goalAmountNum = parseFloat(goalAmount);
-            const submittedTotal = breakdown ? breakdown.total / 100 : (parseFloat(formData.amount) || 0);
+            const submittedTotal = breakdown ? breakdown.total : (parseFloat(formData.amount) || 0);
+            console.log('[DEBUG] Validando montos:', { goalAmountNum, submittedTotal, 'breakdown.total': breakdown?.total, esValido: goalAmountNum > 0 && goalAmountNum <= submittedTotal });
             if (goalAmountNum > 0 && goalAmountNum <= submittedTotal) {
+              let savingTransactionData: CreateTransactionData | undefined;
               try {
+                console.log('[DEBUG] Buscando cuenta y meta:', { formData_originAccount: formData.originAccount, selectedGoal });
                 const originAccount = accounts.find(acc => acc.id?.toString() === formData.originAccount);
               const goal = goals.find(g => g.id === selectedGoal);
+              
+              console.log('[DEBUG] Resultados de búsqueda:', { 
+                originAccount: originAccount ? `id=${originAccount.id}` : 'NO ENCONTRADA',
+                goal: goal ? `id=${goal.id} name=${goal.name}` : 'NO ENCONTRADA' 
+              });
               
               if (!originAccount || !goal) {
                   throw new Error('Cuenta o meta no encontrada');
@@ -821,7 +838,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
 
                 const finalAmount = convertedAmount || pesosToCents(goalAmountNum);
               
-                const savingTransactionData: CreateTransactionData = {
+                savingTransactionData = {
                   origin_account: Number(formData.originAccount),
                   type: 4,
                   date: formData.date,
@@ -830,6 +847,8 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                   note: `Ahorro asignado desde ingreso${formData.note ? `: ${formData.note}` : ''}`,
                 };
 
+                console.log('[DEBUG] Creando transacción de ahorro con datos:', savingTransactionData);
+
                 if (transactionCurrency && transactionCurrency !== originAccount.currency && exchangeRate) {
                   savingTransactionData.transaction_currency = transactionCurrency;
                   savingTransactionData.exchange_rate = exchangeRate;
@@ -837,10 +856,24 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                 }
 
                 await transactionService.create(savingTransactionData);
-              } catch {
-                // Intentionally empty
+                console.log('✅ Transacción de ahorro creada exitosamente para meta:', selectedGoal);
+              } catch (error) {
+                console.error('❌ ERROR al crear transacción de ahorro:', error);
+                if (savingTransactionData) {
+                  console.error('Datos enviados:', savingTransactionData);
+                }
+                // Mostrar error al usuario en lugar de ocultarlo
+                throw new Error(`Error al asignar ahorro a meta: ${error instanceof Error ? error.message : 'Error desconocido'}`);
               }
+          } else {
+            console.log('[DEBUG] ❌ Validación de montos falló o no hay monto asignado');
           }
+        } else {
+          console.log('[DEBUG] ❌ No se creará transacción de ahorro. Razones:', {
+            'Es ingreso': formData.type === 'income',
+            'Tiene meta seleccionada': !!selectedGoal,
+            'Tiene monto asignado': !!goalAmount
+          });
         }
       }
 
