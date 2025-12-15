@@ -9,7 +9,6 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: true,
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
     onConsoleLog: (log, type) => {
       if (type === 'error' && typeof log === 'string' && log.includes('Not implemented: navigation')) {
         return false;
