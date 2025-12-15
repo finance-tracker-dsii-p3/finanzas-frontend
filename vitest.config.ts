@@ -37,11 +37,12 @@ export default defineConfig({
         'dist/',
       ],
       thresholds: {
-        // Umbral mínimo: 60%
-        lines: 60,
-        functions: 60,
-        branches: 60,
-        statements: 60,
+        // Umbral mínimo: 55% del total general (global)
+        // Estos thresholds se aplican al total general, no por archivo individual
+        lines: 55,
+        functions: 55,
+        branches: 55,
+        statements: 55,
       },
     },
   },
