@@ -262,5 +262,45 @@ describe('MovementDetailModal', () => {
     // Verificar que al menos uno de los montos es el esperado
     expect(amounts.some(el => el.textContent?.includes('100.000'))).toBe(true);
   });
+
+  it('debe mostrar información de transferencia sin categoría', () => {
+    render(
+      <MovementDetailModal 
+        movement={mockTransferMovement} 
+        onClose={mockOnClose} 
+      />
+    );
+    
+    // Verificar que se muestra la información de transferencia
+    expect(screen.getByText('Cuenta Origen')).toBeInTheDocument();
+    expect(screen.getByText('Cuenta Destino')).toBeInTheDocument();
+  });
+
+  it('debe manejar movimientos sin tag', () => {
+    const movementWithoutTag = {
+      ...mockMovement,
+      tag: null,
+    };
+    
+    render(
+      <MovementDetailModal 
+        movement={movementWithoutTag} 
+        onClose={mockOnClose} 
+      />
+    );
+    
+    expect(screen.getByText('Almuerzo con amigos')).toBeInTheDocument();
+  });
+
+  it('debe mostrar información de cuenta origen', () => {
+    render(
+      <MovementDetailModal 
+        movement={mockMovement} 
+        onClose={mockOnClose} 
+      />
+    );
+    
+    expect(screen.getByText('Cuenta Ahorros')).toBeInTheDocument();
+  });
 });
 

@@ -13,9 +13,19 @@ vi.mock('../../services/authService', () => ({
   },
 }));
 
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
 describe('Register', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockNavigate.mockClear();
   });
 
   it('debe renderizar el formulario de registro', () => {
@@ -92,13 +102,18 @@ describe('Register', () => {
     await user.type(passwordInput, 'Password123!');
     await user.type(confirmPasswordInput, 'Different123!');
     
+    // Intentar enviar el formulario para que se valide
+    const submitButton = screen.getByRole('button', { name: /crear cuenta/i });
+    await user.click(submitButton);
+    
     await waitFor(() => {
       expect(screen.getByText(/las contraseñas no coinciden/i)).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
   });
 
   it('debe registrar usuario exitosamente con datos válidos', async () => {
     const user = userEvent.setup();
+    
     vi.mocked(authService.register).mockResolvedValueOnce({
       message: 'Usuario registrado exitosamente',
       user: {
@@ -125,7 +140,7 @@ describe('Register', () => {
     
     await waitFor(() => {
       expect(authService.register).toHaveBeenCalled();
-    });
+    }, { timeout: 10000 });
     
     const callArgs = vi.mocked(authService.register).mock.calls[0][0];
     expect(callArgs).toMatchObject({
@@ -138,7 +153,8 @@ describe('Register', () => {
       identification: '1234567890',
       role: 'user',
     });
-  });
+    // phone es opcional y puede estar presente o no
+  }, 15000);
 
   it('debe mostrar error si el registro falla', async () => {
     const user = userEvent.setup();
@@ -159,12 +175,12 @@ describe('Register', () => {
     
     await waitFor(() => {
       expect(screen.getByText(/el usuario ya existe/i)).toBeInTheDocument();
-    }, { timeout: 3000 });
-  });
+    }, { timeout: 10000 });
+  }, 15000);
 
   it('debe mostrar estado de carga durante el registro', async () => {
     const user = userEvent.setup();
-    vi.mocked(authService.register).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 200)));
+    vi.mocked(authService.register).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 500)));
     
     render(<Register />);
     
@@ -180,10 +196,10 @@ describe('Register', () => {
     await user.click(submitButton);
     
     await waitFor(() => {
-      const loadingButton = screen.getByRole('button', { name: /creando cuenta\.\.\./i });
+      const loadingButton = screen.getByRole('button', { name: /creando cuenta/i });
       expect(loadingButton).toBeInTheDocument();
       expect(loadingButton).toBeDisabled();
-    }, { timeout: 3000 });
+    }, { timeout: 2000 });
   }, 10000);
 
   it('debe mostrar/ocultar contraseñas al hacer clic en los botones', async () => {

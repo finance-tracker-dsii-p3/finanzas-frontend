@@ -93,5 +93,63 @@ describe('ConfirmModal', () => {
 
     expect(screen.queryByText('Confirmar')).not.toBeInTheDocument();
   });
+
+  it('debe mostrar diferentes tipos de modal (warning, danger, info)', () => {
+    const { rerender } = render(
+      <ConfirmModal
+        isOpen={true}
+        onCancel={mockOnCancel}
+        onConfirm={mockOnConfirm}
+        title="Warning"
+        message="Mensaje"
+        type="warning"
+      />
+    );
+
+    expect(screen.getByText('Warning')).toBeInTheDocument();
+
+    rerender(
+      <ConfirmModal
+        isOpen={true}
+        onCancel={mockOnCancel}
+        onConfirm={mockOnConfirm}
+        title="Danger"
+        message="Mensaje"
+        type="danger"
+      />
+    );
+
+    expect(screen.getByText('Danger')).toBeInTheDocument();
+
+    rerender(
+      <ConfirmModal
+        isOpen={true}
+        onCancel={mockOnCancel}
+        onConfirm={mockOnConfirm}
+        title="Info"
+        message="Mensaje"
+        type="info"
+      />
+    );
+
+    expect(screen.getByText('Info')).toBeInTheDocument();
+  });
+
+  it('debe usar texto personalizado para botones', () => {
+    render(
+      <ConfirmModal
+        isOpen={true}
+        onCancel={mockOnCancel}
+        onConfirm={mockOnConfirm}
+        title="Confirmar"
+        message="Mensaje"
+        confirmText="Aceptar personalizado"
+        cancelText="Cancelar personalizado"
+      />
+    );
+
+    expect(screen.getByText('Aceptar personalizado')).toBeInTheDocument();
+    expect(screen.getByText('Cancelar personalizado')).toBeInTheDocument();
+  });
 });
 

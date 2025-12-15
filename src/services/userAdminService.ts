@@ -89,41 +89,7 @@ const getAuthHeaders = () => {
   };
 };
 
-const parseError = async (response: Response): Promise<string> => {
-  try {
-    const error = await response.json();
-    
-    if (error.error) {
-      return typeof error.error === 'string' ? error.error : error.error[0] || 'Error desconocido';
-    }
-    
-    if (error.message) {
-      return error.message;
-    }
-    
-    if (error.detail) {
-      return error.detail;
-    }
-    
-    // Errores de campos específicos
-    const fieldErrors: string[] = [];
-    for (const [field, value] of Object.entries(error)) {
-      if (Array.isArray(value)) {
-        fieldErrors.push(`${field}: ${value[0]}`);
-      } else if (typeof value === 'string') {
-        fieldErrors.push(`${field}: ${value}`);
-      }
-    }
-    
-    if (fieldErrors.length > 0) {
-      return fieldErrors.join('. ');
-    }
-    
-    return `Error ${response.status}: ${response.statusText}`;
-  } catch {
-    return `Error ${response.status}: ${response.statusText}`;
-  }
-};
+import { parseApiError } from '../utils/apiErrorHandler';
 
 export const userAdminService = {
   /**
@@ -141,8 +107,7 @@ export const userAdminService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response, 'Error en la operación de administración de usuarios');
     }
 
     return response.json();
@@ -158,8 +123,7 @@ export const userAdminService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response, 'Error en la operación de administración de usuarios');
     }
 
     const data = await response.json();
@@ -178,8 +142,7 @@ export const userAdminService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response, 'Error en la operación de administración de usuarios');
     }
 
     return response.json();
@@ -206,8 +169,7 @@ export const userAdminService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response, 'Error en la operación de administración de usuarios');
     }
 
     return response.json();

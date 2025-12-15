@@ -186,14 +186,21 @@ export const authService = {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => {
-        return { message: 'Error al iniciar sesión' };
-      });
+      let error;
+      try {
+        error = await response.json();
+      } catch {
+        // Si no se puede parsear el JSON, crear un error genérico
+        throw new Error('Error al conectar con el servidor. Verifica que el backend esté ejecutándose.');
+      }
       
+      // Priorizar non_field_errors (errores generales)
       if (error.non_field_errors) {
         const errorMsg = Array.isArray(error.non_field_errors) ? error.non_field_errors[0] : error.non_field_errors;
         throw new Error(errorMsg);
       }
+      
+      // Errores de campos específicos
       if (error.username) {
         const errorMsg = Array.isArray(error.username) ? error.username[0] : error.username;
         throw new Error(errorMsg);
@@ -203,8 +210,16 @@ export const authService = {
         throw new Error(errorMsg);
       }
       
-      const errorMsg = error.message || error.detail || 'Credenciales inválidas';
-      throw new Error(errorMsg);
+      // Mensajes de error genéricos
+      if (error.detail) {
+        throw new Error(error.detail);
+      }
+      if (error.message) {
+        throw new Error(error.message);
+      }
+      
+      // Error por defecto
+      throw new Error('Credenciales inválidas. Verifica tu usuario y contraseña.');
     }
 
     const result = await response.json();

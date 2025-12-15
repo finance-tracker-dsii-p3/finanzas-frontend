@@ -355,5 +355,35 @@ describe('CustomReminderModal', () => {
       );
     }, { timeout: 2000 });
   });
+
+  it('debe actualizar el formulario cuando cambia el recordatorio', () => {
+    const reminder1 = {
+      id: 1,
+      title: 'Recordatorio 1',
+      message: 'Mensaje 1',
+      reminder_date: '2025-01-15',
+      reminder_time: '09:00:00',
+    };
+
+    const reminder2 = {
+      id: 2,
+      title: 'Recordatorio 2',
+      message: 'Mensaje 2',
+      reminder_date: '2025-01-16',
+      reminder_time: '10:00:00',
+    };
+
+    const { rerender } = render(
+      <CustomReminderModal reminder={reminder1} onClose={mockOnClose} onSave={mockOnSave} />
+    );
+
+    expect(screen.getByDisplayValue('Recordatorio 1')).toBeInTheDocument();
+
+    rerender(
+      <CustomReminderModal reminder={reminder2} onClose={mockOnClose} onSave={mockOnSave} />
+    );
+
+    expect(screen.getByDisplayValue('Recordatorio 2')).toBeInTheDocument();
+  });
 });
 

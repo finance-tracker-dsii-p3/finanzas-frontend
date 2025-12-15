@@ -1,4 +1,4 @@
-import { checkAndHandleAuthError } from '../utils/authErrorHandler';
+import { parseApiError, handleNetworkError } from '../utils/apiErrorHandler';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
 
@@ -98,59 +98,6 @@ const getAuthHeaders = (): HeadersInit => {
   };
 };
 
-const parseError = async (response: Response) => {
-  if (response.status >= 500) {
-    const error = await response.json().catch(() => ({}));
-    const errorMessage = error.detail || error.message || error.error || 'Error interno del servidor';
-    throw new Error(`Error del servidor (${response.status}): ${errorMessage}. Por favor, intenta nuevamente más tarde o contacta al administrador.`);
-  }
-
-  if (response.status === 401) {
-    checkAndHandleAuthError(response);
-    throw new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
-  }
-
-  if (response.status === 403) {
-    throw new Error('No tienes permisos para realizar esta operación.');
-  }
-
-  if (response.status === 404) {
-    throw new Error('La notificación que buscas no existe o fue eliminada.');
-  }
-
-  const fallback = { message: 'Error en la operación de notificaciones' };
-  let error;
-  try {
-    error = await response.json();
-  } catch {
-    error = fallback;
-  }
-
-  const errorMessages: string[] = [];
-
-  if (error.message && !errorMessages.includes(error.message)) {
-    errorMessages.push(error.message);
-  }
-  if (error.detail && !errorMessages.includes(error.detail)) {
-    errorMessages.push(error.detail);
-  }
-
-  if (errorMessages.length === 0) {
-    errorMessages.push('Error en la operación. Verifica que todos los campos obligatorios estén completos.');
-  }
-
-  throw new Error(errorMessages.join('. '));
-};
-
-const handleFetchError = (error: unknown): never => {
-  if (error instanceof TypeError && (error.message.includes('fetch') || error.message.includes('network'))) {
-    throw new Error('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
-  }
-  if (error instanceof Error) {
-    throw error;
-  }
-  throw new Error('Error inesperado al procesar la solicitud.');
-};
 
 export const notificationService = {
   async list(filters?: NotificationFilters): Promise<NotificationListResponse> {
@@ -176,7 +123,7 @@ export const notificationService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de notificaciones');
       }
 
       const data = await response.json();
@@ -198,7 +145,7 @@ export const notificationService = {
 
       return data;
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -211,12 +158,12 @@ export const notificationService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de notificaciones');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -229,12 +176,12 @@ export const notificationService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de notificaciones');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -247,12 +194,12 @@ export const notificationService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de notificaciones');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -265,12 +212,12 @@ export const notificationService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de notificaciones');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -283,12 +230,12 @@ export const notificationService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de notificaciones');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -301,12 +248,12 @@ export const notificationService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de notificaciones');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -329,7 +276,7 @@ export const notificationService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de notificaciones');
       }
 
       const data = await response.json();
@@ -343,7 +290,7 @@ export const notificationService = {
       
       return [];
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -362,12 +309,12 @@ export const notificationService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de notificaciones');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -381,12 +328,12 @@ export const notificationService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de notificaciones');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -399,10 +346,10 @@ export const notificationService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de notificaciones');
       }
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -415,12 +362,12 @@ export const notificationService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de notificaciones');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -451,7 +398,7 @@ export const notificationService = {
             updated_at: new Date().toISOString(),
           };
         }
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de notificaciones');
       }
 
       return response.json();
@@ -473,7 +420,7 @@ export const notificationService = {
           updated_at: new Date().toISOString(),
         };
       }
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -489,12 +436,12 @@ export const notificationService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de notificaciones');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -507,7 +454,7 @@ export const notificationService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de notificaciones');
       }
 
       const data = await response.json();
@@ -522,7 +469,7 @@ export const notificationService = {
       }
       return data;
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },

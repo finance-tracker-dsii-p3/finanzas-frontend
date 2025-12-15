@@ -216,5 +216,99 @@ describe('SOATs', () => {
       expect(screen.getByText(/no hay soats registrados/i)).toBeInTheDocument();
     });
   });
+
+  it('debe mostrar error cuando falla la carga', async () => {
+    (soatService.listSOATs as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Error de red'));
+
+    render(<SOATs />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/error de red/i)).toBeInTheDocument();
+    });
+  });
+
+  it('debe editar un SOAT', async () => {
+    const user = userEvent.setup({ delay: null });
+    render(<SOATs />);
+
+    await waitFor(() => {
+      expect(screen.getByText('ABC123')).toBeInTheDocument();
+    });
+
+    const editButtons = screen.getAllByText(/editar/i);
+    await act(async () => {
+      await user.click(editButtons[0]);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/veh.*culo/i)).toBeInTheDocument();
+    });
+  });
+
+  it('debe eliminar un SOAT', async () => {
+    const user = userEvent.setup({ delay: null });
+    (soatService.deleteSOAT as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    render(<SOATs />);
+
+    await waitFor(() => {
+      expect(screen.getByText('ABC123')).toBeInTheDocument();
+    });
+
+    // Buscar botones de eliminar por rol o texto
+    const deleteButtons = screen.getAllByRole('button').filter(btn => 
+      btn.textContent?.includes('Eliminar') || btn.getAttribute('aria-label')?.includes('eliminar')
+    );
+    
+    if (deleteButtons.length === 0) {
+      // Si no hay botones con texto, buscar por icono o cualquier botón cerca del SOAT
+      const soatCard = screen.getByText('ABC123').closest('div');
+      const buttons = soatCard?.querySelectorAll('button') || [];
+      const deleteBtn = Array.from(buttons).find(btn => btn.textContent?.toLowerCase().includes('eliminar'));
+      if (deleteBtn) {
+        await act(async () => {
+          await user.click(deleteBtn);
+        });
+      }
+    } else {
+      await act(async () => {
+        await user.click(deleteButtons[0]);
+      });
+    }
+
+    await waitFor(() => {
+      const confirmText = screen.queryByText(/est.*s seguro/i) || screen.queryByText(/eliminar/i);
+      expect(confirmText).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    const confirmButton = screen.queryByText(/confirmar/i) || screen.queryByRole('button', { name: /confirmar/i });
+    if (confirmButton) {
+      await act(async () => {
+        await user.click(confirmButton);
+      });
+
+      await waitFor(() => {
+        expect(soatService.deleteSOAT).toHaveBeenCalledWith(1);
+      }, { timeout: 3000 });
+    }
+  });
+
+  it('debe actualizar un SOAT', async () => {
+    const user = userEvent.setup({ delay: null });
+    (soatService.updateSOAT as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    render(<SOATs />);
+
+    await waitFor(() => {
+      expect(screen.getByText('ABC123')).toBeInTheDocument();
+    });
+
+    const editButtons = screen.getAllByText(/editar/i);
+    await act(async () => {
+      await user.click(editButtons[0]);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/veh.*culo/i)).toBeInTheDocument();
+    });
+  });
 });
 

@@ -34,13 +34,20 @@
   padding: 16px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: white;
+  cursor: pointer;
 }
 
 .upcoming-bill-item:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+  border-color: #9ca3af;
+}
+
+.upcoming-bill-item:active {
   transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
 }
 
 .upcoming-bill-item.urgency-overdue {
@@ -76,6 +83,13 @@
 .bill-urgency-emoji {
   font-size: 1.2rem;
   flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+}
+
+.upcoming-bill-item:hover .bill-urgency-emoji {
+  transform: scale(1.2) rotate(10deg);
+  animation: pulse 0.6s ease-in-out;
 }
 
 .bill-provider {

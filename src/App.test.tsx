@@ -67,6 +67,34 @@ vi.mock('./pages/profile/ProfilePage', () => ({
   ProfilePage: () => <div data-testid="profile-page">Profile Page</div>,
 }));
 
+vi.mock('./pages/notifications/Notifications', () => ({
+  default: () => <div data-testid="notifications-page">Notifications Page</div>,
+}));
+
+vi.mock('./pages/admin/AdminUsers', () => ({
+  default: () => <div data-testid="admin-users-page">Admin Users Page</div>,
+}));
+
+vi.mock('./pages/vehicles/Vehicles', () => ({
+  default: () => <div data-testid="vehicles-page">Vehicles Page</div>,
+}));
+
+vi.mock('./pages/soats/SOATs', () => ({
+  default: () => <div data-testid="soats-page">SOATs Page</div>,
+}));
+
+vi.mock('./pages/bills/Bills', () => ({
+  default: () => <div data-testid="bills-page">Bills Page</div>,
+}));
+
+vi.mock('./components/ProtectedAdminRoute', () => ({
+  ProtectedAdminRoute: ({ children }: { children: React.ReactNode }) => <div data-testid="protected-admin-route">{children}</div>,
+}));
+
+vi.mock('./context/NotificationContext', () => ({
+  NotificationProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="notification-provider">{children}</div>,
+}));
+
 describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -79,6 +107,7 @@ describe('App', () => {
     expect(screen.getByTestId('category-provider')).toBeInTheDocument();
     expect(screen.getByTestId('budget-provider')).toBeInTheDocument();
     expect(screen.getByTestId('alert-provider')).toBeInTheDocument();
+    expect(screen.getByTestId('notification-provider')).toBeInTheDocument();
   });
 
   it('debe renderizar la página de inicio en la ruta raíz', () => {
@@ -145,6 +174,46 @@ describe('App', () => {
     
     expect(screen.getByTestId('protected-route')).toBeInTheDocument();
     // El componente usa lazy loading, así que puede mostrar el fallback de carga
+    expect(screen.getByText('Cargando...')).toBeInTheDocument();
+  });
+
+  it('debe renderizar la página de notificaciones protegida en /notifications', () => {
+    window.history.pushState({}, '', '/notifications');
+    render(<App />);
+    
+    expect(screen.getByTestId('protected-route')).toBeInTheDocument();
+    expect(screen.getByText('Cargando...')).toBeInTheDocument();
+  });
+
+  it('debe renderizar la página de admin protegida en /admin/users', () => {
+    window.history.pushState({}, '', '/admin/users');
+    render(<App />);
+    
+    expect(screen.getByTestId('protected-admin-route')).toBeInTheDocument();
+    expect(screen.getByText('Cargando...')).toBeInTheDocument();
+  });
+
+  it('debe renderizar la página de vehículos protegida en /vehicles', () => {
+    window.history.pushState({}, '', '/vehicles');
+    render(<App />);
+    
+    expect(screen.getByTestId('protected-route')).toBeInTheDocument();
+    expect(screen.getByText('Cargando...')).toBeInTheDocument();
+  });
+
+  it('debe renderizar la página de SOATs protegida en /soats', () => {
+    window.history.pushState({}, '', '/soats');
+    render(<App />);
+    
+    expect(screen.getByTestId('protected-route')).toBeInTheDocument();
+    expect(screen.getByText('Cargando...')).toBeInTheDocument();
+  });
+
+  it('debe renderizar la página de facturas protegida en /bills', () => {
+    window.history.pushState({}, '', '/bills');
+    render(<App />);
+    
+    expect(screen.getByTestId('protected-route')).toBeInTheDocument();
     expect(screen.getByText('Cargando...')).toBeInTheDocument();
   });
 });

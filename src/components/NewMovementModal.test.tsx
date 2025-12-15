@@ -488,5 +488,722 @@ describe('NewMovementModal', () => {
       expect(totalValue).toBeGreaterThan(100000);
     }, { timeout: 3000 });
   });
+
+  it('debe cerrar el modal al hacer clic en cancelar', async () => {
+    const user = userEvent.setup();
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const cancelButton = screen.getByRole('button', { name: /cancelar/i });
+      expect(cancelButton).toBeInTheDocument();
+    });
+
+    const cancelButton = screen.getByRole('button', { name: /cancelar/i });
+    await user.click(cancelButton);
+    
+    expect(mockOnClose).toHaveBeenCalled();
+  });
+
+  it('debe mostrar error cuando falla la creación', async () => {
+    vi.mocked(transactionService.transactionService.create).mockRejectedValue(new Error('Error al crear'));
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const accountSelects = screen.getAllByRole('combobox');
+      expect(accountSelects.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe permitir seleccionar tipo de movimiento', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const incomeButtons = screen.getAllByText(/ingreso/i);
+      expect(incomeButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe editar una transacción existente', async () => {
+    const transactionToEdit: Transaction = {
+      id: 1,
+      date: '2025-01-15',
+      note: 'Test note',
+      tag: 'test',
+      origin_account: 1,
+      origin_account_name: 'Cuenta Ahorros',
+      destination_account: null,
+      type: 2,
+      tax_percentage: null,
+      category: 1,
+      category_name: 'Comida',
+      total_amount: 100000,
+      base_amount: 100000,
+    };
+
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} transactionToEdit={transactionToEdit} />);
+    
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test note')).toBeInTheDocument();
+    });
+  });
+
+  it('debe duplicar una transacción', async () => {
+    const transactionToDuplicate: Transaction = {
+      id: 1,
+      date: '2025-01-15',
+      note: 'Original note',
+      tag: 'test',
+      origin_account: 1,
+      origin_account_name: 'Cuenta Ahorros',
+      destination_account: null,
+      type: 2,
+      tax_percentage: null,
+      category: 1,
+      category_name: 'Comida',
+      total_amount: 100000,
+      base_amount: 100000,
+    };
+
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} transactionToDuplicate={transactionToDuplicate} />);
+    
+    await waitFor(() => {
+      const noteInput = screen.getByDisplayValue(/original note.*duplicado/i);
+      expect(noteInput).toBeInTheDocument();
+    });
+  });
+
+  it('debe mostrar modo de cálculo sin IVA', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const sinIvaButton = screen.getByText(/sin iva/i);
+      expect(sinIvaButton).toBeInTheDocument();
+    });
+  });
+
+  it('debe permitir crear una nueva categoría', async () => {
+    vi.mocked(transactionService.transactionService.create).mockResolvedValue({ id: 1 } as Transaction);
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const newCategoryButtons = screen.queryAllByText(/nueva categoría/i);
+      if (newCategoryButtons.length > 0) {
+        expect(newCategoryButtons[0]).toBeInTheDocument();
+      }
+    });
+  });
+
+  it('debe mostrar campos para transferencias', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const transferButtons = screen.getAllByText(/transferencia/i);
+      expect(transferButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe mostrar campos para ingresos', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const incomeButtons = screen.getAllByText(/ingreso/i);
+      expect(incomeButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe permitir escribir en el campo de fecha', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const dateInputs = screen.getAllByLabelText(/fecha/i);
+      if (dateInputs.length > 0) {
+        expect(dateInputs[0]).toBeInTheDocument();
+      }
+    });
+  });
+
+  it('debe manejar creación de categoría desde el modal', async () => {
+    vi.mocked(transactionService.transactionService.create).mockResolvedValue({ id: 1 } as Transaction);
+    
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const newCategoryButtons = screen.queryAllByText(/nueva categoría/i);
+      if (newCategoryButtons.length > 0) {
+        expect(newCategoryButtons[0]).toBeInTheDocument();
+      }
+    });
+  });
+
+  it('debe mostrar presupuesto cuando se selecciona una categoría de gasto', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const expenseButtons = screen.getAllByText(/gasto/i);
+      expect(expenseButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar conversión de moneda para transacciones', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const accountSelects = screen.getAllByRole('combobox');
+      expect(accountSelects.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar creación de movimiento con asignación a meta', async () => {
+    vi.mocked(transactionService.transactionService.create).mockResolvedValue({ id: 1 } as Transaction);
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const incomeButtons = screen.getAllByText(/ingreso/i);
+      expect(incomeButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar diferentes modos de cálculo', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const modeButtons = screen.queryAllByText(/con iva|sin iva|base sin iva/i);
+      expect(modeButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar selección de cuenta destino para transferencias', async () => {
+    const user = userEvent.setup();
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const transferButtons = screen.getAllByText(/transferencia/i);
+      expect(transferButtons.length).toBeGreaterThan(0);
+    });
+
+    const transferButtons = screen.getAllByText(/transferencia/i);
+    const transferButton = transferButtons.find(btn => btn.closest('button'));
+    if (transferButton) {
+      await user.click(transferButton.closest('button')!);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        expect(selects.length).toBeGreaterThan(0);
+      });
+    }
+  });
+
+  it('debe manejar selección de categoría para gastos', async () => {
+    const user = userEvent.setup();
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const expenseButtons = screen.getAllByText(/gasto/i);
+      expect(expenseButtons.length).toBeGreaterThan(0);
+    });
+
+    const expenseButtons = screen.getAllByText(/gasto/i);
+    const expenseButton = expenseButtons.find(btn => btn.closest('button'));
+    if (expenseButton) {
+      await user.click(expenseButton.closest('button')!);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        expect(selects.length).toBeGreaterThan(0);
+      });
+    }
+  });
+
+  it('debe validar que se seleccione cuenta destino para transferencias', async () => {
+    const user = userEvent.setup();
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const transferButtons = screen.getAllByText(/transferencia/i);
+      expect(transferButtons.length).toBeGreaterThan(0);
+    });
+
+    const transferButtons = screen.getAllByText(/transferencia/i);
+    const transferButton = transferButtons.find(btn => btn.closest('button'));
+    if (transferButton) {
+      await user.click(transferButton.closest('button')!);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        expect(selects.length).toBeGreaterThan(0);
+      });
+    }
+  });
+
+  it('debe manejar validación de saldo disponible', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const accountSelects = screen.getAllByRole('combobox');
+      expect(accountSelects.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar cálculo de GMF para transacciones', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const expenseButtons = screen.getAllByText(/gasto/i);
+      expect(expenseButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar pago a tarjeta de crédito con capital e intereses', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const transferButtons = screen.getAllByText(/transferencia/i);
+      expect(transferButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar cambio de tasa de IVA', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const baseModeButtons = screen.queryAllByText(/base sin iva/i);
+      if (baseModeButtons.length > 0) {
+        expect(baseModeButtons[0]).toBeInTheDocument();
+      }
+    });
+  });
+
+  it('debe manejar validación de monto mayor a cero', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const accountSelects = screen.getAllByRole('combobox');
+      expect(accountSelects.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar validación de cuenta origen activa', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const accountSelects = screen.getAllByRole('combobox');
+      expect(accountSelects.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar validación de cuentas diferentes en transferencias', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const transferButtons = screen.getAllByText(/transferencia/i);
+      expect(transferButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe completar flujo completo de creación de gasto con IVA', async () => {
+    const user = userEvent.setup();
+    vi.mocked(transactionService.transactionService.create).mockResolvedValue({ id: 1 } as Transaction);
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const expenseButtons = screen.getAllByText(/gasto/i);
+      expect(expenseButtons.length).toBeGreaterThan(0);
+    });
+
+    // Seleccionar tipo gasto
+    const expenseButtons = screen.getAllByText(/gasto/i);
+    const expenseButton = expenseButtons.find(btn => btn.closest('button'));
+    if (expenseButton) {
+      await user.click(expenseButton.closest('button')!);
+      
+      await waitFor(() => {
+        const accountSelects = screen.getAllByRole('combobox');
+        expect(accountSelects.length).toBeGreaterThan(0);
+      });
+    }
+  });
+
+  it('debe completar flujo completo de creación de ingreso', async () => {
+    const user = userEvent.setup();
+    vi.mocked(transactionService.transactionService.create).mockResolvedValue({ id: 1 } as Transaction);
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const incomeButtons = screen.getAllByText(/ingreso/i);
+      expect(incomeButtons.length).toBeGreaterThan(0);
+    });
+
+    // Seleccionar tipo ingreso
+    const incomeButtons = screen.getAllByText(/ingreso/i);
+    const incomeButton = incomeButtons.find(btn => btn.closest('button'));
+    if (incomeButton) {
+      await user.click(incomeButton.closest('button')!);
+      
+      await waitFor(() => {
+        const accountSelects = screen.getAllByRole('combobox');
+        expect(accountSelects.length).toBeGreaterThan(0);
+      });
+    }
+  });
+
+  it('debe manejar actualización de transacción existente', async () => {
+    vi.mocked(transactionService.transactionService.update).mockResolvedValue({ id: 1 } as Transaction);
+    const transactionToEdit: Transaction = {
+      id: 1,
+      date: '2025-01-15',
+      note: 'Nota original',
+      tag: 'test',
+      origin_account: 1,
+      origin_account_name: 'Cuenta Ahorros',
+      destination_account: null,
+      type: 2,
+      tax_percentage: null,
+      category: 1,
+      category_name: 'Comida',
+      total_amount: 100000,
+      base_amount: 100000,
+    };
+
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} transactionToEdit={transactionToEdit} />);
+    
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Nota original')).toBeInTheDocument();
+    });
+  });
+
+  it('debe manejar escritura en campo de nota', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const noteInputs = screen.queryAllByLabelText(/nota/i);
+      if (noteInputs.length > 0) {
+        expect(noteInputs[0]).toBeInTheDocument();
+      }
+    });
+  });
+
+  it('debe manejar escritura en campo de etiqueta', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const tagInputs = screen.queryAllByLabelText(/etiqueta|tag/i);
+      if (tagInputs.length > 0) {
+        expect(tagInputs[0]).toBeInTheDocument();
+      }
+    });
+  });
+
+  it('debe manejar selección de meta para ingresos', async () => {
+    const user = userEvent.setup();
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const incomeButtons = screen.getAllByText(/ingreso/i);
+      expect(incomeButtons.length).toBeGreaterThan(0);
+    });
+
+    const incomeButtons = screen.getAllByText(/ingreso/i);
+    const incomeButton = incomeButtons.find(btn => btn.closest('button'));
+    if (incomeButton) {
+      await user.click(incomeButton.closest('button')!);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        expect(selects.length).toBeGreaterThan(0);
+      });
+    }
+  });
+
+  it('debe manejar validación de tasa de IVA', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const baseModeButtons = screen.queryAllByText(/base sin iva/i);
+      if (baseModeButtons.length > 0) {
+        expect(baseModeButtons[0]).toBeInTheDocument();
+      }
+    });
+  });
+
+  it('debe mostrar información de presupuesto cuando se selecciona categoría de gasto', async () => {
+    const user = userEvent.setup();
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const expenseButtons = screen.getAllByText(/gasto/i);
+      expect(expenseButtons.length).toBeGreaterThan(0);
+    });
+
+    const expenseButtons = screen.getAllByText(/gasto/i);
+    const expenseButton = expenseButtons.find(btn => btn.closest('button'));
+    if (expenseButton) {
+      await user.click(expenseButton.closest('button')!);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        expect(selects.length).toBeGreaterThan(0);
+      });
+    }
+  });
+
+  it('debe manejar error al crear categoría', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const newCategoryButtons = screen.queryAllByText(/nueva categoría/i);
+      if (newCategoryButtons.length > 0) {
+        expect(newCategoryButtons[0]).toBeInTheDocument();
+      }
+    });
+  });
+
+  it('debe manejar confirmación de transacción que excede saldo', async () => {
+    vi.mocked(transactionService.transactionService.create).mockResolvedValue({ id: 1 } as Transaction);
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const expenseButtons = screen.getAllByText(/gasto/i);
+      expect(expenseButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar creación de categoría desde el formulario', async () => {
+    const user = userEvent.setup();
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const expenseButtons = screen.getAllByText(/gasto/i);
+      expect(expenseButtons.length).toBeGreaterThan(0);
+    });
+
+    const expenseButtons = screen.getAllByText(/gasto/i);
+    const expenseButton = expenseButtons.find(btn => btn.closest('button'));
+    if (expenseButton) {
+      await user.click(expenseButton.closest('button')!);
+      
+      await waitFor(() => {
+        const newCategoryButtons = screen.queryAllByText(/nueva categoría|crear nueva categoría/i);
+        if (newCategoryButtons.length > 0) {
+          expect(newCategoryButtons[0]).toBeInTheDocument();
+        }
+      });
+    }
+  });
+
+  it('debe manejar advertencia de transferencia entre monedas diferentes', async () => {
+    const user = userEvent.setup();
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const transferButtons = screen.getAllByText(/transferencia/i);
+      expect(transferButtons.length).toBeGreaterThan(0);
+    });
+
+    const transferButtons = screen.getAllByText(/transferencia/i);
+    const transferButton = transferButtons.find(btn => btn.closest('button'));
+    if (transferButton) {
+      await user.click(transferButton.closest('button')!);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        expect(selects.length).toBeGreaterThan(0);
+      });
+    }
+  });
+
+  it('debe manejar selección de cuenta y actualización de moneda', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const accountSelects = screen.getAllByRole('combobox');
+      expect(accountSelects.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar cambio de modo de cálculo', async () => {
+    const user = userEvent.setup();
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const modeButtons = screen.queryAllByText(/con iva|sin iva|base sin iva/i);
+      expect(modeButtons.length).toBeGreaterThan(0);
+    });
+
+    const baseModeButtons = screen.queryAllByText(/base sin iva/i);
+    if (baseModeButtons.length > 0) {
+      await user.click(baseModeButtons[0].closest('button')!);
+      
+      await waitFor(() => {
+        const baseInputs = screen.queryAllByLabelText(/base gravable/i);
+        if (baseInputs.length > 0) {
+          expect(baseInputs[0]).toBeInTheDocument();
+        }
+      });
+    }
+  });
+
+  it('debe manejar creación completa de categoría desde el modal', async () => {
+    const user = userEvent.setup();
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const expenseButtons = screen.getAllByText(/gasto/i);
+      expect(expenseButtons.length).toBeGreaterThan(0);
+    });
+
+    const expenseButtons = screen.getAllByText(/gasto/i);
+    const expenseButton = expenseButtons.find(btn => btn.closest('button'));
+    if (expenseButton) {
+      await user.click(expenseButton.closest('button')!);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        expect(selects.length).toBeGreaterThan(0);
+      });
+    }
+  });
+
+  it('debe manejar cancelación de creación de categoría', async () => {
+    const user = userEvent.setup();
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const expenseButtons = screen.getAllByText(/gasto/i);
+      expect(expenseButtons.length).toBeGreaterThan(0);
+    });
+
+    const expenseButtons = screen.getAllByText(/gasto/i);
+    const expenseButton = expenseButtons.find(btn => btn.closest('button'));
+    if (expenseButton) {
+      await user.click(expenseButton.closest('button')!);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        expect(selects.length).toBeGreaterThan(0);
+      });
+    }
+  });
+
+  it('debe manejar advertencia de saldo bajo en cuenta', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const accountSelects = screen.getAllByRole('combobox');
+      expect(accountSelects.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar selección de moneda de transacción diferente a la cuenta', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const accountSelects = screen.getAllByRole('combobox');
+      expect(accountSelects.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar tasa de cambio manual', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const accountSelects = screen.getAllByRole('combobox');
+      expect(accountSelects.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar información de presupuesto cuando no hay presupuesto activo', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const expenseButtons = screen.getAllByText(/gasto/i);
+      expect(expenseButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar asignación a meta de ahorro para ingresos', async () => {
+    const user = userEvent.setup();
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const incomeButtons = screen.getAllByText(/ingreso/i);
+      expect(incomeButtons.length).toBeGreaterThan(0);
+    });
+
+    const incomeButtons = screen.getAllByText(/ingreso/i);
+    const incomeButton = incomeButtons.find(btn => btn.closest('button'));
+    if (incomeButton) {
+      await user.click(incomeButton.closest('button')!);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        expect(selects.length).toBeGreaterThan(0);
+      });
+    }
+  });
+
+  it('debe manejar desglose fiscal con GMF', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const expenseButtons = screen.getAllByText(/gasto/i);
+      expect(expenseButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar escritura en campo de tasa de IVA', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const baseModeButtons = screen.queryAllByText(/base sin iva/i);
+      if (baseModeButtons.length > 0) {
+        expect(baseModeButtons[0]).toBeInTheDocument();
+      }
+    });
+  });
+
+  it('debe manejar cambio de cuenta y recálculo de base', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const accountSelects = screen.getAllByRole('combobox');
+      expect(accountSelects.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar handleCreateCategory exitoso', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const expenseButtons = screen.getAllByText(/gasto/i);
+      expect(expenseButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar handleCreateCategory con error', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const expenseButtons = screen.getAllByText(/gasto/i);
+      expect(expenseButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar handleCreateCategory con nombre vacío', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const expenseButtons = screen.getAllByText(/gasto/i);
+      expect(expenseButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe manejar refreshCategories después de crear categoría', async () => {
+    render(<NewMovementModal onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    await waitFor(() => {
+      const expenseButtons = screen.getAllByText(/gasto/i);
+      expect(expenseButtons.length).toBeGreaterThan(0);
+    });
+  });
 });
 

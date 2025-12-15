@@ -177,7 +177,7 @@ describe('CategoriesPage', () => {
     const gastosButtons = screen.getAllByText(/gastos/i);
     const gastosFilterButton = gastosButtons.find((btn) => btn.closest('button')?.textContent === 'Gastos');
     if (gastosFilterButton) {
-      await user.click(gastosFilterButton.closest('button')!);
+      await user.click(gastosFilterButton.closest('button') as HTMLElement);
     }
 
     await waitFor(() => {
@@ -195,6 +195,17 @@ describe('CategoriesPage', () => {
     render(<CategoriesPage onBack={mockOnBack} />);
 
     expect(screen.getByText(/cargando categorías/i)).toBeInTheDocument();
+  });
+
+  it('debe mostrar error cuando falla la carga', async () => {
+    vi.mocked(mockUseCategories.refreshCategories).mockRejectedValue(new Error('Error de red'));
+    
+    render(<CategoriesPage onBack={mockOnBack} />);
+    
+    await waitFor(() => {
+      // El componente debería manejar el error
+      expect(screen.getByText(/categorías/i)).toBeInTheDocument();
+    });
   });
 
   it('debe mostrar mensaje cuando no hay categorías', () => {

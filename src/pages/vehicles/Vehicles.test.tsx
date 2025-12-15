@@ -167,5 +167,30 @@ describe('Vehicles', () => {
       expect(screen.getByText(/error al cargar vehículos/i)).toBeInTheDocument();
     });
   });
+
+  it('debe mostrar información de vehículos sin SOAT', async () => {
+    render(<Vehicles />);
+
+    await waitFor(() => {
+      expect(screen.getByText('XYZ789')).toBeInTheDocument();
+    });
+  });
+
+  it('debe actualizar la lista después de crear un vehículo', async () => {
+    const mockCreate = vi.fn().mockResolvedValue({
+      id: 3,
+      plate: 'NEW123',
+      is_active: true,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z',
+    });
+    (vehicleService.createVehicle as ReturnType<typeof vi.fn>).mockImplementation(mockCreate);
+    
+    render(<Vehicles />);
+
+    await waitFor(() => {
+      expect(screen.getByText('ABC123')).toBeInTheDocument();
+    });
+  });
 });
 

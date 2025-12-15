@@ -1,4 +1,4 @@
-import { checkAndHandleAuthError } from '../utils/authErrorHandler';
+import { parseApiError } from '../utils/apiErrorHandler';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
 
@@ -104,93 +104,6 @@ const buildQueryParams = (filters?: RuleFilters) => {
   return params.toString() ? `?${params.toString()}` : '';
 };
 
-const parseError = async (response: Response) => {
-  if (response.status >= 500) {
-    const error = await response.json().catch(() => ({}));
-    const errorMessage = error.detail || error.message || error.error || 'Error interno del servidor';
-    throw new Error(`Error del servidor (${response.status}): ${errorMessage}. Por favor, intenta nuevamente más tarde o contacta al administrador.`);
-  }
-
-  if (checkAndHandleAuthError(response)) {
-    throw new Error('No autorizado. Por favor, inicia sesión nuevamente.');
-  }
-
-  if (response.status === 403) {
-    throw new Error('No tienes permiso para realizar esta acción.');
-  }
-
-  if (response.status === 404) {
-    throw new Error('Regla no encontrada.');
-  }
-
-  const fallback = { message: 'Error en la operación de reglas' };
-  let error;
-  try {
-    error = await response.json();
-  } catch {
-    error = fallback;
-  }
-
-  const errorMessages: string[] = [];
-
-  if (error.message && error.message !== 'Error en la petición' && !errorMessages.includes(error.message)) {
-    errorMessages.push(error.message);
-  }
-  if (error.detail && !errorMessages.includes(error.detail)) {
-    errorMessages.push(error.detail);
-  }
-
-  const errorDetails = error.details || error;
-  const fields = ['name', 'criteria_type', 'keyword', 'target_transaction_type', 'action_type', 'target_category', 'target_tag'];
-
-  for (const field of fields) {
-    const fieldError = errorDetails[field] || error[field];
-    if (fieldError) {
-      const errorText = Array.isArray(fieldError) ? fieldError[0] : fieldError;
-      const fieldLabel = {
-        name: 'Nombre',
-        criteria_type: 'Tipo de criterio',
-        keyword: 'Palabra clave',
-        target_transaction_type: 'Tipo de transacción',
-        action_type: 'Tipo de acción',
-        target_category: 'Categoría objetivo',
-        target_tag: 'Etiqueta objetivo',
-      }[field] || field;
-      errorMessages.push(`${fieldLabel}: ${errorText}`);
-    }
-  }
-
-  if (error.details && typeof error.details === 'object') {
-    Object.keys(error.details).forEach(key => {
-      if (!fields.includes(key) && key !== 'message' && key !== 'detail' && key !== 'non_field_errors' && error.details[key]) {
-        const fieldError = Array.isArray(error.details[key]) ? error.details[key][0] : error.details[key];
-        if (typeof fieldError === 'string' && !errorMessages.includes(fieldError)) {
-          errorMessages.push(fieldError);
-        }
-      }
-    });
-  }
-
-  const nonFieldErrors = errorDetails.non_field_errors || error.non_field_errors;
-  if (nonFieldErrors) {
-    const nonFieldErrorsArray = Array.isArray(nonFieldErrors) ? nonFieldErrors : [nonFieldErrors];
-    nonFieldErrorsArray.forEach((err: string) => {
-      if (!errorMessages.includes(err)) {
-        errorMessages.push(err);
-      }
-    });
-  }
-
-  if (errorMessages.length === 0) {
-    if (error.suggestion) {
-      errorMessages.push(error.suggestion);
-    } else {
-      errorMessages.push('Error en la operación. Verifica que todos los campos obligatorios estén completos.');
-    }
-  }
-
-  throw new Error(errorMessages.join('. '));
-};
 
 export const ruleService = {
   async getRules(filters?: RuleFilters): Promise<{ count: number; results: Rule[] }> {
@@ -202,7 +115,7 @@ export const ruleService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de reglas');
       }
 
       return response.json();
@@ -222,7 +135,7 @@ export const ruleService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de reglas');
       }
 
       return response.json();
@@ -243,7 +156,7 @@ export const ruleService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de reglas');
       }
 
       return response.json();
@@ -264,7 +177,7 @@ export const ruleService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de reglas');
       }
 
       return response.json();
@@ -284,7 +197,7 @@ export const ruleService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de reglas');
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -302,7 +215,7 @@ export const ruleService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de reglas');
       }
 
       const data = await response.json();
@@ -324,7 +237,7 @@ export const ruleService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de reglas');
       }
 
       const data = await response.json();
@@ -346,7 +259,7 @@ export const ruleService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de reglas');
       }
 
       return response.json();
@@ -366,7 +279,7 @@ export const ruleService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de reglas');
       }
 
       return response.json();
@@ -386,7 +299,7 @@ export const ruleService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de reglas');
       }
 
       return response.json();

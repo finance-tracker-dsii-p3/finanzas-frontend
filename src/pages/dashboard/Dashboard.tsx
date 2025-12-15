@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, AlertCircle, User, LogOut, Users, Car, ReceiptText, Menu, X, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { Calendar, PieChart, Activity, Upload, FileText, Target, ChevronRight, Receipt, Percent, AlertCircle, User, LogOut, Users, Menu, X, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useBudgets } from '../../context/BudgetContext';
 import { MonthlySummaryResponse } from '../../services/budgetService';
@@ -184,13 +184,13 @@ const Dashboard: React.FC = () => {
                 {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
               {/* Desktop Navigation - Always visible on md+ */}
-              <nav className="nav-tabs-responsive desktop-nav hidden md:flex md:flex-row md:relative md:bg-transparent md:border-0 md:p-0 md:shadow-none md:z-auto md:max-h-none md:overflow-visible gap-4 lg:gap-6">
+              <nav className="nav-tabs-responsive desktop-nav hidden md:flex md:flex-row md:relative md:bg-transparent md:border-0 md:p-0 md:shadow-none md:z-auto md:max-h-none md:overflow-visible">
                 <button
                   onClick={() => {
                     setCurrentView('dashboard');
                     setShowMobileMenu(false);
                   }}
-                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap px-2 ${
                     currentView === 'dashboard' 
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                       : 'text-gray-600 hover:text-gray-900'
@@ -307,42 +307,39 @@ const Dashboard: React.FC = () => {
                     setCurrentView('vehicles');
                     setShowMobileMenu(false);
                   }}
-                  className={`text-xs sm:text-sm font-medium transition-smooth button-press flex items-center gap-1 whitespace-nowrap ${
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
                     currentView === 'vehicles' 
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  <Car className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                  <span>Vehículos</span>
+                  Vehículos
                 </button>
                 <button
                   onClick={() => {
                     setCurrentView('soats');
                     setShowMobileMenu(false);
                   }}
-                  className={`text-xs sm:text-sm font-medium transition-smooth button-press flex items-center gap-1 whitespace-nowrap ${
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
                     currentView === 'soats' 
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  <Car className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                  <span>SOATs</span>
+                  SOATs
                 </button>
                 <button
                   onClick={() => {
                     setCurrentView('bills');
                     setShowMobileMenu(false);
                   }}
-                  className={`text-xs sm:text-sm font-medium transition-smooth button-press flex items-center gap-1 whitespace-nowrap ${
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
                     currentView === 'bills' 
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  <ReceiptText className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                  <span>Facturas</span>
+                  Facturas
                 </button>
               </nav>
 
@@ -354,7 +351,7 @@ const Dashboard: React.FC = () => {
                     setCurrentView('dashboard');
                     setShowMobileMenu(false);
                   }}
-                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap px-2 ${
                     currentView === 'dashboard' 
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                       : 'text-gray-600 hover:text-gray-900'
@@ -471,42 +468,39 @@ const Dashboard: React.FC = () => {
                     setCurrentView('vehicles');
                     setShowMobileMenu(false);
                   }}
-                  className={`text-xs sm:text-sm font-medium transition-smooth button-press flex items-center gap-1 whitespace-nowrap ${
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
                     currentView === 'vehicles' 
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  <Car className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                  <span>Vehículos</span>
+                  Vehículos
                 </button>
                 <button
                   onClick={() => {
                     setCurrentView('soats');
                     setShowMobileMenu(false);
                   }}
-                  className={`text-xs sm:text-sm font-medium transition-smooth button-press flex items-center gap-1 whitespace-nowrap ${
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
                     currentView === 'soats' 
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  <Car className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                  <span>SOATs</span>
+                  SOATs
                 </button>
                 <button
                   onClick={() => {
                     setCurrentView('bills');
                     setShowMobileMenu(false);
                   }}
-                  className={`text-xs sm:text-sm font-medium transition-smooth button-press flex items-center gap-1 whitespace-nowrap ${
+                  className={`text-xs sm:text-sm font-medium transition-smooth button-press whitespace-nowrap ${
                     currentView === 'bills' 
                       ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  <ReceiptText className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                  <span>Facturas</span>
+                  Facturas
                 </button>
                 </nav>
               )}
@@ -971,13 +965,13 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <button
               onClick={() => setCurrentView('budgets')}
-              className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+              className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 transition-smooth button-press"
             >
               Ver todos
-              <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
+              <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 transition-transform" />
             </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 stagger-list">
             {budgetSummary.budgets.slice(0, 6).map((budget) => {
               const spentPercentage = parseFloat(budget.spent_percentage);
               const statusColor =
@@ -996,7 +990,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               return (
                 <div
                   key={budget.budget_id}
-                  className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow"
+                  className="budget-card-item border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-all cursor-pointer"
                 >
                   <div className="flex items-center gap-2 mb-2 sm:mb-3">
                     <div
@@ -1053,9 +1047,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="mt-4 text-center">
               <button
                 onClick={() => setCurrentView('budgets')}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-smooth button-press flex items-center gap-1 mx-auto"
               >
                 Ver {budgetSummary.budgets.length - 6} presupuesto{budgetSummary.budgets.length - 6 !== 1 ? 's' : ''} más
+                <ChevronRight className="w-4 h-4 transition-transform" />
               </button>
             </div>
           )}

@@ -1,4 +1,4 @@
-import { checkAndHandleAuthError } from '../utils/authErrorHandler';
+import { parseApiError, handleNetworkError } from '../utils/apiErrorHandler';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
 
@@ -43,99 +43,6 @@ const getAuthHeaders = () => {
   };
 };
 
-const parseError = async (response: Response): Promise<Error> => {
-  if (response.status >= 500) {
-    const error = await response.json().catch(() => ({}));
-    const errorMessage = error.detail || error.message || error.error || 'Error interno del servidor';
-    return new Error(`Error del servidor (${response.status}): ${errorMessage}. Por favor, intenta nuevamente más tarde o contacta al administrador.`);
-  }
-
-  if (response.status === 401) {
-    checkAndHandleAuthError(response);
-    return new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
-  }
-
-  if (response.status === 403) {
-    return new Error('No tienes permisos para realizar esta operación.');
-  }
-
-  if (response.status === 404) {
-    return new Error('La meta solicitada no fue encontrada.');
-  }
-
-  const fallback = { message: 'Error en la operación de metas' };
-  let error;
-  try {
-    error = await response.json();
-  } catch {
-    error = fallback;
-  }
-  
-  const errorMessages: string[] = [];
-  
-  if (error.message && 
-      error.message !== 'Error en la petición' && 
-      !errorMessages.includes(error.message)) {
-    errorMessages.push(error.message);
-  }
-  if (error.detail && !errorMessages.includes(error.detail)) {
-    errorMessages.push(error.detail);
-  }
-  
-  const errorDetails = error.details || error;
-  
-  const fields = ['name', 'target_amount', 'date', 'description'];
-  
-  for (const field of fields) {
-    const fieldError = errorDetails[field] || error[field];
-    if (fieldError) {
-      const errorText = Array.isArray(fieldError) ? fieldError[0] : fieldError;
-      const fieldLabel = {
-        name: 'Nombre',
-        target_amount: 'Monto objetivo',
-        date: 'Fecha',
-        description: 'Descripción',
-      }[field] || field;
-      errorMessages.push(`${fieldLabel}: ${errorText}`);
-    }
-  }
-  
-  const nonFieldErrors = errorDetails.non_field_errors || error.non_field_errors;
-  if (nonFieldErrors) {
-    const nonFieldErrorsArray = Array.isArray(nonFieldErrors) ? nonFieldErrors : [nonFieldErrors];
-    nonFieldErrorsArray.forEach((err: string) => {
-      if (!errorMessages.includes(err)) {
-        errorMessages.push(err);
-      }
-    });
-  }
-  
-  if (errorMessages.length === 0) {
-    if (error.suggestion) {
-      errorMessages.push(error.suggestion);
-    } else {
-      errorMessages.push('Error en la operación. Verifica que todos los campos obligatorios estén completos.');
-    }
-  }
-  
-  return new Error(errorMessages.join('. '));
-};
-
-const handleFetchError = (error: unknown): never => {
-  if (error instanceof TypeError) {
-    if (error.message.includes('fetch') || 
-        error.message.includes('Failed to fetch') ||
-        error.message.includes('NetworkError') ||
-        error.message.includes('ERR_CONNECTION_REFUSED')) {
-      throw new Error('No se pudo conectar con el servidor. Verifica que el backend esté ejecutándose en http://localhost:8000');
-    }
-  }
-  if (error instanceof Error) {
-    throw error;
-  }
-  throw new Error('Error desconocido al realizar la operación');
-};
-
 export const goalService = {
   async list(): Promise<Goal[]> {
     try {
@@ -145,7 +52,7 @@ export const goalService = {
       });
 
       if (!response.ok) {
-        throw await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de metas');
       }
 
       const data = await response.json();
@@ -163,8 +70,7 @@ export const goalService = {
       
       return [];
     } catch (error) {
-      handleFetchError(error);
-      throw error;
+      throw handleNetworkError(error);
     }
   },
 
@@ -176,13 +82,12 @@ export const goalService = {
       });
 
       if (!response.ok) {
-        throw await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de metas');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
-      throw error;
+      throw handleNetworkError(error);
     }
   },
 
@@ -195,13 +100,12 @@ export const goalService = {
       });
 
       if (!response.ok) {
-        throw await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de metas');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
-      throw error;
+      throw handleNetworkError(error);
     }
   },
 
@@ -214,13 +118,12 @@ export const goalService = {
       });
 
       if (!response.ok) {
-        throw await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de metas');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
-      throw error;
+      throw handleNetworkError(error);
     }
   },
 
@@ -232,11 +135,10 @@ export const goalService = {
       });
 
       if (!response.ok) {
-        throw await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de metas');
       }
     } catch (error) {
-      handleFetchError(error);
-      throw error;
+      throw handleNetworkError(error);
     }
   },
 };

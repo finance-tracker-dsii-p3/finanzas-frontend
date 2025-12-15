@@ -59,7 +59,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions })
   return (
     <div className="recent-transactions">
       <h3 className="recent-transactions-title">Movimientos Recientes</h3>
-      <div className="recent-transactions-list">
+      <div className="recent-transactions-list stagger-list">
         {transactions.map((transaction) => (
           <div key={transaction.id} className="recent-transaction-item">
             <div 
