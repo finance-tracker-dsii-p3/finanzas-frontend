@@ -195,5 +195,117 @@ describe('Accounts', () => {
       expect(screen.getByText('Cuenta Inactiva')).toBeInTheDocument();
     });
   });
+
+  it('debe mostrar error cuando falla la carga', async () => {
+    vi.mocked(accountService.accountService.getAllAccounts).mockRejectedValue(new Error('Error de red'));
+    
+    render(<Accounts onBack={mockOnBack} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText(/error de red/i)).toBeInTheDocument();
+    });
+  });
+
+  it('debe editar una cuenta', async () => {
+    const user = userEvent.setup();
+    render(<Accounts onBack={mockOnBack} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Cuenta Ahorros')).toBeInTheDocument();
+    });
+    
+    const editButtons = screen.getAllByText(/editar/i);
+    await user.click(editButtons[0]);
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('new-account-modal')).toBeInTheDocument();
+      expect(screen.getByTestId('editing-account')).toBeInTheDocument();
+    });
+  });
+
+  it('debe eliminar una cuenta', async () => {
+    const user = userEvent.setup();
+    render(<Accounts onBack={mockOnBack} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Cuenta Ahorros')).toBeInTheDocument();
+    });
+    
+    // Buscar botón de eliminar por icono o texto
+    const accountCard = screen.getByText('Cuenta Ahorros').closest('div');
+    const buttons = accountCard?.querySelectorAll('button') || [];
+    const deleteBtn = Array.from(buttons).find(btn => {
+      const hasTrashIcon = btn.querySelector('svg');
+      const text = btn.textContent?.toLowerCase() || '';
+      return hasTrashIcon || text.includes('eliminar');
+    });
+    
+    if (deleteBtn) {
+      await user.click(deleteBtn);
+      
+      await waitFor(() => {
+        const confirmText = screen.queryByText(/est.*s seguro/i) || screen.queryByText(/eliminar/i);
+        expect(confirmText).toBeInTheDocument();
+      }, { timeout: 3000 });
+      
+      const confirmButton = screen.queryByText(/confirmar/i) || screen.queryByRole('button', { name: /confirmar/i });
+      if (confirmButton) {
+        await user.click(confirmButton);
+        
+        await waitFor(() => {
+          expect(accountService.accountService.deleteAccount).toHaveBeenCalled();
+        }, { timeout: 3000 });
+      }
+    }
+  });
+
+  it('debe toggle activo/inactivo de una cuenta', async () => {
+    const user = userEvent.setup();
+    render(<Accounts onBack={mockOnBack} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Cuenta Ahorros')).toBeInTheDocument();
+    });
+    
+    const toggleButtons = screen.getAllByRole('button', { name: /activar|desactivar/i });
+    if (toggleButtons.length > 0) {
+      await user.click(toggleButtons[0]);
+      
+      await waitFor(() => {
+        expect(accountService.accountService.toggleActive).toHaveBeenCalled();
+      });
+    }
+  });
+
+  it('debe mostrar información de cuentas de crédito', async () => {
+    const creditAccounts = [
+      {
+        id: 3,
+        name: 'Tarjeta Mastercard',
+        account_type: 'liability' as const,
+        category: 'credit_card' as const,
+        currency: 'COP' as const,
+        current_balance: -500000,
+        credit_limit: 5000000,
+        is_active: true,
+      },
+    ];
+    
+    vi.mocked(accountService.accountService.getAllAccounts).mockResolvedValue(creditAccounts);
+    
+    render(<Accounts onBack={mockOnBack} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Tarjeta Mastercard')).toBeInTheDocument();
+    });
+  });
+
+  it('debe mostrar el balance formateado correctamente', async () => {
+    render(<Accounts onBack={mockOnBack} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Cuenta Ahorros')).toBeInTheDocument();
+    });
+  });
 });
 

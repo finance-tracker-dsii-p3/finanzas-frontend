@@ -1,4 +1,4 @@
-import { checkAndHandleAuthError } from '../utils/authErrorHandler';
+import { parseApiError, handleNetworkError } from '../utils/apiErrorHandler';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
 
@@ -118,121 +118,6 @@ const normalizeResponse = <T>(data: { status: string; data?: T | { results: T[] 
   return data as T;
 };
 
-const parseError = async (response: Response, defaultMessage: string = 'Error en la operación'): Promise<Error> => {
-  if (response.status >= 500) {
-    let errorText = await response.text();
-    
-    if (errorText.includes('<!DOCTYPE html>') || errorText.includes('<html')) {
-      const exceptionMatch = errorText.match(/<pre class="exception_value">([^<]+)<\/pre>/);
-      if (exceptionMatch) {
-        errorText = exceptionMatch[1].trim();
-      } else {
-        const titleMatch = errorText.match(/<title>([^<]+)<\/title>/);
-        if (titleMatch) {
-          errorText = titleMatch[1].trim();
-        } else {
-          errorText = 'Error interno del servidor. Revisa los logs del backend para más detalles.';
-        }
-      }
-    } else {
-      try {
-        const errorJson = JSON.parse(errorText);
-        errorText = errorJson.detail || errorJson.message || errorJson.error || errorText;
-      } catch {
-        if (errorText.length > 500) {
-          errorText = errorText.substring(0, 500) + '...';
-        }
-      }
-    }
-    
-    return new Error(`Error del servidor (${response.status}): ${errorText}. Por favor, intenta nuevamente más tarde o contacta al administrador.`);
-  }
-
-  if (response.status === 401) {
-    checkAndHandleAuthError(response);
-    return new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
-  }
-
-  if (response.status === 403) {
-    return new Error('No tienes permisos para realizar esta operación.');
-  }
-
-  if (response.status === 404) {
-    return new Error('El recurso solicitado no fue encontrado.');
-  }
-
-  const fallback = { message: defaultMessage };
-  let error;
-  try {
-    error = await response.json();
-  } catch {
-    error = fallback;
-  }
-
-  const errorMessages: string[] = [];
-
-  if (error.message && !errorMessages.includes(error.message)) {
-    errorMessages.push(error.message);
-  }
-  if (error.detail && !errorMessages.includes(error.detail)) {
-    errorMessages.push(error.detail);
-  }
-
-  const fields = [
-    'credit_card_account_id',
-    'purchase_transaction_id',
-    'financing_category_id',
-    'number_of_installments',
-    'interest_rate',
-    'start_date',
-    'description',
-    'installment_number',
-    'payment_date',
-    'source_account_id',
-    'notes'
-  ];
-
-  for (const field of fields) {
-    if (error[field]) {
-      const fieldError = Array.isArray(error[field]) ? error[field][0] : error[field];
-      const fieldLabel: Record<string, string> = {
-        credit_card_account_id: 'Tarjeta de crédito',
-        purchase_transaction_id: 'Transacción de compra',
-        financing_category_id: 'Categoría de financiamiento',
-        number_of_installments: 'Número de cuotas',
-        interest_rate: 'Tasa de interés',
-        start_date: 'Fecha de inicio',
-        description: 'Descripción',
-        installment_number: 'Número de cuota',
-        payment_date: 'Fecha de pago',
-        source_account_id: 'Cuenta origen',
-        notes: 'Notas'
-      };
-      errorMessages.push(`${fieldLabel[field] || field}: ${fieldError}`);
-    }
-  }
-
-  if (error.non_field_errors) {
-    const nonFieldErrors = Array.isArray(error.non_field_errors) ? error.non_field_errors : [error.non_field_errors];
-    errorMessages.push(...nonFieldErrors);
-  }
-
-  if (errorMessages.length === 0) {
-    errorMessages.push(defaultMessage);
-  }
-
-  return new Error(errorMessages.join('. '));
-};
-
-const handleFetchError = (error: unknown): Error => {
-  if (error instanceof TypeError && error.message.includes('fetch')) {
-    return new Error('No se pudo conectar con el servidor. Verifica que el backend esté ejecutándose.');
-  }
-  if (error instanceof Error) {
-    return error;
-  }
-  return new Error('Error desconocido al realizar la operación');
-};
 
 export const creditCardPlanService = {
   async createPlan(data: CreatePlanData): Promise<number> {
@@ -244,14 +129,14 @@ export const creditCardPlanService = {
       });
 
       if (!response.ok) {
-        throw await parseError(response, 'Error al crear el plan de cuotas');
+        throw await parseApiError(response, 'Error al crear el plan de cuotas');
       }
 
       const result = await response.json();
       const normalized = normalizeResponse<{ plan_id: number }>(result);
       return normalized.plan_id;
     } catch (error) {
-      throw handleFetchError(error);
+      throw handleNetworkError(error);
     }
   },
 
@@ -263,7 +148,7 @@ export const creditCardPlanService = {
       });
 
       if (!response.ok) {
-        throw await parseError(response, 'Error al listar los planes de cuotas');
+        throw await parseApiError(response, 'Error al listar los planes de cuotas');
       }
 
       const result = await response.json();
@@ -277,7 +162,7 @@ export const creditCardPlanService = {
       }
       return [];
     } catch (error) {
-      throw handleFetchError(error);
+      throw handleNetworkError(error);
     }
   },
 
@@ -289,13 +174,13 @@ export const creditCardPlanService = {
       });
 
       if (!response.ok) {
-        throw await parseError(response, 'Error al obtener el plan de cuotas');
+        throw await parseApiError(response, 'Error al obtener el plan de cuotas');
       }
 
       const result = await response.json();
       return normalizeResponse<InstallmentPlan>(result);
     } catch (error) {
-      throw handleFetchError(error);
+      throw handleNetworkError(error);
     }
   },
 
@@ -307,14 +192,14 @@ export const creditCardPlanService = {
       });
 
       if (!response.ok) {
-        throw await parseError(response, 'Error al obtener el calendario de cuotas');
+        throw await parseApiError(response, 'Error al obtener el calendario de cuotas');
       }
 
       const result = await response.json();
       const normalized = normalizeResponse<{ schedule: ScheduleItem[] }>(result);
       return normalized.schedule || [];
     } catch (error) {
-      throw handleFetchError(error);
+      throw handleNetworkError(error);
     }
   },
 
@@ -327,13 +212,13 @@ export const creditCardPlanService = {
       });
 
       if (!response.ok) {
-        throw await parseError(response, 'Error al registrar el pago');
+        throw await parseApiError(response, 'Error al registrar el pago');
       }
 
       const result = await response.json();
       return normalizeResponse<PaymentResponse>(result);
     } catch (error) {
-      throw handleFetchError(error);
+      throw handleNetworkError(error);
     }
   },
 
@@ -346,13 +231,13 @@ export const creditCardPlanService = {
       });
 
       if (!response.ok) {
-        throw await parseError(response, 'Error al actualizar el plan de cuotas');
+        throw await parseApiError(response, 'Error al actualizar el plan de cuotas');
       }
 
       const result = await response.json();
       return normalizeResponse<InstallmentPlan>(result);
     } catch (error) {
-      throw handleFetchError(error);
+      throw handleNetworkError(error);
     }
   },
 
@@ -370,13 +255,13 @@ export const creditCardPlanService = {
       });
 
       if (!response.ok) {
-        throw await parseError(response, 'Error al obtener el resumen mensual');
+        throw await parseApiError(response, 'Error al obtener el resumen mensual');
       }
 
       const result = await response.json();
       return normalizeResponse<MonthlySummary>(result);
     } catch (error) {
-      throw handleFetchError(error);
+      throw handleNetworkError(error);
     }
   },
 
@@ -388,14 +273,14 @@ export const creditCardPlanService = {
       });
 
       if (!response.ok) {
-        throw await parseError(response, 'Error al obtener los próximos pagos');
+        throw await parseApiError(response, 'Error al obtener los próximos pagos');
       }
 
       const result = await response.json();
       const normalized = normalizeResponse<UpcomingPayment[]>(result);
       return Array.isArray(normalized) ? normalized : [];
     } catch (error) {
-      throw handleFetchError(error);
+      throw handleNetworkError(error);
     }
   },
 };

@@ -58,7 +58,7 @@ const UpcomingBills: React.FC<UpcomingBillsProps> = ({ bills }) => {
   return (
     <div className="upcoming-bills">
       <h3 className="upcoming-bills-title">Próximas Facturas a Vencer</h3>
-      <div className="upcoming-bills-list">
+      <div className="upcoming-bills-list stagger-list">
         {sortedBills.map((bill) => (
           <div 
             key={bill.id} 

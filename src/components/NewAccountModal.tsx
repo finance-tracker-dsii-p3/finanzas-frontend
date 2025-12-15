@@ -197,19 +197,22 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
       newErrors.name = 'El nombre de la cuenta es requerido';
     }
     
-    // Validar número de cuenta: obligatorio con mínimo de dígitos según moneda
-    const accountNumberDigits = formData.accountNumber.replace(/\D/g, ''); // Solo dígitos
-    const minDigitsByCurrency: Record<Account['currency'], number> = {
-      'COP': 10,
-      'USD': 7,
-      'EUR': 8
-    };
-    const minDigits = minDigitsByCurrency[formData.currency] || 10;
-    
-    if (!formData.accountNumber.trim()) {
-      newErrors.accountNumber = 'El número de cuenta es requerido';
-    } else if (accountNumberDigits.length < minDigits) {
-      newErrors.accountNumber = `El número de cuenta debe tener al menos ${minDigits} dígitos para cuentas en ${formData.currency}`;
+    // Validar número de cuenta: obligatorio excepto para efectivo y otros
+    // Para efectivo y otros, el número de cuenta es opcional
+    if (formData.type !== 'cash' && formData.type !== 'other') {
+      const accountNumberDigits = formData.accountNumber.replace(/\D/g, ''); // Solo dígitos
+      const minDigitsByCurrency: Record<Account['currency'], number> = {
+        'COP': 10,
+        'USD': 7,
+        'EUR': 8
+      };
+      const minDigits = minDigitsByCurrency[formData.currency] || 10;
+      
+      if (!formData.accountNumber.trim()) {
+        newErrors.accountNumber = 'El número de cuenta es requerido';
+      } else if (accountNumberDigits.length < minDigits) {
+        newErrors.accountNumber = `El número de cuenta debe tener al menos ${minDigits} dígitos para cuentas en ${formData.currency}`;
+      }
     }
     
     if (isCreditCard) {
@@ -261,7 +264,11 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
       // GMF no aplica a tarjetas de crédito ni efectivo, siempre false para ellas
       gmf_exempt: (formData.type === 'credit_card' || formData.type === 'cash') ? false : formData.gmfExempt,
       bank_name: formData.bankName.trim() || undefined,
-      account_number: formData.accountNumber.trim()
+      // Para efectivo y otros, no enviar account_number (es opcional en el backend)
+      // Para los demás tipos, enviar el número de cuenta
+      account_number: (formData.type === 'cash' || formData.type === 'other') 
+        ? undefined 
+        : formData.accountNumber.trim() || undefined
     };
     
     if (isCreditCard) {

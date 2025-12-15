@@ -517,6 +517,45 @@ describe('Movements', () => {
     expect(mockOnBack).toHaveBeenCalled();
   });
 
+  it('debe mostrar información de transferencias', async () => {
+    const transferTransaction: Transaction = {
+      id: 4,
+      origin_account: 1,
+      origin_account_name: 'Cuenta Origen',
+      destination_account: 2,
+      destination_account_name: 'Cuenta Destino',
+      type: 3 as const,
+      type_display: 'Transferencia',
+      base_amount: 50000,
+      tax_percentage: null,
+      total_amount: 50000,
+      date: '2025-01-13',
+      category: null,
+      note: 'Transferencia entre cuentas',
+    };
+
+    vi.mocked(transactionService.transactionService.listPaginated).mockResolvedValueOnce({
+      count: 1,
+      next: null,
+      previous: null,
+      results: [transferTransaction],
+    });
+
+    render(
+      <Movements 
+        showTaxes={false} 
+        setShowTaxes={mockSetShowTaxes} 
+        onBack={mockOnBack} 
+      />
+    );
+
+    await waitFor(() => {
+      // Verificar que se muestra la información de la transferencia
+      const transferTexts = screen.getAllByText(/transferencia/i);
+      expect(transferTexts.length).toBeGreaterThan(0);
+    });
+  });
+
   it('debe mostrar el checkbox para mostrar desglose fiscal', async () => {
     const user = userEvent.setup();
     render(

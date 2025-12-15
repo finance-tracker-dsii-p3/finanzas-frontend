@@ -8,25 +8,7 @@ const getAuthHeaders = (): HeadersInit => {
   };
 };
 
-const parseError = async (response: Response, defaultMessage: string): Promise<Error> => {
-  try {
-    const data = await response.json();
-    if (data.detail) return new Error(data.detail);
-    if (data.error) return new Error(data.error);
-    if (data.message) return new Error(data.message);
-    if (typeof data === 'string') return new Error(data);
-    if (data.non_field_errors && Array.isArray(data.non_field_errors)) {
-      return new Error(data.non_field_errors[0]);
-    }
-    const firstKey = Object.keys(data)[0];
-    if (firstKey && Array.isArray(data[firstKey]) && data[firstKey].length > 0) {
-      return new Error(`${firstKey}: ${data[firstKey][0]}`);
-    }
-  } catch {
-    // Si no se puede parsear el JSON, usar el mensaje por defecto
-  }
-  return new Error(defaultMessage);
-};
+import { parseApiError } from '../utils/apiErrorHandler';
 
 export type Currency = 'COP' | 'USD' | 'EUR';
 
@@ -58,7 +40,7 @@ export const baseCurrencyService = {
       });
 
       if (!response.ok) {
-        throw await parseError(response, 'Error al obtener moneda base');
+        throw await parseApiError(response, 'Error al obtener moneda base');
       }
 
       return await response.json();
@@ -82,7 +64,7 @@ export const baseCurrencyService = {
       });
 
       if (!response.ok) {
-        throw await parseError(response, 'Error al establecer moneda base');
+        throw await parseApiError(response, 'Error al establecer moneda base');
       }
 
       return await response.json();

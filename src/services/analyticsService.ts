@@ -1,4 +1,4 @@
-import { checkAndHandleAuthError } from '../utils/authErrorHandler';
+import { parseApiError } from '../utils/apiErrorHandler';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
 
@@ -163,54 +163,9 @@ const buildQueryParams = (params: Record<string, string | number | undefined>): 
       queryParams.append(key, String(value));
     }
   });
-  return queryParams.toString() ? `?${queryParams.toString()}` : '';
+  return queryParams.toString();
 };
 
-const parseError = async (response: Response) => {
-  if (response.status >= 500) {
-    const error = await response.json().catch(() => ({}));
-    const errorMessage = error.detail || error.message || error.error || 'Error interno del servidor';
-    throw new Error(`Error del servidor (${response.status}): ${errorMessage}. Por favor, intenta nuevamente más tarde o contacta al administrador.`);
-  }
-
-  if (checkAndHandleAuthError(response)) {
-    throw new Error('No autorizado. Por favor, inicia sesión nuevamente.');
-  }
-
-  if (response.status === 403) {
-    throw new Error('No tienes permiso para realizar esta acción.');
-  }
-
-  if (response.status === 404) {
-    throw new Error('Recurso no encontrado.');
-  }
-
-  const fallback = { message: 'Error en la operación de analytics' };
-  let error;
-  try {
-    error = await response.json();
-  } catch {
-    error = fallback;
-  }
-
-  const errorMessages: string[] = [];
-
-  if (error.message && error.message !== 'Error en la petición' && !errorMessages.includes(error.message)) {
-    errorMessages.push(error.message);
-  }
-  if (error.detail && !errorMessages.includes(error.detail)) {
-    errorMessages.push(error.detail);
-  }
-  if (error.error && !errorMessages.includes(error.error)) {
-    errorMessages.push(error.error);
-  }
-
-  if (errorMessages.length === 0) {
-    errorMessages.push('Error en la operación. Por favor, intenta nuevamente.');
-  }
-
-  throw new Error(errorMessages.join('. '));
-};
 
 export const analyticsService = {
   async getDashboard(params: DashboardParams = {}): Promise<DashboardResponse> {
@@ -221,13 +176,14 @@ export const analyticsService = {
         others_threshold: params.others_threshold,
       });
 
-      const response = await fetch(`${API_BASE_URL}/api/analytics/dashboard/${queryParams ? `?${queryParams}` : ''}`, {
+      const queryString = queryParams ? `?${queryParams}` : '';
+      const response = await fetch(`${API_BASE_URL}/api/analytics/dashboard/${queryString}`, {
         method: 'GET',
         headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de analytics');
       }
 
       return response.json();
@@ -246,13 +202,14 @@ export const analyticsService = {
         mode,
       });
 
-      const response = await fetch(`${API_BASE_URL}/api/analytics/indicators/${queryParams ? `?${queryParams}` : ''}`, {
+      const queryString = queryParams ? `?${queryParams}` : '';
+      const response = await fetch(`${API_BASE_URL}/api/analytics/indicators/${queryString}`, {
         method: 'GET',
         headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de analytics');
       }
 
       return response.json();
@@ -272,13 +229,14 @@ export const analyticsService = {
         others_threshold: othersThreshold,
       });
 
-      const response = await fetch(`${API_BASE_URL}/api/analytics/expenses-chart/${queryParams ? `?${queryParams}` : ''}`, {
+      const queryString = queryParams ? `?${queryParams}` : '';
+      const response = await fetch(`${API_BASE_URL}/api/analytics/expenses-chart/${queryString}`, {
         method: 'GET',
         headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de analytics');
       }
 
       return response.json();
@@ -297,13 +255,14 @@ export const analyticsService = {
         mode,
       });
 
-      const response = await fetch(`${API_BASE_URL}/api/analytics/daily-flow-chart/${queryParams ? `?${queryParams}` : ''}`, {
+      const queryString = queryParams ? `?${queryParams}` : '';
+      const response = await fetch(`${API_BASE_URL}/api/analytics/daily-flow-chart/${queryString}`, {
         method: 'GET',
         headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de analytics');
       }
 
       return response.json();
@@ -328,13 +287,14 @@ export const analyticsService = {
         limit,
       });
 
-      const response = await fetch(`${API_BASE_URL}/api/analytics/category/${categoryId}/transactions/${queryParams ? `?${queryParams}` : ''}`, {
+      const queryString = queryParams ? `?${queryParams}` : '';
+      const response = await fetch(`${API_BASE_URL}/api/analytics/category/${categoryId}/transactions/${queryString}`, {
         method: 'GET',
         headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de analytics');
       }
 
       return response.json();
@@ -354,7 +314,7 @@ export const analyticsService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de analytics');
       }
 
       return response.json();
@@ -454,7 +414,7 @@ export const analyticsService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de analytics');
       }
 
       return response.json();

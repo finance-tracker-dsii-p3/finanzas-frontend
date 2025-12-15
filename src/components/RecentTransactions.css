@@ -37,11 +37,19 @@
   padding: 16px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
 
 .recent-transaction-item:hover {
   border-color: #d1d5db;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  background-color: #f9fafb;
+}
+
+.recent-transaction-item:active {
+  transform: translateY(0);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -55,6 +63,11 @@
   font-size: 1.2rem;
   color: white;
   flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.recent-transaction-item:hover .transaction-icon {
+  transform: scale(1.1) rotate(5deg);
 }
 
 .transaction-info {

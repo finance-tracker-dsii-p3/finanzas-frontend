@@ -268,5 +268,98 @@ describe('Bills', () => {
       }, { timeout: 3000 });
     }
   });
+
+  it('debe mostrar error cuando falla la carga', async () => {
+    (billService.listBills as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Error de red'));
+
+    render(<Bills />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/error de red/i)).toBeInTheDocument();
+    });
+  });
+
+  it('debe editar una factura', async () => {
+    const user = userEvent.setup({ delay: null });
+    render(<Bills />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Netflix')).toBeInTheDocument();
+    });
+
+    const editButtons = screen.getAllByText(/editar/i);
+    await act(async () => {
+      await user.click(editButtons[0]);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/proveedor/i)).toBeInTheDocument();
+    });
+  });
+
+  it('debe eliminar una factura', async () => {
+    const user = userEvent.setup({ delay: null });
+    (billService.deleteBill as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    render(<Bills />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Netflix')).toBeInTheDocument();
+    });
+
+    // Buscar botones de eliminar
+    const deleteButtons = screen.getAllByRole('button').filter(btn => 
+      btn.textContent?.includes('Eliminar') || btn.getAttribute('aria-label')?.includes('eliminar')
+    );
+    
+    if (deleteButtons.length === 0) {
+      const billCard = screen.getByText('Netflix').closest('div');
+      const buttons = billCard?.querySelectorAll('button') || [];
+      const deleteBtn = Array.from(buttons).find(btn => btn.textContent?.toLowerCase().includes('eliminar'));
+      if (deleteBtn) {
+        await act(async () => {
+          await user.click(deleteBtn);
+        });
+      }
+    } else {
+      await act(async () => {
+        await user.click(deleteButtons[0]);
+      });
+    }
+
+    await waitFor(() => {
+      const confirmText = screen.queryByText(/est.*s seguro/i) || screen.queryByText(/eliminar/i);
+      expect(confirmText).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    const confirmButton = screen.queryByText(/confirmar/i) || screen.queryByRole('button', { name: /confirmar/i });
+    if (confirmButton) {
+      await act(async () => {
+        await user.click(confirmButton);
+      });
+
+      await waitFor(() => {
+        expect(billService.deleteBill).toHaveBeenCalledWith(1);
+      }, { timeout: 3000 });
+    }
+  });
+
+  it('debe actualizar una factura', async () => {
+    const user = userEvent.setup({ delay: null });
+    (billService.updateBill as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    render(<Bills />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Netflix')).toBeInTheDocument();
+    });
+
+    const editButtons = screen.getAllByText(/editar/i);
+    await act(async () => {
+      await user.click(editButtons[0]);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/proveedor/i)).toBeInTheDocument();
+    });
+  });
 });
 

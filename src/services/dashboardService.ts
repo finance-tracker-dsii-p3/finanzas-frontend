@@ -1,4 +1,4 @@
-import { checkAndHandleAuthError } from '../utils/authErrorHandler';
+import { parseApiError } from '../utils/apiErrorHandler';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
 
@@ -122,47 +122,6 @@ const getAuthHeaders = () => {
   };
 };
 
-const parseError = async (response: Response) => {
-  if (response.status >= 500) {
-    const error = await response.json().catch(() => ({}));
-    const errorMessage = error.detail || error.message || error.error || 'Error interno del servidor';
-    throw new Error(`Error del servidor (${response.status}): ${errorMessage}`);
-  }
-
-  if (response.status === 401) {
-    checkAndHandleAuthError(response);
-    throw new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
-  }
-
-  if (response.status === 403) {
-    throw new Error('No tienes permisos para realizar esta operación.');
-  }
-
-  if (response.status === 404) {
-    throw new Error('El recurso solicitado no fue encontrado.');
-  }
-
-  const fallback = { message: 'Error en la operación' };
-  let error;
-  try {
-    error = await response.json();
-  } catch {
-    error = fallback;
-  }
-
-  const errorMessages: string[] = [];
-  
-  if (error.error) errorMessages.push(error.error);
-  if (error.detail) errorMessages.push(error.detail);
-  if (error.message) errorMessages.push(error.message);
-  if (error.details) errorMessages.push(error.details);
-
-  if (errorMessages.length === 0) {
-    errorMessages.push('Error en la operación. Verifica los datos e intenta nuevamente.');
-  }
-
-  throw new Error(errorMessages.join('. '));
-};
 
 export const dashboardService = {
   async getFinancialDashboard(params?: {
@@ -186,7 +145,7 @@ export const dashboardService = {
     });
 
     if (!response.ok) {
-      await parseError(response);
+      throw await parseApiError(response, 'Error al obtener el dashboard');
     }
 
     const result: DashboardResponse = await response.json();

@@ -127,16 +127,7 @@ const getAuthHeaders = () => {
   };
 };
 
-import { parseBackendError, handleFetchError } from '../utils/errorHandler';
-
-const parseError = async (response: Response): Promise<string> => {
-  try {
-    const error = await parseBackendError(response, 'Error en la operación de vehículos');
-    return error.message;
-  } catch (err) {
-    return err instanceof Error ? err.message : `Error ${response.status}: ${response.statusText}`;
-  }
-};
+import { parseApiError, handleNetworkError } from '../utils/apiErrorHandler';
 
 export const vehicleService = {
   /**
@@ -150,15 +141,14 @@ export const vehicleService = {
       });
 
       if (!response.ok) {
-        const error = await parseError(response);
-        throw new Error(error);
+        throw await parseApiError(response, 'Error en la operación de vehículos');
       }
 
       const data = await response.json();
       // Manejar paginación si existe
       return Array.isArray(data) ? data : (data.results || []);
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -173,8 +163,7 @@ export const vehicleService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     return response.json();
@@ -191,8 +180,7 @@ export const vehicleService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     return response.json();
@@ -209,8 +197,7 @@ export const vehicleService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     return response.json();
@@ -226,8 +213,7 @@ export const vehicleService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
   },
 
@@ -241,8 +227,7 @@ export const vehicleService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     return response.json();
@@ -258,8 +243,7 @@ export const vehicleService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     return response.json();
@@ -287,8 +271,7 @@ export const soatService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     const data = await response.json();
@@ -305,8 +288,7 @@ export const soatService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     return response.json();
@@ -323,8 +305,7 @@ export const soatService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     return response.json();
@@ -341,8 +322,7 @@ export const soatService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     return response.json();
@@ -358,8 +338,7 @@ export const soatService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
   },
 
@@ -374,8 +353,7 @@ export const soatService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     return response.json();
@@ -391,8 +369,7 @@ export const soatService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     return response.json();
@@ -408,8 +385,7 @@ export const soatService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     return response.json();
@@ -425,8 +401,7 @@ export const soatService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     return response.json();
@@ -454,8 +429,7 @@ export const soatAlertService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     const data = await response.json();
@@ -472,8 +446,7 @@ export const soatAlertService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     return response.json();
@@ -489,8 +462,7 @@ export const soatAlertService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     return response.json();
@@ -506,8 +478,7 @@ export const soatAlertService = {
     });
 
     if (!response.ok) {
-      const error = await parseError(response);
-      throw new Error(error);
+      throw await parseApiError(response);
     }
 
     return response.json();

@@ -1,4 +1,4 @@
-import { checkAndHandleAuthError } from '../utils/authErrorHandler';
+import { parseApiError, handleNetworkError } from '../utils/apiErrorHandler';
 
 import { Currency } from '../utils/currencyUtils';
 
@@ -158,153 +158,6 @@ const buildQueryParams = (filters?: TransactionFilters) => {
   return params.toString() ? `?${params.toString()}` : '';
 };
 
-const parseError = async (response: Response) => {
-  if (response.status >= 500) {
-    const error = await response.json().catch(() => ({}));
-    const errorMessage = error.detail || error.message || error.error || 'Error interno del servidor';
-    throw new Error(`Error del servidor (${response.status}): ${errorMessage}. Por favor, intenta nuevamente más tarde o contacta al administrador.`);
-  }
-
-  if (response.status === 401) {
-    checkAndHandleAuthError(response);
-    throw new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
-  }
-
-  if (response.status === 403) {
-    throw new Error('No tienes permisos para realizar esta operación.');
-  }
-
-  if (response.status === 404) {
-    throw new Error('El recurso solicitado no fue encontrado.');
-  }
-
-  const fallback = { message: 'Error en la operación de transacciones' };
-  let error;
-  try {
-    error = await response.json();
-  } catch {
-    error = fallback;
-  }
-  
-  const errorMessages: string[] = [];
-  
-  if (error.message && 
-      error.message !== 'Error en la petición' && 
-      !errorMessages.includes(error.message)) {
-    errorMessages.push(error.message);
-  }
-  if (error.detail && !errorMessages.includes(error.detail)) {
-    errorMessages.push(error.detail);
-  }
-  
-  const errorDetails = error.details || error;
-  
-  const fields = ['origin_account', 'destination_account', 'type', 'base_amount', 'total_amount', 'tax_percentage', 'date', 'category', 'tag', 'note', 'capital_amount', 'interest_amount'];
-  
-  for (const field of fields) {
-    const fieldError = errorDetails[field] || error[field];
-    if (fieldError) {
-      const errorText = Array.isArray(fieldError) ? fieldError[0] : fieldError;
-      const fieldLabel = {
-        origin_account: 'Cuenta origen',
-        destination_account: 'Cuenta destino',
-        type: 'Tipo de transacción',
-        base_amount: 'Monto base',
-        total_amount: 'Monto total',
-        tax_percentage: 'Porcentaje de IVA',
-        date: 'Fecha',
-        category: 'Categoría',
-        tag: 'Etiqueta',
-        note: 'Nota',
-        capital_amount: 'Monto de capital',
-        interest_amount: 'Monto de intereses',
-      }[field] || field;
-      errorMessages.push(`${fieldLabel}: ${errorText}`);
-    }
-  }
-  
-  if (error.details && typeof error.details === 'object') {
-    Object.keys(error.details).forEach(key => {
-      if (!fields.includes(key) && 
-          key !== 'message' && 
-          key !== 'detail' && 
-          key !== 'non_field_errors' &&
-          error.details[key]) {
-        const fieldError = Array.isArray(error.details[key]) ? error.details[key][0] : error.details[key];
-        if (typeof fieldError === 'string' && !errorMessages.includes(fieldError)) {
-          const fieldLabel = {
-            origin_account: 'Cuenta origen',
-            destination_account: 'Cuenta destino',
-            type: 'Tipo de transacción',
-            base_amount: 'Monto base',
-            total_amount: 'Monto total',
-            tax_percentage: 'Porcentaje de IVA',
-            date: 'Fecha',
-            category: 'Categoría',
-            tag: 'Etiqueta',
-            note: 'Nota',
-            capital_amount: 'Monto de capital',
-            interest_amount: 'Monto de intereses',
-          }[key] || key;
-          errorMessages.push(`${fieldLabel}: ${fieldError}`);
-        }
-      }
-    });
-  }
-  
-  const nonFieldErrors = errorDetails.non_field_errors || error.non_field_errors;
-  if (nonFieldErrors) {
-    const nonFieldErrorsArray = Array.isArray(nonFieldErrors) ? nonFieldErrors : [nonFieldErrors];
-    nonFieldErrorsArray.forEach((err: string) => {
-      if (!errorMessages.includes(err)) {
-        errorMessages.push(err);
-      }
-    });
-  }
-  
-  Object.keys(error).forEach(key => {
-    if (key !== 'details' &&
-        !fields.includes(key) && 
-        key !== 'message' && 
-        key !== 'detail' && 
-        key !== 'non_field_errors' &&
-        key !== 'error' &&
-        key !== 'status_code' &&
-        key !== 'suggestion' &&
-        error[key]) {
-      const fieldError = Array.isArray(error[key]) ? error[key][0] : error[key];
-      if (typeof fieldError === 'string' && !errorMessages.includes(fieldError)) {
-        errorMessages.push(`${key}: ${fieldError}`);
-      }
-    }
-  });
-  
-  if (errorMessages.length === 0) {
-    if (error.suggestion) {
-      errorMessages.push(error.suggestion);
-    } else {
-      errorMessages.push('Error en la operación. Verifica que todos los campos obligatorios estén completos.');
-    }
-  }
-  
-  throw new Error(errorMessages.join('. '));
-};
-
-const handleFetchError = (error: unknown): never => {
-  if (error instanceof TypeError) {
-    if (error.message.includes('fetch') || 
-        error.message.includes('Failed to fetch') ||
-        error.message.includes('NetworkError') ||
-        error.message.includes('ERR_CONNECTION_REFUSED')) {
-      throw new Error('No se pudo conectar con el servidor. Verifica que el backend esté ejecutándose en http://localhost:8000');
-    }
-  }
-  if (error instanceof Error) {
-    throw error;
-  }
-  throw new Error('Error desconocido al realizar la operación');
-};
-
 export const transactionService = {
   async list(filters?: TransactionFilters): Promise<Transaction[]> {
     try {
@@ -315,7 +168,7 @@ export const transactionService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de transacciones');
       }
 
       const data = await response.json();
@@ -332,7 +185,7 @@ export const transactionService = {
         return [];
       }
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -346,7 +199,7 @@ export const transactionService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de transacciones');
       }
 
       const data = await response.json();
@@ -374,7 +227,7 @@ export const transactionService = {
         };
       }
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -387,12 +240,12 @@ export const transactionService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de transacciones');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -486,12 +339,12 @@ export const transactionService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de transacciones');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -570,12 +423,12 @@ export const transactionService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de transacciones');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -588,10 +441,10 @@ export const transactionService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de transacciones');
       }
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -605,12 +458,12 @@ export const transactionService = {
       });
 
       if (!response.ok) {
-        await parseError(response);
+        throw await parseApiError(response, 'Error en la operación de transacciones');
       }
 
       return response.json();
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },
@@ -632,7 +485,7 @@ export const transactionService = {
       
       return this.create(duplicateData);
     } catch (error) {
-      handleFetchError(error);
+      handleNetworkError(error);
       throw error;
     }
   },

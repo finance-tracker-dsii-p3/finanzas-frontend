@@ -311,6 +311,26 @@ describe('AdminUsers', () => {
     });
   });
 
+  it('debe mostrar información de usuarios inactivos', async () => {
+    render(<AdminUsers />);
+
+    await waitFor(() => {
+      // Verificar que se muestra información de usuarios inactivos
+      const inactiveUsers = screen.queryAllByText(/inactivo/i);
+      expect(inactiveUsers.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('debe mostrar información de usuarios sin último acceso', async () => {
+    render(<AdminUsers />);
+
+    await waitFor(() => {
+      // Verificar que se muestra "Nunca" para usuarios sin último acceso
+      const neverTexts = screen.queryAllByText(/nunca/i);
+      expect(neverTexts.length).toBeGreaterThan(0);
+    });
+  });
+
   it('debe limpiar filtros correctamente', async () => {
     const user = userEvent.setup({ delay: null });
     render(<AdminUsers />);

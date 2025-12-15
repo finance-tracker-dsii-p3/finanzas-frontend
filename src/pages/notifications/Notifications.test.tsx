@@ -444,6 +444,29 @@ describe('Notifications Page', () => {
     expect(mockRefreshCustomReminders).toHaveBeenCalled();
   });
 
+  it('debe mostrar diferentes tipos de notificaciones', async () => {
+    const billNotification: Notification = {
+      ...mockNotification,
+      id: 4,
+      notification_type: 'bill_reminder',
+      notification_type_display: 'Recordatorio de factura',
+      title: 'Recordatorio de factura',
+      message: 'Tienes una factura próxima a vencer',
+    };
+
+    vi.mocked(useNotifications).mockReturnValue({
+      ...vi.mocked(useNotifications)(),
+      notifications: [billNotification],
+    } as unknown as ReturnType<typeof useNotifications>);
+
+    render(<Notifications />);
+
+    await waitFor(() => {
+      // Verificar que se muestra el mensaje de la notificación
+      expect(screen.getByText('Tienes una factura próxima a vencer')).toBeInTheDocument();
+    });
+  });
+
   it('debe eliminar recordatorio personalizado', async () => {
     const user = userEvent.setup();
     // Mock window.confirm
