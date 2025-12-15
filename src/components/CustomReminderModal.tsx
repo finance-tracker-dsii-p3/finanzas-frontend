@@ -36,9 +36,9 @@ const CustomReminderModal: React.FC<CustomReminderModalProps> = ({
       setTitle(reminder.title);
       setMessage(reminder.message);
       setReminderDate(reminder.reminder_date);
-      setReminderTime(reminder.reminder_time.slice(0, 5)); // HH:MM
+      setReminderTime(reminder.reminder_time.slice(0, 5));
     } else {
-      // Valores por defecto para nuevo recordatorio
+
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       setReminderDate(tomorrow.toISOString().split('T')[0]);
@@ -70,7 +70,6 @@ const CustomReminderModal: React.FC<CustomReminderModalProps> = ({
       return;
     }
 
-    // Validar que la fecha/hora sea futura
     const reminderDateTime = new Date(`${reminderDate}T${reminderTime}`);
     const now = new Date();
 
@@ -85,7 +84,7 @@ const CustomReminderModal: React.FC<CustomReminderModalProps> = ({
         title: title.trim(),
         message: message.trim(),
         reminder_date: reminderDate,
-        reminder_time: `${reminderTime}:00`, // Agregar segundos
+        reminder_time: `${reminderTime}:00`,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al guardar el recordatorio');
@@ -94,7 +93,6 @@ const CustomReminderModal: React.FC<CustomReminderModalProps> = ({
     }
   };
 
-  // Obtener fecha mínima (mañana)
   const minDate = new Date();
   minDate.setDate(minDate.getDate() + 1);
   const minDateStr = minDate.toISOString().split('T')[0];

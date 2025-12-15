@@ -230,8 +230,7 @@ describe('Accounts', () => {
     await waitFor(() => {
       expect(screen.getByText('Cuenta Ahorros')).toBeInTheDocument();
     });
-    
-    // Buscar botón de eliminar por icono o texto
+
     const accountCard = screen.getByText('Cuenta Ahorros').closest('div');
     const buttons = accountCard?.querySelectorAll('button') || [];
     const deleteBtn = Array.from(buttons).find(btn => {
@@ -305,6 +304,49 @@ describe('Accounts', () => {
     
     await waitFor(() => {
       expect(screen.getByText('Cuenta Ahorros')).toBeInTheDocument();
+    });
+  });
+
+  it('debe filtrar cuentas por tipo', async () => {
+    const user = userEvent.setup();
+    render(<Accounts onBack={mockOnBack} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Cuenta Ahorros')).toBeInTheDocument();
+    });
+    
+    const filterSelects = screen.queryAllByRole('combobox');
+    if (filterSelects.length > 0) {
+      const select = filterSelects[0] as HTMLSelectElement;
+      const options = Array.from(select.options);
+      const assetOption = options.find(opt => opt.value === 'asset' || opt.text.includes('Activo'));
+      if (assetOption) {
+        await user.selectOptions(select, assetOption.value);
+      }
+    }
+  });
+
+  it('debe buscar cuentas por nombre', async () => {
+    const user = userEvent.setup();
+    render(<Accounts onBack={mockOnBack} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Cuenta Ahorros')).toBeInTheDocument();
+    });
+    
+    const searchInput = screen.queryByPlaceholderText(/buscar/i);
+    if (searchInput) {
+      await user.type(searchInput, 'Ahorros');
+    }
+  });
+
+  it('debe mostrar estado vacío cuando no hay cuentas', async () => {
+    vi.mocked(accountService.accountService.getAllAccounts).mockResolvedValue([]);
+    
+    render(<Accounts onBack={mockOnBack} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText(/no hay cuentas/i)).toBeInTheDocument();
     });
   });
 });

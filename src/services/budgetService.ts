@@ -1,6 +1,6 @@
 import { parseApiError, handleNetworkError } from '../utils/apiErrorHandler';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
 
 export type CalculationMode = 'base' | 'total';
 export type Period = 'monthly' | 'yearly';
@@ -29,7 +29,7 @@ export interface BudgetDetail {
   category_color: string;
   category_icon: string;
   amount: string;
-  currency: string; // 'COP', 'USD', 'EUR'
+  currency: string;
   calculation_mode: CalculationMode;
   calculation_mode_display: string;
   period: Period;
@@ -62,7 +62,7 @@ export interface BudgetListResponse {
 export interface BudgetPayload {
   category: number;
   amount: string;
-  currency: string; // 'COP', 'USD', 'EUR' - Requerido
+  currency: string;
   calculation_mode?: CalculationMode;
   period?: Period;
   start_date?: string;

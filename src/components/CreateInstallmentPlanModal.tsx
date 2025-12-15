@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { XCircle, AlertCircle, Calculator, Calendar } from 'lucide-react';
 import { creditCardPlanService, CreatePlanData } from '../services/creditCardPlanService';
 import { accountService, Account } from '../services/accountService';
@@ -30,12 +30,7 @@ const CreateInstallmentPlanModal: React.FC<CreateInstallmentPlanModalProps> = ({
     description: '',
   });
 
-  useEffect(() => {
-    loadCreditCards();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const loadCreditCards = async () => {
+  const loadCreditCards = useCallback(async () => {
     try {
       setIsLoadingCards(true);
       const accounts = await accountService.getAllAccounts();
@@ -57,7 +52,11 @@ const CreateInstallmentPlanModal: React.FC<CreateInstallmentPlanModalProps> = ({
     } finally {
       setIsLoadingCards(false);
     }
-  };
+  }, [purchaseTransaction.origin_account]);
+
+  useEffect(() => {
+    loadCreditCards();
+  }, [loadCreditCards]);
 
   const validateForm = (): string | null => {
     if (!formData.creditCardId) {

@@ -1,8 +1,6 @@
-/* ============================================
-   ANIMACIONES GLOBALES DEL FRONTEND
-   ============================================ */
 
-/* Animaciones de entrada/salida para modales */
+
+
 @keyframes modalBackdropFadeIn {
   from {
     opacity: 0;
@@ -65,7 +63,7 @@
   }
 }
 
-/* Animaciones de fade para elementos */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -128,7 +126,7 @@
   }
 }
 
-/* Animaciones de slide */
+
 @keyframes slideInRight {
   from {
     transform: translateX(100%);
@@ -165,7 +163,7 @@
   }
 }
 
-/* Animaciones de scale */
+
 @keyframes scaleIn {
   from {
     transform: scale(0.8);
@@ -218,7 +216,7 @@
   }
 }
 
-/* Animación de shimmer para loading */
+
 @keyframes shimmer {
   0% {
     background-position: -1000px 0;
@@ -228,7 +226,7 @@
   }
 }
 
-/* Animación de rotación suave */
+
 @keyframes rotate {
   from {
     transform: rotate(0deg);
@@ -238,7 +236,7 @@
   }
 }
 
-/* Animación de heartbeat */
+
 @keyframes heartbeat {
   0%, 100% {
     transform: scale(1);
@@ -254,7 +252,7 @@
   }
 }
 
-/* Clases de utilidad para animaciones */
+
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
 }
@@ -303,7 +301,7 @@
   animation: shake 0.5s ease-in-out;
 }
 
-/* Transiciones suaves para hover */
+
 .transition-smooth {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -316,7 +314,7 @@
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Efectos de hover mejorados */
+
 .hover-lift {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -342,7 +340,7 @@
   box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
 }
 
-/* Animación de entrada escalonada para listas */
+
 .stagger-item {
   opacity: 0;
   animation: fadeInUp 0.4s ease-out forwards;
@@ -359,7 +357,7 @@
 .stagger-item:nth-child(9) { animation-delay: 0.45s; }
 .stagger-item:nth-child(10) { animation-delay: 0.5s; }
 
-/* Clase para aplicar animación escalonada automáticamente a listas */
+
 .stagger-list > * {
   opacity: 0;
   animation: fadeInUp 0.4s ease-out forwards;
@@ -378,7 +376,7 @@
 .stagger-list > *:nth-child(11) { animation-delay: 0.55s; }
 .stagger-list > *:nth-child(12) { animation-delay: 0.6s; }
 
-/* Animación para botones */
+
 .button-press {
   transition: transform 0.1s ease;
 }
@@ -387,12 +385,12 @@
   transform: scale(0.95);
 }
 
-/* Animación para cards */
+
 .card-enter {
   animation: fadeInUp 0.5s ease-out;
 }
 
-/* Animación para notificaciones */
+
 .notification-enter {
   animation: slideInRight 0.3s ease-out;
 }
@@ -401,7 +399,7 @@
   animation: slideOutRight 0.3s ease-out;
 }
 
-/* Animación para dropdowns */
+
 .dropdown-enter {
   animation: fadeInDown 0.2s ease-out;
 }
@@ -410,7 +408,7 @@
   animation: fadeOut 0.2s ease-out;
 }
 
-/* Animación de skeleton loading */
+
 @keyframes skeleton-loading {
   0% {
     background-position: -200px 0;
@@ -431,7 +429,7 @@
   animation: skeleton-loading 1.5s ease-in-out infinite;
 }
 
-/* Animación para spinners mejorados */
+
 @keyframes spin-smooth {
   from {
     transform: rotate(0deg);
@@ -445,7 +443,7 @@
   animation: spin-smooth 1s linear infinite;
 }
 
-/* Animación para progress bars */
+
 @keyframes progress-bar {
   from {
     width: 0%;
@@ -456,7 +454,7 @@
   animation: progress-bar 1s ease-out;
 }
 
-/* Animación para tooltips */
+
 @keyframes tooltipFadeIn {
   from {
     opacity: 0;
@@ -472,7 +470,7 @@
   animation: tooltipFadeIn 0.2s ease-out;
 }
 
-/* Animación para modales mejorada */
+
 .modal-backdrop-enter {
   animation: modalBackdropFadeIn 0.2s ease-out;
 }
@@ -489,17 +487,17 @@
   animation: modalSlideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Animación para páginas */
+
 .page-enter {
   animation: fadeIn 0.4s ease-out;
 }
 
-/* Animación para formularios */
+
 .form-group-enter {
   animation: fadeInUp 0.3s ease-out;
 }
 
-/* Animación para alertas */
+
 .alert-enter {
   animation: slideInRight 0.3s ease-out;
 }
@@ -508,18 +506,18 @@
   animation: slideOutRight 0.3s ease-out;
 }
 
-/* Animación para tabs */
+
 .tab-active {
   position: relative;
   animation: fadeIn 0.2s ease-out;
 }
 
-/* Animación para badges */
+
 .badge-enter {
   animation: scaleIn 0.2s ease-out;
 }
 
-/* Animación para iconos */
+
 .icon-spin {
   animation: rotate 2s linear infinite;
 }
@@ -532,7 +530,7 @@
   animation: bounce 1s ease-in-out infinite;
 }
 
-/* Animación para números (contadores) */
+
 @keyframes countUp {
   from {
     opacity: 0;
@@ -548,22 +546,22 @@
   animation: countUp 0.5s ease-out;
 }
 
-/* Animación para gráficos */
+
 .chart-enter {
   animation: fadeInUp 0.6s ease-out;
 }
 
-/* Animación para tablas */
+
 .table-row-enter {
   animation: fadeInLeft 0.3s ease-out;
 }
 
-/* Animación para imágenes */
+
 .image-load {
   animation: fadeIn 0.5s ease-out;
 }
 
-/* Animación para inputs focus */
+
 .input-focus {
   transition: all 0.3s ease;
 }
@@ -572,7 +570,7 @@
   transform: scale(1.02);
 }
 
-/* Animación para botones de acción */
+
 .action-button {
   transition: all 0.2s ease;
   position: relative;
@@ -601,7 +599,7 @@
   transform: scale(0.98);
 }
 
-/* Animaciones globales para todos los botones */
+
 button:not([disabled]):not(.no-animate) {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -615,7 +613,7 @@ button:not([disabled]):not(.no-animate):active {
   transform: translateY(0);
 }
 
-/* Animaciones específicas para botones en tarjetas */
+
 .card button,
 [class*="card"] button,
 button[class*="card"] {
@@ -661,23 +659,23 @@ button[class*="card"] > * {
   z-index: 1;
 }
 
-/* Animación para loading states */
+
 .loading-dots::after {
   content: '...';
   animation: pulse 1.5s ease-in-out infinite;
 }
 
-/* Animación para success states */
+
 .success-checkmark {
   animation: scaleIn 0.3s ease-out;
 }
 
-/* Animación para error states */
+
 .error-shake {
   animation: shake 0.5s ease-in-out;
 }
 
-/* Media queries para reducir animaciones en dispositivos con preferencia de movimiento reducido */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Edit, UserCheck, UserX, Filter, X, CheckCircle, XCircle, Calendar, Clock } from 'lucide-react';
 import { userAdminService, AdminUser, EditUserData } from '../../services/userAdminService';
 import './AdminUsers.css';
@@ -36,11 +36,11 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
 
   useEffect(() => {
     if (user && isOpen) {
-      // Solo cargar datos si es un usuario diferente o si no se han cargado
+
       if (lastLoadedUserId !== user.id) {
         setIsLoading(true);
         setError(null);
-        // Obtener detalles completos del usuario
+
         userAdminService.getUserDetail(user.id)
           .then((detail) => {
             setFormData({
@@ -63,11 +63,11 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
           });
       }
     } else if (!isOpen) {
-      // Limpiar cuando se cierra el modal
+
       setAuditLog([]);
       setError(null);
       setLastLoadedUserId(null);
-      // Limpiar timeout si existe
+
       if (closeTimeoutRef.current) {
         clearTimeout(closeTimeoutRef.current);
         closeTimeoutRef.current = null;
@@ -83,15 +83,15 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
       return 'El apellido es requerido';
     }
     if (!formData.email?.trim()) {
-      return 'El correo electrÃ³nico es requerido';
+      return 'El correo electrónico es requerido';
     }
-    // Validar formato de email bÃ¡sico
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      return 'El formato del correo electrÃ³nico no es vÃ¡lido';
+      return 'El formato del correo electrónico no es válido';
     }
     if (!formData.identification?.trim()) {
-      return 'La identificaciÃ³n es requerida';
+      return 'La identificación es requerida';
     }
     return null;
   };
@@ -100,7 +100,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
     e.preventDefault();
     if (!user) return;
 
-    // Validar formulario antes de enviar
     const validationError = validateForm();
     if (validationError) {
       setError(validationError);
@@ -112,7 +111,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
     setAuditLog([]);
 
     try {
-      // Asegurar que NO se envÃ­e el campo role (solo backend puede cambiarlo)
+
       const dataToSend: EditUserData = {
         first_name: formData.first_name,
         last_name: formData.last_name,
@@ -122,24 +121,20 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
         is_active: formData.is_active,
         is_verified: formData.is_verified,
       };
-      // Explicitamente NO incluir role
+
 
       const response = await userAdminService.editUser(user.id, dataToSend);
-      
-      // Mostrar auditorÃ­a si estÃ¡ disponible
+
       if (response.audit_log && response.audit_log.length > 0) {
         setAuditLog(response.audit_log);
       }
-      
-      // Recargar lista de usuarios
+
       onSave();
       setIsSaving(false);
-      
-      // Cerrar modal despuÃ©s de un breve delay para que el usuario vea el Ã©xito
-      // Si hay auditorÃ­a, esperar un poco mÃ¡s para que se vea
+
+
       const closeDelay = (response.audit_log && response.audit_log.length > 0) ? 2000 : 1000;
-      
-      // Limpiar timeout anterior si existe
+
       if (closeTimeoutRef.current) {
         clearTimeout(closeTimeoutRef.current);
       }
@@ -182,11 +177,11 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
 
         {auditLog.length > 0 && (
           <div className="audit-log-preview">
-            <h3 className="text-sm font-semibold mb-2 text-green-700">âœ“ Cambios guardados exitosamente:</h3>
+            <h3 className="text-sm font-semibold mb-2 text-green-700">✓ Cambios guardados exitosamente:</h3>
             <ul className="space-y-1">
               {auditLog.map((log, idx) => (
                 <li key={idx} className="text-xs text-gray-600">
-                  <strong>{log.field}</strong>: {log.old_value || 'N/A'} â†’ {log.new_value || 'N/A'}
+                  <strong>{log.field}</strong>: {log.old_value || 'N/A'} → {log.new_value || 'N/A'}
                   <span className="text-gray-400 ml-2">({log.changed_by})</span>
                 </li>
               ))}
@@ -241,7 +236,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
 
           <div className="form-group">
             <label htmlFor="email" className="form-label">
-              Correo ElectrÃ³nico *
+              Correo Electrónico *
             </label>
             <input
               type="email"
@@ -263,7 +258,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="identification" className="form-label">
-                IdentificaciÃ³n *
+                Identificación *
               </label>
               <input
                 type="text"
@@ -284,7 +279,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
 
             <div className="form-group">
               <label htmlFor="phone" className="form-label">
-                TelÃ©fono
+                Teléfono
               </label>
               <input
                 type="text"
@@ -353,8 +348,7 @@ const AdminUsers: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  
-  // Filtros
+
   const [filterRole, setFilterRole] = useState<'all' | 'admin' | 'user'>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [filterVerified, setFilterVerified] = useState<'all' | 'verified' | 'unverified'>('all');
@@ -381,7 +375,6 @@ const AdminUsers: React.FC = () => {
   const applyFilters = useCallback(() => {
     let filtered = [...users];
 
-    // BÃºsqueda por texto
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -393,19 +386,16 @@ const AdminUsers: React.FC = () => {
       );
     }
 
-    // Filtro por rol
     if (filterRole !== 'all') {
       filtered = filtered.filter((user) => user.role === filterRole);
     }
 
-    // Filtro por estado activo/inactivo
     if (filterStatus !== 'all') {
       filtered = filtered.filter((user) =>
         filterStatus === 'active' ? user.is_active : !user.is_active
       );
     }
 
-    // Filtro por verificaciÃ³n
     if (filterVerified !== 'all') {
       filtered = filtered.filter((user) =>
         filterVerified === 'verified' ? user.is_verified : !user.is_verified
@@ -469,7 +459,7 @@ const AdminUsers: React.FC = () => {
     <div className="admin-users-page">
       <div className="admin-users-header">
         <div className="header-left">
-          <h1 className="page-title">AdministraciÃ³n de Usuarios</h1>
+          <h1 className="page-title">Administración de Usuarios</h1>
           <p className="page-subtitle">Gestiona usuarios registrados en el sistema</p>
         </div>
         <div className="header-stats">
@@ -495,7 +485,7 @@ const AdminUsers: React.FC = () => {
       {error && (
         <div className="error-message">
           <p>{error}</p>
-          <button onClick={() => setError(null)} className="error-close">Ã—</button>
+          <button onClick={() => setError(null)} className="error-close">×</button>
         </div>
       )}
 
@@ -504,7 +494,7 @@ const AdminUsers: React.FC = () => {
           <Search className="search-icon" />
           <input
             type="text"
-            placeholder="Buscar por nombre, email o identificaciÃ³n..."
+            placeholder="Buscar por nombre, email o identificación..."
             className="search-input"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -549,7 +539,7 @@ const AdminUsers: React.FC = () => {
           </div>
 
           <div className="filter-group">
-            <label className="filter-label">VerificaciÃ³n</label>
+            <label className="filter-label">Verificación</label>
             <select
               className="filter-select"
               value={filterVerified}
@@ -575,8 +565,8 @@ const AdminUsers: React.FC = () => {
               <th>Correo</th>
               <th>Rol</th>
               <th>Estado</th>
-              <th>Fecha CreaciÃ³n</th>
-              <th>Ãšltimo Acceso</th>
+              <th>Fecha Creación</th>
+              <th>Último Acceso</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -619,7 +609,7 @@ const AdminUsers: React.FC = () => {
                       )}
                       {user.is_verified && (
                         <span className="verified-badge" title="Usuario verificado">
-                          âœ“
+                          ✓
                         </span>
                       )}
                     </div>

@@ -91,10 +91,9 @@ describe('AdminUsers', () => {
     render(<AdminUsers />);
 
     await waitFor(() => {
-      expect(screen.getByText('2')).toBeInTheDocument(); // Total
+      expect(screen.getByText('2')).toBeInTheDocument();
     });
 
-    // Activos: 1, Inactivos: 1
     const statValues = screen.getAllByText('1');
     expect(statValues.length).toBeGreaterThan(0);
   });
@@ -128,12 +127,11 @@ describe('AdminUsers', () => {
     await user.click(filterButton);
 
     await waitFor(() => {
-      // Buscar el select por su valor por defecto "all"
+
       const selects = screen.getAllByRole('combobox');
       expect(selects.length).toBeGreaterThan(0);
     });
 
-    // Buscar el select que tiene la opción "Administrador" (primer select es de rol)
     const selects = screen.getAllByRole('combobox');
     const roleSelect = selects[0] as HTMLSelectElement;
     
@@ -162,7 +160,6 @@ describe('AdminUsers', () => {
       expect(selects.length).toBeGreaterThan(0);
     });
 
-    // El segundo select es de estado (después de rol)
     const selects = screen.getAllByRole('combobox');
     const statusSelect = selects[1] as HTMLSelectElement;
     
@@ -234,7 +231,7 @@ describe('AdminUsers', () => {
     });
 
     const toggleButtons = screen.getAllByTitle(/desactivar usuario|activar usuario/i);
-    await user.click(toggleButtons[0]); // Desactivar el primer usuario
+    await user.click(toggleButtons[0]);
 
     await waitFor(() => {
       expect(userAdminService.editUser).toHaveBeenCalledWith(1, {
@@ -286,7 +283,6 @@ describe('AdminUsers', () => {
       expect(screen.getByText('Usuario Uno')).toBeInTheDocument();
     });
 
-    // Verificar que se muestran las fechas (formato localizado)
     const dateCells = screen.getAllByText(/ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic/i);
     expect(dateCells.length).toBeGreaterThan(0);
   });
@@ -298,7 +294,6 @@ describe('AdminUsers', () => {
       expect(screen.getByText('Admin Uno')).toBeInTheDocument();
     });
 
-    // El segundo usuario (admin1) tiene last_login: null
     expect(screen.getByText('Nunca')).toBeInTheDocument();
   });
 
@@ -315,7 +310,7 @@ describe('AdminUsers', () => {
     render(<AdminUsers />);
 
     await waitFor(() => {
-      // Verificar que se muestra información de usuarios inactivos
+
       const inactiveUsers = screen.queryAllByText(/inactivo/i);
       expect(inactiveUsers.length).toBeGreaterThan(0);
     });
@@ -325,7 +320,7 @@ describe('AdminUsers', () => {
     render(<AdminUsers />);
 
     await waitFor(() => {
-      // Verificar que se muestra "Nunca" para usuarios sin último acceso
+
       const neverTexts = screen.queryAllByText(/nunca/i);
       expect(neverTexts.length).toBeGreaterThan(0);
     });

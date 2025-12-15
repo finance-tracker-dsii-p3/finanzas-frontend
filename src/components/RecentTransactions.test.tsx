@@ -85,7 +85,7 @@ describe('RecentTransactions', () => {
 
   it('debe formatear correctamente las fechas', () => {
     render(<RecentTransactions transactions={mockTransactions} />);
-    // Las fechas se formatean como "15 ene", "14 ene", etc.
+
     const dateElements = screen.getAllByText(/15|14|13/i);
     expect(dateElements.length).toBeGreaterThan(0);
   });
@@ -101,3 +101,4 @@ describe('RecentTransactions', () => {
     expect(alimentacionElements.length).toBeGreaterThan(0);
   });
 });
+

@@ -153,8 +153,6 @@ describe('NewAccountModal', () => {
       expect(nameInputs.length).toBeGreaterThan(0);
     });
     
-    // El formulario requiere más campos, así que solo verificamos que el modal se renderiza
-    // y que el botón de submit existe
     const submitButton = screen.getByRole('button', { name: /crear cuenta/i });
     expect(submitButton).toBeInTheDocument();
   });
@@ -166,9 +164,7 @@ describe('NewAccountModal', () => {
     const submitButton = screen.getByRole('button', { name: /crear cuenta/i });
     await user.click(submitButton);
     
-    // El formulario debería mostrar errores o no permitir el submit
     await waitFor(() => {
-      // Verificar que onSave no se llamó sin datos válidos
       expect(mockOnSave).not.toHaveBeenCalled();
     });
   });
@@ -217,7 +213,6 @@ describe('NewAccountModal', () => {
       await user.click(walletButton.closest('button')!);
       
       await waitFor(() => {
-        // Verificar que se muestra el formulario
         expect(screen.getByText(/nueva cuenta/i)).toBeInTheDocument();
       });
     }
@@ -275,7 +270,6 @@ describe('NewAccountModal', () => {
       expect(selects.length).toBeGreaterThan(0);
     });
 
-    // Seleccionar tipo banco
     const bankButtons = screen.getAllByText(/banco/i);
     const bankButton = bankButtons.find(btn => btn.closest('button') && !btn.textContent?.includes('Seleccionar'));
     if (bankButton) {
@@ -304,7 +298,6 @@ describe('NewAccountModal', () => {
     const nameInputs = screen.getAllByRole('textbox');
     await user.type(nameInputs[0], 'Cuenta Completa');
     
-    // El formulario requiere más campos para ser válido
     const submitButton = screen.getByRole('button', { name: /crear cuenta/i });
     expect(submitButton).toBeInTheDocument();
   });
@@ -430,7 +423,6 @@ describe('NewAccountModal', () => {
       expect(buttons.length).toBeGreaterThan(0);
     });
 
-    // Cambiar de banco a wallet
     const walletButtons = screen.getAllByText(/billetera/i);
     const walletButton = walletButtons.find(btn => btn.closest('button'));
     if (walletButton) {
@@ -715,7 +707,6 @@ describe('NewAccountModal', () => {
       expect(bankButtons.length).toBeGreaterThan(0);
     });
 
-    // Seleccionar tipo banco
     const bankButtons = screen.getAllByText(/banco/i);
     const bankButton = bankButtons.find(btn => btn.closest('button') && !btn.textContent?.includes('Seleccionar'));
     if (bankButton) {
@@ -726,11 +717,9 @@ describe('NewAccountModal', () => {
         expect(nameInputs.length).toBeGreaterThan(0);
       });
 
-      // Escribir nombre
       const nameInputs = screen.getAllByRole('textbox');
       await user.type(nameInputs[0], 'Cuenta Bancaria Test');
       
-      // Seleccionar banco
       await waitFor(() => {
         const selects = screen.getAllByRole('combobox');
         const bankSelect = selects.find(sel => {
@@ -742,7 +731,6 @@ describe('NewAccountModal', () => {
         }
       });
 
-      // Escribir número de cuenta
       await waitFor(() => {
         const accountNumberInputs = screen.queryAllByPlaceholderText(/número de cuenta/i);
         if (accountNumberInputs.length > 0) {
@@ -762,7 +750,6 @@ describe('NewAccountModal', () => {
       expect(creditCardButtons.length).toBeGreaterThan(0);
     });
 
-    // Seleccionar tipo tarjeta de crédito
     const creditCardButtons = screen.getAllByText(/crédito/i);
     const creditCardButton = creditCardButtons.find(btn => btn.closest('button'));
     if (creditCardButton) {
@@ -773,11 +760,9 @@ describe('NewAccountModal', () => {
         expect(nameInputs.length).toBeGreaterThan(0);
       });
 
-      // Escribir nombre
       const nameInputs = screen.getAllByRole('textbox');
       await user.type(nameInputs[0], 'Tarjeta Visa Test');
       
-      // Seleccionar banco
       await waitFor(() => {
         const selects = screen.getAllByRole('combobox');
         const bankSelect = selects.find(sel => {
@@ -817,14 +802,12 @@ describe('NewAccountModal', () => {
     const container = document.querySelector('.newaccountmodal-container');
     if (container) {
       await user.click(container as HTMLElement);
-      // No debería cerrar
       expect(screen.getByText(/nueva cuenta/i)).toBeInTheDocument();
     }
   });
 
   it('debe manejar estado de carga durante el guardado', async () => {
     const savePromise = new Promise<void>(() => {
-      // Promise que nunca se resuelve para simular carga
     });
     mockOnSave.mockReturnValue(savePromise);
     
@@ -1009,7 +992,6 @@ describe('NewAccountModal', () => {
     const nameInputs = screen.getAllByRole('textbox');
     await user.type(nameInputs[0], 'Cuenta Completa Test');
     
-    // El formulario requiere más campos para ser válido
     const submitButton = screen.getByRole('button', { name: /crear cuenta/i });
     expect(submitButton).toBeInTheDocument();
   });
@@ -1134,6 +1116,196 @@ describe('NewAccountModal', () => {
         });
       }
     }
+  });
+
+  it('debe permitir escribir en el campo de descripción y mostrar contador', async () => {
+    const user = userEvent.setup();
+    render(<NewAccountModal onClose={mockOnClose} onSave={mockOnSave} />);
+    
+    await waitFor(() => {
+      const textareas = screen.queryAllByRole('textbox');
+      expect(textareas.length).toBeGreaterThan(0);
+    });
+
+    const textareas = screen.queryAllByRole('textbox');
+    const descriptionTextarea = textareas.find(textarea => {
+      const placeholder = textarea.getAttribute('placeholder') || '';
+      return placeholder.toLowerCase().includes('descripción');
+    });
+
+    if (descriptionTextarea) {
+      await user.type(descriptionTextarea, 'Descripción de prueba');
+      expect(descriptionTextarea).toHaveValue('Descripción de prueba');
+      
+      await waitFor(() => {
+        const counter = screen.getByText(/\/500 caracteres/i);
+        expect(counter).toBeInTheDocument();
+      });
+    }
+  });
+
+  it('debe limitar la descripción a 500 caracteres', async () => {
+    render(<NewAccountModal onClose={mockOnClose} onSave={mockOnSave} />);
+    
+    await waitFor(() => {
+      const textareas = screen.queryAllByRole('textbox');
+      expect(textareas.length).toBeGreaterThan(0);
+    });
+
+    const textareas = screen.queryAllByRole('textbox');
+    const descriptionTextarea = textareas.find(textarea => {
+      const placeholder = textarea.getAttribute('placeholder') || '';
+      return placeholder.toLowerCase().includes('descripción');
+    });
+
+    if (descriptionTextarea) {
+      const maxLength = descriptionTextarea.getAttribute('maxLength');
+      expect(maxLength).toBe('500');
+      expect(Number(maxLength)).toBe(500);
+    }
+  });
+
+  it('debe mostrar checkbox de GMF exempt para cuentas COP que no sean tarjeta ni efectivo', async () => {
+    const user = userEvent.setup();
+    render(<NewAccountModal onClose={mockOnClose} onSave={mockOnSave} />);
+    
+    await waitFor(() => {
+      const bankButtons = screen.getAllByText(/banco/i);
+      expect(bankButtons.length).toBeGreaterThan(0);
+    });
+
+    const bankButtons = screen.getAllByText(/banco/i);
+    const bankButton = bankButtons.find(btn => btn.closest('button') && !btn.textContent?.includes('Seleccionar'));
+    if (bankButton) {
+      await user.click(bankButton.closest('button')!);
+      
+      await waitFor(() => {
+        const selects = screen.getAllByRole('combobox');
+        const currencySelect = selects.find(sel => {
+          const options = Array.from((sel as HTMLSelectElement).options);
+          return options.some(opt => opt.value === 'COP');
+        });
+        if (currencySelect) {
+          user.selectOptions(currencySelect as HTMLSelectElement, 'COP');
+        }
+      });
+
+      await waitFor(() => {
+        const checkboxes = screen.queryAllByRole('checkbox');
+        const gmfCheckbox = checkboxes.find(cb => {
+          const label = cb.closest('label');
+          return label?.textContent?.toLowerCase().includes('gmf') || label?.textContent?.toLowerCase().includes('exenta');
+        });
+        expect(gmfCheckbox).toBeInTheDocument();
+      });
+    }
+  });
+
+  it('debe permitir cambiar el tipo de cuenta entre activo y pasivo', async () => {
+    const user = userEvent.setup();
+    render(<NewAccountModal onClose={mockOnClose} onSave={mockOnSave} />);
+    
+    await waitFor(() => {
+      const radioButtons = screen.queryAllByRole('radio');
+      expect(radioButtons.length).toBeGreaterThan(0);
+    });
+
+    const radioButtons = screen.queryAllByRole('radio');
+    const assetRadio = radioButtons.find(rb => (rb as HTMLInputElement).value === 'asset');
+    const liabilityRadio = radioButtons.find(rb => (rb as HTMLInputElement).value === 'liability');
+
+    if (assetRadio && liabilityRadio) {
+      expect((assetRadio as HTMLInputElement).checked).toBe(true);
+      
+      await user.click(liabilityRadio as HTMLElement);
+      expect((liabilityRadio as HTMLInputElement).checked).toBe(true);
+      
+      await user.click(assetRadio as HTMLElement);
+      expect((assetRadio as HTMLInputElement).checked).toBe(true);
+    }
+  });
+
+  it('debe permitir cambiar el estado activo de la cuenta', async () => {
+    const user = userEvent.setup();
+    render(<NewAccountModal onClose={mockOnClose} onSave={mockOnSave} />);
+    
+    await waitFor(() => {
+      const checkboxes = screen.queryAllByRole('checkbox');
+      const activeCheckbox = checkboxes.find(cb => {
+        const label = cb.closest('label');
+        return label?.textContent?.toLowerCase().includes('activa');
+      });
+      expect(activeCheckbox).toBeDefined();
+    });
+
+    const checkboxes = screen.queryAllByRole('checkbox');
+    const activeCheckbox = checkboxes.find(cb => {
+      const label = cb.closest('label');
+      return label?.textContent?.toLowerCase().includes('activa');
+    });
+    
+    if (activeCheckbox) {
+      const checkboxElement = activeCheckbox as HTMLInputElement;
+      await waitFor(() => {
+        expect(checkboxElement.checked).toBe(true);
+      });
+      await user.click(activeCheckbox as HTMLElement);
+      await waitFor(() => {
+        expect(checkboxElement.checked).toBe(false);
+      });
+    }
+  });
+
+  it('debe limpiar el error de nombre cuando se escribe', async () => {
+    const user = userEvent.setup();
+    render(<NewAccountModal onClose={mockOnClose} onSave={mockOnSave} />);
+    
+    await waitFor(() => {
+      const nameInputs = screen.getAllByRole('textbox');
+      expect(nameInputs.length).toBeGreaterThan(0);
+    });
+
+    const nameInputs = screen.getAllByRole('textbox');
+    const nameInput = nameInputs.find(input => {
+      const isTextarea = input.tagName.toLowerCase() === 'textarea';
+      if (isTextarea) return false;
+      
+      const label = input.closest('div')?.querySelector('label');
+      const labelText = label?.textContent?.toLowerCase() || '';
+      return labelText.includes('nombre');
+    });
+    
+    if (nameInput) {
+      await user.clear(nameInput);
+      await user.type(nameInput, 'Cuenta Test');
+      await waitFor(() => {
+        expect(nameInput).toHaveValue('Cuenta Test');
+      }, { timeout: 3000 });
+    } else {
+      expect(screen.getByText(/nueva cuenta/i)).toBeInTheDocument();
+    }
+  });
+
+  it('debe limitar el nombre a 100 caracteres', async () => {
+    render(<NewAccountModal onClose={mockOnClose} onSave={mockOnSave} />);
+    
+    await waitFor(() => {
+      const nameInputs = screen.getAllByRole('textbox');
+      expect(nameInputs.length).toBeGreaterThan(0);
+    });
+
+    const nameInputs = screen.getAllByRole('textbox');
+    const nameInput = nameInputs.find(input => {
+      const isTextarea = input.tagName.toLowerCase() === 'textarea';
+      if (isTextarea) return false;
+      
+      const label = input.closest('div')?.querySelector('label');
+      const labelText = label?.textContent?.toLowerCase() || '';
+      return labelText.includes('nombre');
+    }) || nameInputs[0];
+    
+    const maxLength = nameInput.getAttribute('maxLength');
+    expect(maxLength).toBe('100');
   });
 });
 

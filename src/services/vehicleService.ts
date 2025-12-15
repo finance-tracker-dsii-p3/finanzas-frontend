@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
 
 export interface Vehicle {
   id: number;
@@ -130,9 +130,7 @@ const getAuthHeaders = () => {
 import { parseApiError, handleNetworkError } from '../utils/apiErrorHandler';
 
 export const vehicleService = {
-  /**
-   * Listar vehículos del usuario
-   */
+  
   async listVehicles(): Promise<Vehicle[]> {
     try {
       const response = await fetch(`${API_BASE_URL}/api/vehicles/`, {
@@ -145,7 +143,7 @@ export const vehicleService = {
       }
 
       const data = await response.json();
-      // Manejar paginación si existe
+
       return Array.isArray(data) ? data : (data.results || []);
     } catch (error) {
       handleNetworkError(error);
@@ -153,9 +151,7 @@ export const vehicleService = {
     }
   },
 
-  /**
-   * Obtener detalle de un vehículo
-   */
+  
   async getVehicle(vehicleId: number): Promise<Vehicle> {
     const response = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}/`, {
       method: 'GET',
@@ -169,9 +165,7 @@ export const vehicleService = {
     return response.json();
   },
 
-  /**
-   * Crear vehículo
-   */
+  
   async createVehicle(data: CreateVehicleData): Promise<Vehicle> {
     const response = await fetch(`${API_BASE_URL}/api/vehicles/`, {
       method: 'POST',
@@ -186,9 +180,7 @@ export const vehicleService = {
     return response.json();
   },
 
-  /**
-   * Actualizar vehículo
-   */
+  
   async updateVehicle(vehicleId: number, data: UpdateVehicleData): Promise<Vehicle> {
     const response = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}/`, {
       method: 'PATCH',
@@ -203,9 +195,7 @@ export const vehicleService = {
     return response.json();
   },
 
-  /**
-   * Eliminar vehículo
-   */
+  
   async deleteVehicle(vehicleId: number): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}/`, {
       method: 'DELETE',
@@ -217,9 +207,7 @@ export const vehicleService = {
     }
   },
 
-  /**
-   * Listar SOATs de un vehículo
-   */
+  
   async getVehicleSOATs(vehicleId: number): Promise<SOAT[]> {
     const response = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}/soats/`, {
       method: 'GET',
@@ -233,9 +221,7 @@ export const vehicleService = {
     return response.json();
   },
 
-  /**
-   * Obtener historial de pagos de un vehículo
-   */
+  
   async getPaymentHistory(vehicleId: number): Promise<PaymentHistory> {
     const response = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}/payment_history/`, {
       method: 'GET',
@@ -251,9 +237,7 @@ export const vehicleService = {
 };
 
 export const soatService = {
-  /**
-   * Listar SOATs del usuario
-   */
+  
   async listSOATs(filters?: {
     status?: string;
     vehicle?: number;
@@ -278,9 +262,7 @@ export const soatService = {
     return Array.isArray(data) ? data : (data.results || []);
   },
 
-  /**
-   * Obtener detalle de un SOAT
-   */
+  
   async getSOAT(soatId: number): Promise<SOAT> {
     const response = await fetch(`${API_BASE_URL}/api/soats/${soatId}/`, {
       method: 'GET',
@@ -294,9 +276,7 @@ export const soatService = {
     return response.json();
   },
 
-  /**
-   * Crear SOAT
-   */
+  
   async createSOAT(data: CreateSOATData): Promise<SOAT> {
     const response = await fetch(`${API_BASE_URL}/api/soats/`, {
       method: 'POST',
@@ -311,9 +291,7 @@ export const soatService = {
     return response.json();
   },
 
-  /**
-   * Actualizar SOAT
-   */
+  
   async updateSOAT(soatId: number, data: UpdateSOATData): Promise<SOAT> {
     const response = await fetch(`${API_BASE_URL}/api/soats/${soatId}/`, {
       method: 'PATCH',
@@ -328,9 +306,7 @@ export const soatService = {
     return response.json();
   },
 
-  /**
-   * Eliminar SOAT
-   */
+  
   async deleteSOAT(soatId: number): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/api/soats/${soatId}/`, {
       method: 'DELETE',
@@ -342,9 +318,7 @@ export const soatService = {
     }
   },
 
-  /**
-   * Registrar pago de SOAT
-   */
+  
   async registerPayment(soatId: number, data: SOATPaymentData): Promise<SOATPaymentResponse> {
     const response = await fetch(`${API_BASE_URL}/api/soats/${soatId}/register_payment/`, {
       method: 'POST',
@@ -359,9 +333,7 @@ export const soatService = {
     return response.json();
   },
 
-  /**
-   * Actualizar estado del SOAT
-   */
+  
   async updateStatus(soatId: number): Promise<{ message: string; soat: SOAT }> {
     const response = await fetch(`${API_BASE_URL}/api/soats/${soatId}/update_status/`, {
       method: 'POST',
@@ -375,9 +347,7 @@ export const soatService = {
     return response.json();
   },
 
-  /**
-   * Listar SOATs próximos a vencer
-   */
+  
   async getExpiringSoon(days: number = 30): Promise<{ count: number; days_range: number; soats: SOAT[] }> {
     const response = await fetch(`${API_BASE_URL}/api/soats/expiring_soon/?days=${days}`, {
       method: 'GET',
@@ -391,9 +361,7 @@ export const soatService = {
     return response.json();
   },
 
-  /**
-   * Listar SOATs vencidos
-   */
+  
   async getExpired(): Promise<{ count: number; soats: SOAT[] }> {
     const response = await fetch(`${API_BASE_URL}/api/soats/expired/`, {
       method: 'GET',
@@ -409,9 +377,7 @@ export const soatService = {
 };
 
 export const soatAlertService = {
-  /**
-   * Listar alertas de SOAT
-   */
+  
   async listAlerts(filters?: {
     is_read?: boolean;
     alert_type?: string;
@@ -436,9 +402,7 @@ export const soatAlertService = {
     return Array.isArray(data) ? data : (data.results || []);
   },
 
-  /**
-   * Obtener detalle de una alerta
-   */
+  
   async getAlert(alertId: number): Promise<SOATAlert> {
     const response = await fetch(`${API_BASE_URL}/api/soat-alerts/${alertId}/`, {
       method: 'GET',
@@ -452,9 +416,7 @@ export const soatAlertService = {
     return response.json();
   },
 
-  /**
-   * Marcar alerta como leída
-   */
+  
   async markAsRead(alertId: number): Promise<{ message: string; alert: SOATAlert }> {
     const response = await fetch(`${API_BASE_URL}/api/soat-alerts/${alertId}/mark_read/`, {
       method: 'POST',
@@ -468,9 +430,7 @@ export const soatAlertService = {
     return response.json();
   },
 
-  /**
-   * Marcar todas las alertas como leídas
-   */
+  
   async markAllAsRead(): Promise<{ message: string }> {
     const response = await fetch(`${API_BASE_URL}/api/soat-alerts/mark_all_read/`, {
       method: 'POST',

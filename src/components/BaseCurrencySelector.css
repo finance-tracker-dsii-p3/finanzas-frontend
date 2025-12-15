@@ -117,7 +117,7 @@
   }
 }
 
-/* Cerrar dropdown al hacer click fuera */
+
 @media (max-width: 640px) {
   .currency-button {
     min-width: 90px;

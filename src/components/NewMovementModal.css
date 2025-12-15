@@ -190,7 +190,7 @@
   animation: newmovementmodalButtonPulse 0.4s ease-out;
 }
 
-/* Ocultar spinners en inputs de tipo number */
+
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;

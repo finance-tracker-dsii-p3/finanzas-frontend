@@ -70,7 +70,7 @@ describe('CategoryTransactionsModal', () => {
 
   it('debe renderizar el modal', () => {
     vi.mocked(analyticsServiceModule.analyticsService.getCategoryTransactions).mockImplementation(
-      () => new Promise(() => {}) // Nunca resuelve
+      () => new Promise(() => {})
     );
 
     render(
@@ -88,7 +88,7 @@ describe('CategoryTransactionsModal', () => {
 
   it('debe mostrar estado de carga inicialmente', () => {
     vi.mocked(analyticsServiceModule.analyticsService.getCategoryTransactions).mockImplementation(
-      () => new Promise(() => {}) // Nunca resuelve
+      () => new Promise(() => {})
     );
 
     render(
@@ -344,3 +344,4 @@ describe('CategoryTransactionsModal', () => {
     });
   });
 });
+

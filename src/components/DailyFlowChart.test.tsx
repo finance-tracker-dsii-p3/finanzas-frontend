@@ -65,7 +65,7 @@ describe('DailyFlowChart', () => {
 
   it('debe mostrar estado de carga inicialmente', () => {
     vi.mocked(analyticsServiceModule.analyticsService.getDailyFlowChart).mockImplementation(
-      () => new Promise(() => {}) // Nunca resuelve
+      () => new Promise(() => {})
     );
 
     render(<DailyFlowChart period="2025-01" mode="total" />);
@@ -150,3 +150,4 @@ describe('DailyFlowChart', () => {
     });
   });
 });
+

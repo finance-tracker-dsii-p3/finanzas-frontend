@@ -30,12 +30,12 @@ interface Movement {
   interest_amount?: number | null;
   gmf_amount?: number | null;
   taxed_amount?: number | null;
-  // Campos de conversión a moneda base (HU-17)
+
   transaction_currency?: Currency | null;
   exchange_rate?: number | null;
   original_amount?: number | null;
   base_currency?: Currency;
-  base_equivalent_amount?: number | null; // En centavos
+  base_equivalent_amount?: number | null;
   base_exchange_rate?: number | null;
   base_exchange_rate_warning?: string | null;
 }
@@ -65,8 +65,8 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   const [filterAccount, setFilterAccount] = useState<number | ''>('');
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
-  const [filterCurrency, setFilterCurrency] = useState<Currency | 'all'>('COP'); // Filtro de moneda para las tarjetas (por defecto COP)
-  const [filterCurrencyTable, setFilterCurrencyTable] = useState<Currency | 'all'>('all'); // Filtro de moneda para la tabla de movimientos
+  const [filterCurrency, setFilterCurrency] = useState<Currency | 'all'>('COP');
+  const [filterCurrencyTable, setFilterCurrencyTable] = useState<Currency | 'all'>('all');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -87,25 +87,24 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
   const [summary, setSummary] = useState<{
     income: number;
     expenses: number;
-    maxIncome: number; // Mayor ingreso individual
-    maxExpense: number; // Mayor gasto individual
+    maxIncome: number;
+    maxExpense: number;
     balance: number;
-    currency: Currency; // Moneda de los valores del summary
+    currency: Currency;
   }>({
     income: 0,
     expenses: 0,
     maxIncome: 0,
     maxExpense: 0,
     balance: 0,
-    currency: 'COP', // Por defecto COP
+    currency: 'COP',
   });
 
-  // Summary por moneda (cuando se selecciona "Todas")
   const [summaryByCurrency, setSummaryByCurrency] = useState<Record<Currency, {
     income: number;
     expenses: number;
-    maxIncome: number; // Mayor ingreso individual
-    maxExpense: number; // Mayor gasto individual
+    maxIncome: number;
+    maxExpense: number;
     balance: number;
   }>>({
     COP: { income: 0, expenses: 0, maxIncome: 0, maxExpense: 0, balance: 0 },
@@ -141,7 +140,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
         start_date?: string;
         end_date?: string;
       } = {
-        ordering: '-created_at', // Ordenar por fecha y hora de creación (más reciente primero)
+        ordering: '-created_at',
         page: currentPage,
         page_size: pageSize,
       };
@@ -171,11 +170,11 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
       } catch {
         paginatedResponse = await transactionService.listPaginated(filters);
         if (Array.isArray(paginatedResponse.results)) {
-          // Ordenar por fecha y hora de creación (más reciente primero)
+
           paginatedResponse.results.sort((a, b) => {
             const dateA = new Date(a.created_at || a.date).getTime();
             const dateB = new Date(b.created_at || b.date).getTime();
-            return dateB - dateA; // Más reciente primero
+            return dateB - dateA;
           });
         }
       }
@@ -192,8 +191,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
       setTotalCount(total);
       
       const accountsData = await accountService.getAllAccounts();
-      
-      // Función auxiliar para obtener la moneda de una transacción
+
       const getTransactionCurrency = (t: Transaction): Currency => {
         if (t.origin_account_currency) {
           return t.origin_account_currency;
@@ -201,8 +199,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
         const account = accountsData.find(acc => acc.id === t.origin_account);
         return account?.currency || 'COP';
       };
-      
-      // Filtrar por moneda si se seleccionó un filtro de moneda para la tabla
+
       let filteredTransactionsData = transactionsData;
       if (filterCurrencyTable !== 'all') {
         filteredTransactionsData = transactionsData.filter(t => getTransactionCurrency(t) === filterCurrencyTable);
@@ -211,8 +208,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
       setMovements(filteredTransactionsData);
       const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
       setAccounts(activeAccounts);
-      
-      // Calcular summary por moneda (usar los datos filtrados por moneda de tabla si aplica)
+
       const dataForSummary = filterCurrencyTable !== 'all' ? filteredTransactionsData : transactionsData;
       
       const summariesByCurrency: Record<Currency, { 
@@ -233,32 +229,30 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
         const currency = getTransactionCurrency(t);
         const amountInPesos = t.total_amount / 100;
         
-        if (t.type === 1) { // Income
+        if (t.type === 1) {
           summariesByCurrency[currency].income += amountInPesos;
-          // Actualizar mayor ingreso si este es mayor
+
           if (amountInPesos > summariesByCurrency[currency].maxIncome) {
             summariesByCurrency[currency].maxIncome = amountInPesos;
           }
-        } else if (t.type === 2) { // Expense
+        } else if (t.type === 2) {
           summariesByCurrency[currency].expenses += amountInPesos;
-          // Actualizar mayor gasto si este es mayor
+
           if (amountInPesos > summariesByCurrency[currency].maxExpense) {
             summariesByCurrency[currency].maxExpense = amountInPesos;
           }
         }
       });
-      
-      // Calcular balance para cada moneda
+
       Object.keys(summariesByCurrency).forEach(currency => {
         const summary = summariesByCurrency[currency as Currency];
         summary.balance = summary.income - summary.expenses;
       });
       
       setSummaryByCurrency(summariesByCurrency);
-      
-      // Calcular summary según el filtro seleccionado
+
       if (filterCurrency === 'all') {
-        // Cuando es "Todas", usar COP como referencia (pero las tarjetas se mostrarán por moneda)
+
         setSummary({
           income: summariesByCurrency.COP.income,
           expenses: summariesByCurrency.COP.expenses,
@@ -268,7 +262,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
           currency: 'COP',
         });
       } else {
-        // Cuando se selecciona una moneda específica
+
         const selectedSummary = summariesByCurrency[filterCurrency];
         setSummary({
           income: selectedSummary.income,
@@ -333,8 +327,8 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
       setTimeout(async () => {
         try {
           await refreshBudgets({ active_only: true, period: 'monthly' });
-        } catch {
-          // Intentionally empty
+        } catch (err) {
+          void err;
         }
       }, 2000);
     } catch (err) {
@@ -406,8 +400,8 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
       setTimeout(async () => {
         try {
           await refreshBudgets({ active_only: true, period: 'monthly' });
-        } catch {
-          // Intentionally empty
+        } catch (err) {
+          void err;
         }
       }, 2000);
 
@@ -461,13 +455,13 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
       const accountsData = await accountService.getAllAccounts();
       const activeAccounts = accountsData.filter(acc => acc.is_active !== false);
       setAccounts(activeAccounts);
-    } catch {
-      // Intentionally empty
+    } catch (err) {
+      void err;
     }
     try {
       await refreshBudgets({ active_only: true, period: 'monthly' });
-    } catch {
-      // Intentionally empty
+    } catch (err) {
+      void err;
     }
     
     setTimeout(async () => {
@@ -671,7 +665,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
           Mostrar desglose fiscal
         </label>
         
-        {/* Filtro de moneda para las tarjetas */}
+        {}
         <div className="flex items-center gap-2 px-3 py-1 bg-white border border-gray-300 rounded-full text-sm">
           <span className="text-gray-600 font-medium">Moneda:</span>
           <select
@@ -687,9 +681,9 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
         </div>
       </div>
 
-      {/* Tarjetas de resumen */}
+      {}
       {filterCurrency === 'all' ? (
-        // Mostrar tarjetas por cada moneda cuando se selecciona "Todas"
+
         (['COP', 'USD', 'EUR'] as Currency[]).map(currency => {
           const currencySummary = summaryByCurrency[currency];
           const hasData = currencySummary.income > 0 || currencySummary.expenses > 0;
@@ -748,7 +742,7 @@ const Movements: React.FC<MovementsProps> = ({ showTaxes, setShowTaxes, onBack }
           );
         })
       ) : (
-        // Mostrar tarjetas de una sola moneda cuando se selecciona una moneda específica
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
             <div className="flex items-center gap-2 mb-2">

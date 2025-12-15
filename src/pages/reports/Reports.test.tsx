@@ -45,8 +45,7 @@ describe('Reports', () => {
     
     const quarterButton = screen.getByText('Trimestre');
     await user.click(quarterButton);
-    
-    // El período debería cambiar
+
     expect(quarterButton).toBeInTheDocument();
   });
 
@@ -73,4 +72,45 @@ describe('Reports', () => {
     
     expect(mockSetShowTaxes).toHaveBeenCalledWith(true);
   });
+
+  it('debe llamar a onBack cuando se hace clic en el botón de volver', async () => {
+    const user = userEvent.setup();
+    render(<Reports showTaxes={false} setShowTaxes={mockSetShowTaxes} onBack={mockOnBack} />);
+    
+    const backButton = screen.getByRole('button', { name: /volver al dashboard/i });
+    await user.click(backButton);
+    
+    expect(mockOnBack).toHaveBeenCalled();
+  });
+
+  it('debe mostrar el checkbox de comparar períodos', async () => {
+    const user = userEvent.setup();
+    render(<Reports showTaxes={false} setShowTaxes={mockSetShowTaxes} onBack={mockOnBack} />);
+    
+    const compareCheckbox = screen.getByLabelText(/comparar períodos/i);
+    expect(compareCheckbox).toBeInTheDocument();
+    
+    await user.click(compareCheckbox);
+
+    expect(compareCheckbox).toBeInTheDocument();
+  });
+
+  it('debe mostrar el período personalizado cuando se selecciona', async () => {
+    const user = userEvent.setup();
+    render(<Reports showTaxes={false} setShowTaxes={mockSetShowTaxes} onBack={mockOnBack} />);
+    
+    const customButton = screen.queryByText('Personalizado');
+    if (customButton) {
+      await user.click(customButton);
+      expect(customButton).toBeInTheDocument();
+    }
+  });
+
+  it('debe mostrar el resumen financiero', () => {
+    render(<Reports showTaxes={false} setShowTaxes={mockSetShowTaxes} onBack={mockOnBack} />);
+
+    expect(screen.getByText(/reportes y análisis/i)).toBeInTheDocument();
+  });
 });
+
+

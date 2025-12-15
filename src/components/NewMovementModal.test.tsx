@@ -810,7 +810,6 @@ describe('NewMovementModal', () => {
       expect(expenseButtons.length).toBeGreaterThan(0);
     });
 
-    // Seleccionar tipo gasto
     const expenseButtons = screen.getAllByText(/gasto/i);
     const expenseButton = expenseButtons.find(btn => btn.closest('button'));
     if (expenseButton) {
@@ -833,7 +832,6 @@ describe('NewMovementModal', () => {
       expect(incomeButtons.length).toBeGreaterThan(0);
     });
 
-    // Seleccionar tipo ingreso
     const incomeButtons = screen.getAllByText(/ingreso/i);
     const incomeButton = incomeButtons.find(btn => btn.closest('button'));
     if (incomeButton) {

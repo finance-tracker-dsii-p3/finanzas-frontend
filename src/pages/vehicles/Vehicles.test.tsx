@@ -82,14 +82,13 @@ describe('Vehicles', () => {
       expect(screen.getByText('ABC123')).toBeInTheDocument();
     });
 
-    // Buscar el botón en el header (no en el empty state)
     const createButtons = screen.getAllByRole('button', { name: /nuevo vehículo/i });
     await act(async () => {
       await user.click(createButtons[0]);
     });
 
     await waitFor(() => {
-      // Buscar el modal por el label de placa que solo aparece en el modal
+
       expect(screen.getByLabelText(/placa/i)).toBeInTheDocument();
     });
   });

@@ -38,7 +38,6 @@ const UpcomingBills: React.FC<UpcomingBillsProps> = ({ bills }) => {
     });
   };
 
-  // Ordenar por urgencia: overdue, today, urgent, soon, normal
   const urgencyOrder = { overdue: 0, today: 1, urgent: 2, soon: 3, normal: 4 };
   const sortedBills = [...bills].sort((a, b) => {
     return urgencyOrder[a.urgency] - urgencyOrder[b.urgency];

@@ -1,10 +1,6 @@
-/**
- * Utilidad para manejar errores de red y del backend de manera consistente
- */
 
-/**
- * Maneja errores de red y conexión
- */
+
+
 export const handleFetchError = (error: unknown): never => {
   if (error instanceof TypeError) {
     if (
@@ -25,18 +21,15 @@ export const handleFetchError = (error: unknown): never => {
   throw new Error('Error desconocido al realizar la operación');
 };
 
-/**
- * Parsea errores del backend de manera consistente
- */
+
 export const parseBackendError = async (
   response: Response,
   defaultMessage: string = 'Error en la operación'
 ): Promise<Error> => {
-  // Errores del servidor (500+)
+
   if (response.status >= 500) {
     let errorText = await response.text();
-    
-    // Si es HTML (página de error de Django)
+
     if (errorText.includes('<!DOCTYPE html>') || errorText.includes('<html')) {
       const exceptionMatch = errorText.match(/<pre class="exception_value">([^<]+)<\/pre>/);
       if (exceptionMatch) {
@@ -65,22 +58,18 @@ export const parseBackendError = async (
     );
   }
 
-  // Errores de autenticación (401)
   if (response.status === 401) {
     return new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
   }
 
-  // Errores de permisos (403)
   if (response.status === 403) {
     return new Error('No tienes permisos para realizar esta operación.');
   }
 
-  // Recurso no encontrado (404)
   if (response.status === 404) {
     return new Error('El recurso solicitado no fue encontrado.');
   }
 
-  // Otros errores (400, 422, etc.)
   const fallback = { message: defaultMessage };
   let error;
   try {
@@ -91,7 +80,6 @@ export const parseBackendError = async (
 
   const errorMessages: string[] = [];
 
-  // Mensajes generales
   if (error.message && !errorMessages.includes(error.message)) {
     errorMessages.push(error.message);
   }
@@ -99,7 +87,6 @@ export const parseBackendError = async (
     errorMessages.push(error.detail);
   }
 
-  // Errores de campos específicos
   if (error.details && typeof error.details === 'object') {
     Object.keys(error.details).forEach((key) => {
       if (
@@ -118,7 +105,6 @@ export const parseBackendError = async (
     });
   }
 
-  // Errores no relacionados con campos específicos
   if (error.non_field_errors) {
     const nonFieldErrors = Array.isArray(error.non_field_errors)
       ? error.non_field_errors
@@ -130,7 +116,6 @@ export const parseBackendError = async (
     });
   }
 
-  // Si no hay mensajes de error, usar el mensaje por defecto
   if (errorMessages.length === 0) {
     errorMessages.push(
       'Error en la operación. Verifica que todos los campos obligatorios estén completos.'
@@ -140,9 +125,7 @@ export const parseBackendError = async (
   return new Error(errorMessages.join('. '));
 };
 
-/**
- * Wrapper para funciones async que maneja errores automáticamente
- */
+
 export const withErrorHandling = async <T>(
   fn: () => Promise<T>,
   customErrorHandler?: (error: unknown) => never

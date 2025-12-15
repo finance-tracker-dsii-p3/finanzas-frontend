@@ -33,7 +33,7 @@ const Analytics: React.FC<AnalyticsPageProps> = ({ onBack }) => {
   };
 
   const handleCurrencyChange = () => {
-    // Incrementar la key para forzar re-render de los componentes
+
     setRefreshKey(prev => prev + 1);
   };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, CreditCard, TrendingUp, TrendingDown, Calendar, DollarSign, Percent, Clock, Loader2, Edit2 } from 'lucide-react';
 import InstallmentCalendar from '../../components/InstallmentCalendar';
 import EditInstallmentPlanModal from '../../components/EditInstallmentPlanModal';
@@ -34,34 +34,14 @@ const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
   const [selectedPlan, setSelectedPlan] = useState<InstallmentPlan | null>(null);
   const [planToEdit, setPlanToEdit] = useState<InstallmentPlan | null>(null);
 
-  useEffect(() => {
-    loadPlans();
-    
-    const handleUpdate = () => {
-      loadPlans();
-    };
-    
-    window.addEventListener('installmentPlanCreated', handleUpdate);
-    window.addEventListener('installmentPlanUpdated', handleUpdate);
-    window.addEventListener('installmentPaymentRecorded', handleUpdate);
-    
-    return () => {
-      window.removeEventListener('installmentPlanCreated', handleUpdate);
-      window.removeEventListener('installmentPlanUpdated', handleUpdate);
-      window.removeEventListener('installmentPaymentRecorded', handleUpdate);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [card.id]);
-
-  const loadPlans = async () => {
+  const loadPlans = useCallback(async () => {
     try {
       setIsLoadingPlans(true);
       const allPlans = await creditCardPlanService.listPlans();
-      // Filtrar planes de esta tarjeta
+
       const cardPlans = allPlans.filter(plan => plan.credit_card_account === card.id);
       setInstallmentPlans(cardPlans);
-      
-      // Calcular intereses del mes actual
+
       const now = new Date();
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
@@ -81,14 +61,32 @@ const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
         });
       });
       
-      setCurrentMonthInterest(monthInterest / 100); // Convertir de centavos a pesos
+      setCurrentMonthInterest(monthInterest / 100);
       setPendingPayments(pendingCount);
     } catch (error) {
       console.error('Error al cargar planes:', error);
     } finally {
       setIsLoadingPlans(false);
     }
-  };
+  }, [card.id]);
+
+  useEffect(() => {
+    loadPlans();
+    
+    const handleUpdate = () => {
+      loadPlans();
+    };
+    
+    window.addEventListener('installmentPlanCreated', handleUpdate);
+    window.addEventListener('installmentPlanUpdated', handleUpdate);
+    window.addEventListener('installmentPaymentRecorded', handleUpdate);
+    
+    return () => {
+      window.removeEventListener('installmentPlanCreated', handleUpdate);
+      window.removeEventListener('installmentPlanUpdated', handleUpdate);
+      window.removeEventListener('installmentPaymentRecorded', handleUpdate);
+    };
+  }, [loadPlans]);
 
   const formatCurrency = (amount: number, currency: Currency = 'COP'): string => {
     return formatMoneyFromPesos(amount, currency);
@@ -165,7 +163,7 @@ const CardDetail: React.FC<CardDetailProps> = ({ card, onBack }) => {
           </div>
         </div>
 
-        {/* Información adicional: Lo que se debe y Lo que se ha pagado */}
+        {}
         {(currentDebt !== undefined || totalPaid !== undefined) && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-4">

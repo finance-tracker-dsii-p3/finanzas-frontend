@@ -107,7 +107,6 @@ describe('NotificationCenter', () => {
     const button = screen.getByLabelText(/centro de notificaciones/i);
     await user.click(button);
 
-    // Puede haber múltiples elementos con "notificaciones", usar getAllByText
     const notificationsTexts = screen.getAllByText(/notificaciones/i);
     expect(notificationsTexts.length).toBeGreaterThan(0);
   });
@@ -258,7 +257,6 @@ describe('NotificationCenter', () => {
       expect(notificationsTexts.length).toBeGreaterThan(0);
     });
 
-    // Click fuera del dropdown
     await user.click(document.body);
 
     await waitFor(() => {

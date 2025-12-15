@@ -43,7 +43,7 @@ describe('AlertContext', () => {
     });
 
     await waitFor(() => {
-      expect(result.current).toBeDefined();
+    expect(result.current).toBeDefined();
     });
 
     expect(result.current.alerts).toEqual([]);
@@ -153,7 +153,7 @@ describe('AlertContext', () => {
     });
 
     await act(async () => {
-      await result.current.markAsRead(1);
+    await result.current.markAsRead(1);
     });
 
     await waitFor(() => {
@@ -196,7 +196,7 @@ describe('AlertContext', () => {
     });
 
     await act(async () => {
-      await result.current.markAllAsRead();
+    await result.current.markAllAsRead();
     });
 
     await waitFor(() => {
@@ -236,7 +236,7 @@ describe('AlertContext', () => {
     });
 
     await act(async () => {
-      await result.current.deleteAlert(1);
+    await result.current.deleteAlert(1);
     });
 
     await waitFor(() => {
@@ -262,4 +262,125 @@ describe('AlertContext', () => {
     expect(result.current.alerts).toEqual([]);
     expect(alertServiceModule.alertService.list).not.toHaveBeenCalled();
   });
+
+  it('debe manejar errores al cargar alertas', async () => {
+    vi.mocked(alertServiceModule.alertService.list).mockRejectedValue(
+      new Error('Error de red')
+    );
+
+    const { result } = renderHook(() => useAlerts(), {
+      wrapper: ({ children }) => <AlertProvider>{children}</AlertProvider>,
+    });
+
+    await waitFor(() => {
+      expect(result.current.error).toBeTruthy();
+    });
+
+    expect(result.current.error).toContain('Error de red');
+  });
+
+  it('debe manejar errores al marcar alerta como leída', async () => {
+    const mockAlerts = [
+      {
+        id: 1,
+        budget: 1,
+        budget_category_name: 'Alimentación',
+        budget_spent_percentage: '85.5',
+        budget_amount: '500000',
+        alert_type: 'warning' as AlertType,
+        is_read: false,
+        created_at: '2024-01-15T10:00:00Z',
+        updated_at: '2024-01-15T10:00:00Z',
+      },
+    ];
+
+    vi.mocked(alertServiceModule.alertService.list).mockResolvedValue({
+      count: 1,
+      results: mockAlerts,
+    });
+
+    vi.mocked(alertServiceModule.alertService.markAsRead).mockRejectedValue(
+      new Error('Error al marcar como leída')
+    );
+
+    const { result } = renderHook(() => useAlerts(), {
+      wrapper: ({ children }) => <AlertProvider>{children}</AlertProvider>,
+    });
+
+    await waitFor(() => {
+      expect(result.current.alerts.length).toBeGreaterThan(0);
+    });
+
+    await act(async () => {
+      try {
+        await result.current.markAsRead(1);
+      } catch {
+        void 0;
+      }
+    });
+
+    await waitFor(() => {
+      expect(result.current.error).toBeTruthy();
+    });
+  });
+
+  it('debe obtener una alerta específica', async () => {
+    const mockAlert = {
+      id: 1,
+      budget: 1,
+      budget_category_name: 'Alimentación',
+      budget_spent_percentage: '85.5',
+      budget_amount: '500000',
+      alert_type: 'warning' as AlertType,
+      is_read: false,
+      created_at: '2024-01-15T10:00:00Z',
+      updated_at: '2024-01-15T10:00:00Z',
+    };
+
+    vi.mocked(alertServiceModule.alertService.list).mockResolvedValue({
+      count: 0,
+      results: [],
+    });
+
+    vi.mocked(alertServiceModule.alertService.get).mockResolvedValue(mockAlert as BudgetAlert);
+
+    const { result } = renderHook(() => useAlerts(), {
+      wrapper: ({ children }) => <AlertProvider>{children}</AlertProvider>,
+    });
+
+    await waitFor(() => {
+      expect(result.current).toBeDefined();
+    });
+
+    let alert;
+    await act(async () => {
+      alert = await result.current.getAlert(1);
+    });
+
+    expect(alert).toEqual(mockAlert);
+    expect(alertServiceModule.alertService.get).toHaveBeenCalledWith(1);
+  });
+
+  it('debe refrescar alertas con filtros', async () => {
+    vi.mocked(alertServiceModule.alertService.list).mockResolvedValue({
+      count: 0,
+      results: [],
+    });
+
+    const { result } = renderHook(() => useAlerts(), {
+      wrapper: ({ children }) => <AlertProvider>{children}</AlertProvider>,
+    });
+
+    await waitFor(() => {
+      expect(result.current).toBeDefined();
+    });
+
+    await act(async () => {
+      await result.current.refreshAlerts({ unread: true });
+    });
+
+    expect(alertServiceModule.alertService.list).toHaveBeenCalledWith({ unread: true });
+  });
 });
+
+

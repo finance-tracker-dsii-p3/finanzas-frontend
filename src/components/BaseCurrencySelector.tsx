@@ -60,17 +60,14 @@ const BaseCurrencySelector: React.FC<BaseCurrencySelectorProps> = ({ onCurrencyC
       setMessage(response.message);
       setIsOpen(false);
 
-      // Notificar al componente padre
       if (onCurrencyChange) {
         onCurrencyChange(newCurrency);
       }
 
-      // Disparar evento global para que otros componentes se actualicen
       window.dispatchEvent(new CustomEvent('currency-changed', { 
         detail: { currency: newCurrency } 
       }));
 
-      // Limpiar mensaje después de 3 segundos
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Error al actualizar la moneda');

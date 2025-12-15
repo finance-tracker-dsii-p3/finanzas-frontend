@@ -84,7 +84,7 @@ describe('UpcomingBills', () => {
   it('debe ordenar las facturas por urgencia', () => {
     render(<UpcomingBills bills={mockBills} />);
     const bills = screen.getAllByText(/servicios públicos|internet|factura vencida/i);
-    // La factura vencida (overdue) debe aparecer primero
+
     expect(bills[0]).toHaveTextContent(/factura vencida/i);
   });
 
@@ -100,14 +100,15 @@ describe('UpcomingBills', () => {
 
   it('debe mostrar emoji de urgencia', () => {
     render(<UpcomingBills bills={mockBills} />);
-    // Los emojis están en el DOM aunque no se puedan buscar directamente
+
     const bills = screen.getAllByText(/servicios públicos|internet|factura vencida/i);
     expect(bills.length).toBeGreaterThan(0);
   });
 
   it('debe formatear correctamente las fechas', () => {
     render(<UpcomingBills bills={[mockBills[0]]} />);
-    // La fecha se formatea como "20 ene 2025"
+
     expect(screen.getByText(/20/i)).toBeInTheDocument();
   });
 });
+

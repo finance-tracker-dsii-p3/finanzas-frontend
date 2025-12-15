@@ -1,6 +1,6 @@
 import { parseApiError, handleNetworkError } from '../utils/apiErrorHandler';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
 
 export interface CreditCardDetails {
   credit_limit: number;
@@ -17,7 +17,7 @@ export interface Account {
   account_type: 'asset' | 'liability';
   category: 'bank_account' | 'savings_account' | 'credit_card' | 'wallet' | 'other';
   currency: 'COP' | 'USD' | 'EUR';
-  currency_display?: string; // Nombre de visualización de la moneda
+  currency_display?: string;
   current_balance: number;
   description?: string;
   is_active?: boolean;

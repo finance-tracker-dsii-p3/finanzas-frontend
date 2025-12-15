@@ -375,7 +375,7 @@ describe('AlertCenter', () => {
     await waitFor(() => {
       const errorMessage = screen.queryByText(/error al marcar la alerta como leída/i);
       if (!errorMessage) {
-        // Si no aparece el mensaje específico, buscar cualquier mensaje de error
+
         expect(screen.getByText(/error/i)).toBeInTheDocument();
       } else {
         expect(errorMessage).toBeInTheDocument();
@@ -403,7 +403,6 @@ describe('AlertCenter', () => {
       expect(screen.getByText(/alertas de presupuesto/i)).toBeInTheDocument();
     });
 
-    // Hacer clic fuera del dropdown
     await user.click(document.body);
 
     await waitFor(() => {
@@ -562,7 +561,7 @@ describe('AlertCenter', () => {
   it('debe mostrar el icono correcto para alertas exceeded', async () => {
     const user = userEvent.setup();
     vi.mocked(useAlerts).mockReturnValue({
-      alerts: [mockAlerts[1]], // Alert tipo 'exceeded'
+      alerts: [mockAlerts[1]],
       unreadCount: 1,
       isLoading: false,
       refreshAlerts: mockRefreshAlerts,
@@ -584,7 +583,7 @@ describe('AlertCenter', () => {
   it('debe mostrar el mensaje correcto para alertas warning', async () => {
     const user = userEvent.setup();
     vi.mocked(useAlerts).mockReturnValue({
-      alerts: [mockAlerts[0]], // Alert tipo 'warning'
+      alerts: [mockAlerts[0]],
       unreadCount: 1,
       isLoading: false,
       refreshAlerts: mockRefreshAlerts,

@@ -1,0 +1,3238 @@
+﻿
+> finanzas-frontend@1.0.0 test:coverage
+> vitest run --coverage
+
+
+ RUN  v4.0.15 C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend
+      Coverage enabled with v8
+
+node.exe : stderr | src/pages/profile/ProfilePage.test.tsx > ProfilePage > debe renderizar el componente
+En línea: 1 Carácter: 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\SHADOW\AppData\Roaming ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (stderr | src/pa...r el componente:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error loading summary: Error: No se pudo conectar con el servidor. Verifica tu conexi├│n a internet y que el backend 
+est├® ejecut├índose.
+    at handleNetworkError (C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/utils/apiErrorHandler.ts:177:13)
+    at Object.getSummary 
+(C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/services/notificationService.ts:256:7)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/context/NotificationContext.tsx:123:27
+
+stderr | src/pages/profile/ProfilePage.test.tsx > ProfilePage > debe mostrar los campos del formulario
+Error loading summary: Error: No se pudo conectar con el servidor. Verifica tu conexi├│n a internet y que el backend 
+est├® ejecut├índose.
+    at handleNetworkError (C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/utils/apiErrorHandler.ts:177:13)
+    at Object.getSummary 
+(C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/services/notificationService.ts:256:7)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/context/NotificationContext.tsx:123:27
+
+ ÔØ» src/context/NotificationContext.test.tsx (14 tests | 1 failed) 1980ms
+     Ô£ô debe cargar notificaciones al montar cuando est├í autenticado  362ms
+     Ô£ô debe calcular correctamente el contador de no le├¡das 52ms
+     Ô£ô debe actualizar notificaciones al llamar refreshNotifications 63ms
+     Ô£ô debe marcar notificaci├│n como le├¡da y actualizar estado 77ms
+     Ô£ô no debe cargar notificaciones si no est├í autenticado 16ms
+     Ô£ô debe marcar todas las notificaciones como le├¡das 32ms
+     Ô£ô debe descartar una notificaci├│n 33ms
+     Ô£ô debe descartar todas las notificaciones 66ms
+     Ô£ô debe crear un recordatorio personalizado 36ms
+     Ô£ô debe actualizar un recordatorio personalizado 27ms
+     Ô£ô debe eliminar un recordatorio personalizado 27ms
+     ├ù debe actualizar preferencias de notificaciones 1105ms
+     Ô£ô debe obtener una notificaci├│n espec├¡fica 70ms
+     Ô£ô debe manejar errores al cargar preferencias con 404 12ms
+stderr | src/pages/profile/ProfilePage.test.tsx > ProfilePage > debe mostrar los campos del formulario
+Error loading summary: Error: No se pudo conectar con el servidor. Verifica tu conexi├│n a internet y que el backend 
+est├® ejecut├índose.
+    at handleNetworkError (C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/utils/apiErrorHandler.ts:177:13)
+    at Object.getSummary 
+(C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/services/notificationService.ts:256:7)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/context/NotificationContext.tsx:123:27
+
+ ÔØ» src/components/CreateInstallmentPlanModal.test.tsx (4 tests | 1 failed) 1923ms
+     ├ù debe renderizar el modal 1215ms
+     Ô£ô debe cargar las tarjetas de cr├®dito 93ms
+     Ô£ô debe mostrar el bot├│n de cerrar 240ms
+     Ô£ô debe llamar a onClose cuando se hace clic en cerrar  371ms
+stderr | src/pages/profile/ProfilePage.test.tsx > ProfilePage > debe mostrar el formulario de cambio de contrase├▒a
+Error loading summary: Error: No se pudo conectar con el servidor. Verifica tu conexi├│n a internet y que el backend 
+est├® ejecut├índose.
+    at handleNetworkError (C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/utils/apiErrorHandler.ts:177:13)
+    at Object.getSummary 
+(C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/services/notificationService.ts:256:7)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/context/NotificationContext.tsx:123:27
+
+ ÔØ» src/pages/profile/ProfilePage.test.tsx (4 tests | 3 failed) 3618ms
+     ├ù debe renderizar el componente 1269ms
+     Ô£ô debe cargar el perfil del usuario 109ms
+     ├ù debe mostrar los campos del formulario 1156ms
+     ├ù debe mostrar el formulario de cambio de contrase├▒a 1080ms
+ ÔØ» src/components/RuleForm.test.tsx (3 tests | 3 failed) 12ms
+     ├ù debe renderizar el formulario 6ms
+     ├ù debe mostrar el bot├│n de cerrar 1ms
+     ├ù debe llamar a onClose cuando se hace clic en cerrar 1ms
+ ÔØ» src/components/InstallmentCalendar.test.tsx (3 tests | 1 failed) 1359ms
+     Ô£ô debe renderizar el componente 242ms
+     Ô£ô debe cargar el calendario de cuotas 57ms
+     ├ù debe mostrar el bot├│n de cerrar 1056ms
+stdout | src/components/NewMovementModal.test.tsx > NewMovementModal > debe crear un movimiento de gasto correctamente
+[DEBUG] Total sin GMF en pesos: 100000, Total en centavos: 10000000, GMF estimado: 400
+
+stdout | src/components/NewMovementModal.test.tsx > NewMovementModal > debe crear un movimiento de gasto correctamente
+[DEBUG] Verificando asignaci├│n a meta: {
+  type: 'expense',
+  selectedGoal: null,
+  goalAmount: '',
+  'selectedGoal existe': false,
+  'goalAmount existe': false
+}
+[DEBUG] ÔØî No se crear├í transacci├│n de ahorro. Razones: {
+  'Es ingreso': false,
+  'Tiene meta seleccionada': false,
+  'Tiene monto asignado': false
+}
+
+ Ô£ô src/components/NewMovementModal.test.tsx (70 tests) 8592ms
+     Ô£ô debe permitir escribir en el campo de monto  364ms
+     Ô£ô debe permitir escribir en el campo de nota  372ms
+     Ô£ô debe validar que el monto sea mayor a cero  360ms
+     Ô£ô debe crear un movimiento de gasto correctamente  1594ms
+     Ô£ô debe calcular el total cuando se ingresa base e IVA  510ms
+ Ô£ô src/pages/register/Register.test.tsx (10 tests) 7883ms
+     Ô£ô debe mostrar validaci├│n de contrase├▒a en tiempo real  744ms
+     Ô£ô debe validar que la contrase├▒a tenga may├║scula, min├║scula, n├║mero y car├ícter especial  383ms
+     Ô£ô debe mostrar error si las contrase├▒as no coinciden  737ms
+     Ô£ô debe registrar usuario exitosamente con datos v├ílidos  1634ms
+     Ô£ô debe mostrar error si el registro falla  2095ms
+     Ô£ô debe mostrar estado de carga durante el registro  1793ms
+ Ô£ô src/components/NewAccountModal.test.tsx (60 tests) 10676ms
+     Ô£ô debe renderizar el modal de nueva cuenta  357ms
+     Ô£ô debe permitir escribir en el campo de nombre  500ms
+     Ô£ô debe manejar el guardado de cuenta con todos los campos  403ms
+     Ô£ô debe validar n├║mero de cuenta para cuentas bancarias  412ms
+     Ô£ô debe permitir guardar cuenta de efectivo sin n├║mero de cuenta  311ms
+     Ô£ô debe completar flujo completo de creaci├│n de cuenta bancaria  674ms
+     Ô£ô debe completar flujo completo de creaci├│n de tarjeta de cr├®dito  871ms
+     Ô£ô debe validar que efectivo y otros no requieran n├║mero de cuenta  443ms
+     Ô£ô debe manejar guardado exitoso de cuenta completa  518ms
+ Ô£ô src/pages/admin/AdminUsers.test.tsx (18 tests) 2731ms
+     Ô£ô debe permitir buscar usuarios por texto  349ms
+     Ô£ô debe permitir editar informaci├│n del usuario en el modal  490ms
+     Ô£ô debe mostrar mensaje cuando no hay resultados con filtros  359ms
+ Ô£ô src/pages/notifications/Notifications.test.tsx (21 tests) 2990ms
+     Ô£ô debe crear recordatorio personalizado  758ms
+ Ô£ô src/pages/movements/Movements.test.tsx (17 tests) 4800ms
+     Ô£ô debe renderizar la p├ígina de movimientos  346ms
+     Ô£ô debe abrir el modal de nuevo movimiento al hacer clic  375ms
+     Ô£ô debe filtrar movimientos por tipo  388ms
+     Ô£ô debe buscar movimientos por t├®rmino de b├║squeda  988ms
+     Ô£ô debe eliminar un movimiento  582ms
+     Ô£ô debe duplicar un movimiento  463ms
+stderr | src/pages/dashboard/Dashboard.test.tsx > Dashboard > debe mostrar error cuando falla la carga del dashboard
+Error al cargar dashboard financiero: Error: Error de red
+    at C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/pages/dashboard/Dashboard.test.tsx:158:7
+    at file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/@vitest/runner/dist/index.js:145:11
+    at file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/@vitest/runner/dist/index.js:915:26
+    at file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/@vitest/runner/dist/index.js:1240:20
+    at new Promise (<anonymous>)
+    at runWithTimeout 
+(file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/@vitest/runner/dist/index.js:1206:10)
+    at file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/@vitest/runner/dist/index.js:1650:37
+    at Traces.$ (file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/vitest/dist/chunks/traces.U
+4xDYhzZ.js:115:27)
+    at trace 
+(file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/vitest/dist/chunks/test.BT8LKgU9.js:239:21)
+    at runTest 
+(file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/@vitest/runner/dist/index.js:1650:12)
+
+ Ô£ô src/pages/dashboard/Dashboard.test.tsx (15 tests) 4012ms
+     Ô£ô debe cambiar de vista al hacer clic en un bot├│n de navegaci├│n  673ms
+     Ô£ô debe cambiar el mes seleccionado  436ms
+     Ô£ô debe manejar el logout correctamente  357ms
+     Ô£ô debe cambiar a la vista de presupuestos  314ms
+     Ô£ô debe manejar el cambio de includePending  308ms
+ Ô£ô src/components/CustomReminderModal.test.tsx (17 tests) 4697ms
+     Ô£ô debe validar que el t├¡tulo sea requerido  342ms
+     Ô£ô debe validar que la fecha sea requerida  456ms
+     Ô£ô debe validar que la hora sea requerida  455ms
+     Ô£ô debe validar que la fecha/hora sea futura  789ms
+     Ô£ô debe llamar a onSave con los datos correctos  858ms
+     Ô£ô debe recortar espacios en blanco del t├¡tulo y mensaje  324ms
+ Ô£ô src/pages/login/Login.test.tsx (9 tests) 3780ms
+     Ô£ô debe renderizar el formulario de login  409ms
+     Ô£ô debe permitir escribir en los campos  1147ms
+     Ô£ô debe mostrar error cuando el login falla  751ms
+     Ô£ô debe llamar a login con las credenciales correctas  539ms
+     Ô£ô debe mostrar estado de carga durante el login  638ms
+ Ô£ô src/components/AlertCenter.test.tsx (23 tests) 3014ms
+ Ô£ô src/components/NotificationPreferences.test.tsx (13 tests) 1807ms
+     Ô£ô debe actualizar preferencias al enviar el formulario  395ms
+ Ô£ô src/pages/bills/Bills.test.tsx (14 tests) 1910ms
+     Ô£ô debe abrir modal para crear factura  404ms
+ Ô£ô src/pages/forgot-password/ForgotPassword.test.tsx (5 tests) 1584ms
+     Ô£ô debe permitir escribir en el campo de email  389ms
+     Ô£ô debe enviar el formulario correctamente  506ms
+     Ô£ô debe mostrar error cuando falla la solicitud  422ms
+ Ô£ô src/pages/accounts/Accounts.test.tsx (17 tests) 1411ms
+ Ô£ô src/pages/soats/SOATs.test.tsx (12 tests) 1394ms
+     Ô£ô debe abrir modal para crear SOAT  337ms
+ Ô£ô src/components/NotificationCenter.test.tsx (12 tests) 1283ms
+ Ô£ô src/components/BaseCurrencySelector.test.tsx (9 tests) 1235ms
+ Ô£ô src/pages/vehicles/Vehicles.test.tsx (9 tests) 898ms
+ Ô£ô src/pages/categories/Categories.test.tsx (13 tests) 1147ms
+ Ô£ô src/components/NewGoalModal.test.tsx (4 tests) 1019ms
+     Ô£ô debe validar que el monto sea mayor a cero  553ms
+ Ô£ô src/pages/goals/Goals.test.tsx (10 tests) 812ms
+ Ô£ô src/pages/reports/Reports.test.tsx (12 tests) 961ms
+ Ô£ô src/pages/budgets/Budgets.test.tsx (10 tests) 910ms
+     Ô£ô debe abrir el modal de nuevo presupuesto al hacer clic  303ms
+ Ô£ô src/components/MovementDetailModal.test.tsx (17 tests) 762ms
+ Ô£ô src/pages/rules/Rules.test.tsx (5 tests) 761ms
+ Ô£ô src/components/CategoryTransactionsModal.test.tsx (11 tests) 731ms
+ Ô£ô src/pages/cards/CardDetail.test.tsx (5 tests) 706ms
+ Ô£ô src/context/AlertContext.test.tsx (11 tests) 683ms
+ Ô£ô src/components/EditInstallmentPlanModal.test.tsx (3 tests) 577ms
+ Ô£ô src/components/BaseCurrencySettings.test.tsx (5 tests) 866ms
+ Ô£ô src/pages/reset-password/ResetPassword.test.tsx (4 tests) 801ms
+     Ô£ô debe permitir escribir en los campos de contrase├▒a  517ms
+ Ô£ô src/pages/analytics/Analytics.test.tsx (5 tests) 576ms
+ Ô£ô src/components/ConfirmModal.test.tsx (7 tests) 486ms
+ Ô£ô src/components/PaymentInstallmentModal.test.tsx (3 tests) 419ms
+ Ô£ô src/components/AnalyticsIndicators.test.tsx (8 tests) 523ms
+ Ô£ô src/components/NewBudgetModal.test.tsx (3 tests) 362ms
+ Ô£ô src/pages/home/HomePage.test.tsx (5 tests) 464ms
+ Ô£ô src/pages/success/Success.test.tsx (6 tests) 357ms
+ Ô£ô src/context/BudgetContext.test.tsx (10 tests) 282ms
+ Ô£ô src/components/UpcomingBills.test.tsx (8 tests) 267ms
+ Ô£ô src/components/DailyFlowChart.test.tsx (5 tests) 196ms
+ Ô£ô src/context/CategoryContext.test.tsx (9 tests) 299ms
+ Ô£ô src/components/RecentTransactions.test.tsx (9 tests) 289ms
+ Ô£ô src/components/PeriodComparison.test.tsx (4 tests) 349ms
+ Ô£ô src/components/ExpensesDonutChart.test.tsx (5 tests) 232ms
+ Ô£ô src/App.test.tsx (15 tests) 269ms
+ Ô£ô src/main.test.tsx (2 tests) 83ms
+ Ô£ô src/components/FinanceAnimation.test.tsx (3 tests) 91ms
+ Ô£ô src/services/notificationService.test.ts (31 tests) 69ms
+ Ô£ô src/components/ProtectedAdminRoute.test.tsx (4 tests) 87ms
+stdout | src/services/transactionService.test.ts > transactionService > create > debe crear una transacci├│n de gasto
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 119000,
+  category: 1,
+  tax_percentage: 19,
+  tag: 'almuerzo',
+  note: 'Almuerzo con amigos'
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create > debe crear una transferencia
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 3,
+  date: '2025-01-15',
+  total_amount: 50000,
+  destination_account: 2,
+  note: 'Transferencia'
+}
+[DEBUG] total_amount tipo: number valor: 50000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create > debe crear un pago a tarjeta de cr├®dito con capital e intereses
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 3,
+  date: '2025-01-15',
+  total_amount: 450000,
+  destination_account: 3,
+  note: 'Pago tarjeta'
+}
+[DEBUG] total_amount tipo: number valor: 450000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create > debe redondear montos a enteros
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 119000
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > duplicate > debe duplicar una transacci├│n
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-12-15',
+  total_amount: 119000,
+  tax_percentage: 19,
+  tag: 'almuerzo',
+  note: 'Almuerzo con amigos (duplicado)'
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > duplicate > debe duplicar una transacci├│n con newDate
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-02-15',
+  total_amount: 119000,
+  tax_percentage: 19,
+  tag: 'almuerzo',
+  note: 'Almuerzo con amigos (duplicado)'
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > duplicate > debe duplicar una transacci├│n sin note original
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-12-15',
+  total_amount: 119000,
+  tax_percentage: 19,
+  tag: 'almuerzo',
+  note: 'Duplicado'
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > parseError > debe parsear errores de campos espec├¡ficos
+[DEBUG] Enviando al backend: { origin_account: 1, type: 2, date: '2025-01-15', total_amount: 1000 }
+[DEBUG] total_amount tipo: number valor: 1000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar transacciones con goal (tipo 4)
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 4,
+  date: '2025-01-15',
+  total_amount: 100000,
+  goal: 1
+}
+[DEBUG] total_amount tipo: number valor: 100000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar transacciones con transaction_currency
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 100000
+}
+[DEBUG] total_amount tipo: number valor: 100000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar base_amount con tax_percentage
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 119000,
+  tax_percentage: 19
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar total_amount como float y convertirlo a entero
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 100000
+}
+[DEBUG] total_amount tipo: number valor: 100000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar tag vac├¡o o null
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 100000
+}
+[DEBUG] total_amount tipo: number valor: 100000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar tag vac├¡o o null
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 100000
+}
+[DEBUG] total_amount tipo: number valor: 100000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar note vac├¡o o null
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 100000
+}
+[DEBUG] total_amount tipo: number valor: 100000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar note vac├¡o o null
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 100000
+}
+[DEBUG] total_amount tipo: number valor: 100000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+ Ô£ô src/services/transactionService.test.ts (47 tests) 81ms
+ Ô£ô src/utils/apiErrorHandler.test.ts (37 tests) 58ms
+ Ô£ô src/pages/about/AboutPage.test.tsx (2 tests) 54ms
+ Ô£ô src/components/ProtectedRoute.test.tsx (3 tests) 75ms
+ Ô£ô src/utils/currencyUtils.test.ts (15 tests) 48ms
+ Ô£ô src/services/authService.test.ts (52 tests) 49ms
+ Ô£ô src/utils/errorHandler.test.ts (24 tests) 32ms
+ Ô£ô src/services/vehicleService.test.ts (28 tests) 33ms
+ Ô£ô src/services/baseCurrencyService.test.ts (10 tests) 44ms
+ Ô£ô src/utils/cookieUtils.test.ts (12 tests) 22ms
+ Ô£ô src/services/exchangeRateService.test.ts (17 tests) 34ms
+ Ô£ô src/services/accountService.test.ts (20 tests) 31ms
+ Ô£ô src/services/billService.test.ts (19 tests) 32ms
+ Ô£ô src/services/ruleService.test.ts (14 tests) 28ms
+ Ô£ô src/services/categoryService.test.ts (15 tests) 32ms
+ Ô£ô src/services/userAdminService.test.ts (12 tests) 53ms
+ Ô£ô src/services/analyticsService.test.ts (10 tests) 24ms
+ Ô£ô src/services/alertService.test.ts (12 tests) 28ms
+ Ô£ô src/services/budgetService.test.ts (11 tests) 24ms
+ Ô£ô src/services/creditCardPlanService.test.ts (10 tests) 22ms
+ Ô£ô src/utils/authErrorHandler.test.ts (9 tests) 27ms
+ Ô£ô src/services/goalService.test.ts (10 tests) 24ms
+ Ô£ô src/services/dashboardService.test.ts (6 tests) 19ms
+ Ô£ô src/utils/financingCategoryUtils.test.ts (9 tests) 16ms
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ» Failed Tests 9 ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»
+
+ FAIL  src/context/NotificationContext.test.tsx > NotificationContext > debe actualizar preferencias de notificaciones
+AssertionError: expected "vi.fn()" to be called with arguments: [ { email_enabled: true } ]
+
+Received: 
+
+  1st vi.fn() call:
+
+  [
+    {
+-     "email_enabled": true,
++     "enable_budget_alerts": true,
+    },
+  ]
+
+
+Number of calls: 1
+
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div>[39m
+        [36m<div[39m
+          [33mdata-testid[39m=[32m"notifications-count"[39m
+        [36m>[39m
+          [0m0[0m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mdata-testid[39m=[32m"unread-count"[39m
+        [36m>[39m
+          [0m0[0m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mdata-testid[39m=[32m"loading"[39m
+        [36m>[39m
+          [0mnot-loading[0m
+        [36m</div>[39m
+        [36m<button>[39m
+          [0mRefresh[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mMark Read[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mMark All Read[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mDismiss[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mDismiss All[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mCreate Reminder[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mUpdate Reminder[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mDelete Reminder[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mRefresh Reminders[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mRefresh Preferences[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mRefresh Summary[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mUpdate Preferences[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mGet Notification[0m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+ ÔØ» src/context/NotificationContext.test.tsx:650:53
+    648| 
+    649|     await waitFor(() => {
+    650|       expect(notificationService.updatePreferences).toHaveBeenCalledWiÔÇª
+       |                                                     ^
+    651|     });
+    652|   });
+ ÔØ» runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:47:12
+ ÔØ» checkCallback node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ÔØ» Timeout.checkRealTimersCallback node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/9]ÔÄ»
+
+ FAIL  src/components/CreateInstallmentPlanModal.test.tsx > CreateInstallmentPlanModal > debe renderizar el modal
+TestingLibraryElementError: Found multiple elements with the text: /crear plan de cuotas/i
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<h3[39m
+  [33mclass[39m=[32m"text-xl font-bold text-gray-900"[39m
+  [33mid[39m=[32m"modal-title"[39m
+[36m>[39m
+  [0mCrear Plan de Cuotas[0m
+[36m</h3>[39m
+
+Ignored nodes: comments, script, style
+[36m<button[39m
+  [33mclass[39m=[32m"flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors 
+font-medium disabled:opacity-50 disabled:cursor-not-allowed"[39m
+  [33mtype[39m=[32m"submit"[39m
+[36m>[39m
+  [0mCrear Plan de Cuotas[0m
+[36m</button>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or 
+`findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33maria-labelledby[39m=[32m"modal-title"[39m
+      [33maria-modal[39m=[32m"true"[39m
+      [33mclass[39m=[32m"fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"[39m
+      [33mrole[39m=[32m"dialog"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center justify-between mb-6"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-xl font-bold text-gray-900"[39m
+                [33mid[39m=[32m"modal-title"[39m
+              [36m>[39m
+                [0mCrear Plan de Cuotas[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-sm text-gray-600 mt-1"[39m
+              [36m>[39m
+                [0mConvierte esta compra en un plan de cuotas con intereses[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"Cerrar modal"[39m
+              [33mclass[39m=[32m"text-gray-400 hover:text-gray-600"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-circle-x w-6 h-6"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"10"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m15 9-6 6"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m9 9 6 6"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg"[39m
+          [36m>[39m
+            [36m<h4[39m
+              [33mclass[39m=[32m"font-semibold text-blue-900 mb-2"[39m
+            [36m>[39m
+              [0mInformaci├│n de la compra[0m
+            [36m</h4>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"grid grid-cols-2 gap-4 text-sm"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-blue-700"[39m
+                [36m>[39m
+                  [0mMonto:[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"font-semibold text-blue-900"[39m
+                [36m>[39m
+                  [0m$┬á10.000[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<div>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-blue-700"[39m
+                [36m>[39m
+                  [0mFecha:[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"font-semibold text-blue-900"[39m
+                [36m>[39m
+                  [0m14/1/2025[0m
+                [36m</p>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<form[39m
+            [33mclass[39m=[32m"space-y-4"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"block text-sm font-medium text-gray-700 mb-2"[39m
+                [33mfor[39m=[32m"credit-card"[39m
+              [36m>[39m
+                [0mTarjeta de cr├®dito *[0m
+              [36m</label>[39m
+              [36m<select[39m
+                [33mclass[39m=[32m"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 
+focus:ring-blue-500 focus:border-transparent"[39m
+                [33mid[39m=[32m"credit-card"[39m
+                [33mrequired[39m=[32m""[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m""[39m
+                [36m>[39m
+                  [0mSeleccionar tarjeta...[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"1"[39m
+                [36m>[39m
+                  [0mTarjeta de Cr├®dito[0m
+                  [0m [0m
+                  [0m ([0m
+                  [0mCOP[0m
+                  [0m)[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"grid grid-cols-2 gap-4"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"block text-sm font-medium text-gray-700 mb-2"[39m
+                  [33mfor[39m=[32m"installments"[39m
+                [36m>[39m
+                  [0mN├║mero de cuotas *[0m
+                [36m</label>[39m
+                [36m<input[39m
+                  [33mclass[39m=[32m"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 
+focus:ring-blue-500 focus:border-transparent"[39m
+                  [33mid[39m=[32m"installments"[39m
+                  [33mmax[39m=[32m"120"[39m
+                  [33mmin[39m=[32m"1"[39m
+                  [33mrequired[39m=[32m""[39m
+                  [33mtype[39m=[32m"number"[39m
+                  [33mvalue[39m=[32m"12"[39m
+                [36m/>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs text-gray-500 mt-1"[39m
+                [36m>[39m
+                  [0mEntre 1 y 120 cuotas[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<div>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"block text-sm font-medium text-gray-700 mb-2"[39m
+                  [33mfor[39m=[32m"interest-rate"[39m
+                [36m>[39m
+                  [0mTasa de inter├®s mensual (%) *[0m
+                [36m</label>[39m
+                [36m<input[39m
+                  [33mclass[39m=[32m"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 
+focus:ring-blue-500 focus:border-transparent"[39m
+                  [33mid[39m=[32m"interest-rate"[39m
+                  [33mmax[39m=[32m"100"[39m
+                  [33mmin[39m=[32m"0"[39m
+                  [33mrequired[39m=[32m""[39m
+                  [33mstep[39m=[32m"0.01"[39m
+                  [33mtype[39m=[32m"number"[39m
+                  [33mvalue[39m=[32m"2.00"[39m
+                [36m/>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs text-gray-500 mt-1"[39m
+                [36m>[39m
+                  [0mEj: 2.00 para 2% mensual[0m
+                [36m</p>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"block text-sm font-medium text-gray-700 mb-2"[39m
+                [33mfor[39m=[32m"start-date"[39m
+              [36m>[39m
+                [0mFecha de inicio *[0m
+              [36m</label>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-calendar w-4 h-4 text-gray-400"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M8 2v4"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M16 2v4"[39m
+                  [36m/>[39m
+                  [36m<rect[39m
+                    [33mheight[39m=[32m"18"[39m
+                    [33mrx[39m=[32m"2"[39m
+                    [33mwidth[39m=[32m"18"[39m
+                    [33mx[39m=[32m"3"[39m
+                    [33my[39m=[32m"4"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M3 10h18"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [36m<input[39m
+                  [33mclass[39m=[32m"flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 
+focus:ring-blue-500 focus:border-transparent"[39m
+                  [33mid[39m=[32m"start-date"[39m
+                  [33mrequired[39m=[32m""[39m
+                  [33mtype[39m=[32m"date"[39m
+                  [33mvalue[39m=[32m"2025-12-15"[39m
+                [36m/>[39m
+              [36m</div>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xs text-gray-500 mt-1"[39m
+              [36m>[39m
+                [0mLa primera cuota vencer├í un mes despu├®s de esta fecha[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<div>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"block text-sm font-medium text-gray-700 mb-2"[39m
+                [33mfor[39m=[32m"description"[39m
+              [36m>[39m
+                [0mDescripci├│n (opcional)[0m
+              [36m</label>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 
+focus:ring-blue-500 focus:border-transparent"[39m
+                [33mid[39m=[32m"description"[39m
+                [33mmaxlength[39m=[32m"200"[39m
+                [33mplaceholder[39m=[32m"Ej: Compra de electrodom├®sticos"[39m
+                [33mtype[39m=[32m"text"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xs text-gray-500 mt-1"[39m
+              [36m>[39m
+                [0m0[0m
+                [0m/200 caracteres[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"p-4 bg-green-50 border border-green-200 rounded-lg"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-2 mb-3"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-calculator w-5 h-5 text-green-600"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<rect[39m
+                    [33mheight[39m=[32m"20"[39m
+                    [33mrx[39m=[32m"2"[39m
+                    [33mwidth[39m=[32m"16"[39m
+                    [33mx[39m=[32m"4"[39m
+                    [33my[39m=[32m"2"[39m
+                  [36m/>[39m
+                  [36m<line[39m
+                    [33mx1[39m=[32m"8"[39m
+                    [33mx2[39m=[32m"16"[39m
+                    [33my1[39m=[32m"6"[39m
+                    [33my2[39m=[32m"6"[39m
+                  [36m/>[39m
+                  [36m<line[39m
+                    [33mx1[39m=[32m"16"[39m
+                    [33mx2[39m=[32m"16"[39m
+                    [33my1[39m=[32m"14"[39m
+                    [33my2[39m=[32m"18"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M16 10h.01"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 10h.01"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M8 10h.01"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 14h.01"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M8 14h.01"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 18h.01"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M8 18h.01"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [36m<h4[39m
+                  [33mclass[39m=[32m"font-semibold text-green-900"[39m
+                [36m>[39m
+                  [0mResumen del plan[0m
+                [36m</h4>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"text-sm space-y-2"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex justify-between"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-green-700"[39m
+                  [36m>[39m
+                    [0mMonto de compra:[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"font-semibold text-green-900"[39m
+                  [36m>[39m
+                    [0m$┬á10.000[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex justify-between"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-green-700"[39m
+                  [36m>[39m
+                    [0mN├║mero de cuotas:[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"font-semibold text-green-900"[39m
+                  [36m>[39m
+                    [0m12[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex justify-between"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-green-700"[39m
+                  [36m>[39m
+                    [0mTasa de inter├®s:[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"font-semibold text-green-900"[39m
+                  [36m>[39m
+                    [0m2.00[0m
+                    [0m% mensual[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"pt-2 border-t border-green-200"[39m
+                [36m>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"text-xs text-green-600"[39m
+                  [36m>[39m
+                    [0mEl sistema calcular├í autom├íticamente el valor de cada cuota (capital e inter├®s) al crear el 
+plan.[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex gap-3 pt-4"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 
+transition-colors disabled:opacity-50"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0mCancelar[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
+transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"[39m
+                [33mtype[39m=[32m"submit"[39m
+              [36m>[39m
+                [0mCrear Plan de Cuotas[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</form>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33maria-labelledby[39m=[32m"modal-title"[39m
+        [33maria-modal[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"[39m
+        [33mrole[39m=[32m"dialog"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"p-6"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center justify-between mb-6"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<h3[39m
+                  [33mclass[39m=[32m"text-xl font-bold text-gray-900"[39m
+                  [33mid[39m=[32m"modal-title"[39m
+                [36m>[39m
+                  [0mCrear Plan de Cuotas[0m
+                [36m</h3>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-sm text-gray-600 mt-1"[39m
+                [36m>[39m
+                  [0mConvierte esta compra en un plan de cuotas con intereses[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<button[39m
+                [33maria-label[39m=[32m"Cerrar modal"[39m
+                [33mclass[39m=[32m"text-gray-400 hover:text-gray-600"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-circle-x w-6 h-6"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"12"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"10"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m15 9-6 6"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m9 9 6 6"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg"[39m
+            [36m>[39m
+              [36m<h4[39m
+                [33mclass[39m=[32m"font-semibold text-blue-900 mb-2"[39m
+              [36m>[39m
+                [0mInformaci├│n de la compra[0m
+              [36m</h4>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"grid grid-cols-2 gap-4 text-sm"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"text-blue-700"[39m
+                  [36m>[39m
+                    [0mMonto:[0m
+                  [36m</p>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"font-semibold text-blue-900"[39m
+                  [36m>[39m
+                    [0m$┬á10.000[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+                [36m<div>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"text-blue-700"[39m
+                  [36m>[39m
+                    [0mFecha:[0m
+                  [36m</p>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"font-semibold text-blue-900"[39m
+                  [36m>[39m
+                    [0m14/1/2025[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<form[39m
+              [33mclass[39m=[32m"space-y-4"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"block text-sm font-medium text-gray-700 mb-2"[39m
+                  [33mfor[39m=[32m"credit-card"[39m
+                [36m>[39m
+                  [0mTarjeta de cr├®dito *[0m
+                [36m</label>[39m
+                [36m<select[39m
+                  [33mclass[39m=[32m"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 
+focus:ring-blue-500 focus:border-transparent"[39m
+                  [33mid[39m=[32m"credit-card"[39m
+                  [33mrequired[39m=[32m""[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m""[39m
+                  [36m>[39m
+                    [0mSeleccionar tarjeta...[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"1"[39m
+                  [36m>[39m
+                    [0mTarjeta de Cr├®dito[0m
+                    [0m [0m
+                    [0m ([0m
+                    [0mCOP[0m
+                    [0m)[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"grid grid-cols-2 gap-4"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [36m<label[39m
+                    [33mclass[39m=[32m"block text-sm font-medium text-gray-700 mb-2"[39m
+                    [33mfor[39m=[32m"installments"[39m
+                  [36m>[39m
+                    [0mN├║mero de cuotas *[0m
+                  [36m</label>[39m
+                  [36m<input[39m
+                    [33mclass[39m=[32m"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 
+focus:ring-blue-500 focus:border-transparent"[39m
+                    [33mid[39m=[32m"installments"[39m
+                    [33mmax[39m=[32m"120"[39m
+                    [33mmin[39m=[32m"1"[39m
+                    [33mrequired[39m=[32m""[39m
+                    [33mtype[39m=[32m"number"[39m
+                    [33mvalue[39m=[32m"12"[39m
+                  [36m/>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"text-xs text-gray-500 mt-1"[39m
+                  [36m>[39m
+                    [0mEntre 1 y 120 cuotas[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+                [36m<div>[39m
+                  [36m<label[39m
+                    [33mclass[39m=[32m"block text-sm font-medium text-gray-700 mb-2"[39m
+                    [33mfor[39m=[32m"interest-rate"[39m
+                  [36m>[39m
+                    [0mTasa de inter├®s mensual (%) *[0m
+                  [36m</label>[39m
+                  [36m<input[39m
+                    [33mclass[39m=[32m"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 
+focus:ring-blue-500 focus:border-transparent"[39m
+                    [33mid[39m=[32m"interest-rate"[39m
+                    [33mmax[39m=[32m"100"[39m
+                    [33mmin[39m=[32m"0"[39m
+                    [33mrequired[39m=[32m""[39m
+                    [33mstep[39m=[32m"0.01"[39m
+                    [33mtype[39m=[32m"number"[39m
+                    [33mvalue[39m=[32m"2.00"[39m
+                  [36m/>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"text-xs text-gray-500 mt-1"[39m
+                  [36m>[39m
+                    [0mEj: 2.00 para 2% mensual[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"block text-sm font-medium text-gray-700 mb-2"[39m
+                  [33mfor[39m=[32m"start-date"[39m
+                [36m>[39m
+                  [0mFecha de inicio *[0m
+                [36m</label>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-2"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-calendar w-4 h-4 text-gray-400"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M8 2v4"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M16 2v4"[39m
+                    [36m/>[39m
+                    [36m<rect[39m
+                      [33mheight[39m=[32m"18"[39m
+                      [33mrx[39m=[32m"2"[39m
+                      [33mwidth[39m=[32m"18"[39m
+                      [33mx[39m=[32m"3"[39m
+                      [33my[39m=[32m"4"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M3 10h18"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<input[39m
+                    [33mclass[39m=[32m"flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 
+focus:ring-blue-500 focus:border-transparent"[39m
+                    [33mid[39m=[32m"start-date"[39m
+                    [33mrequired[39m=[32m""[39m
+                    [33mtype[39m=[32m"date"[39m
+                    [33mvalue[39m=[32m"2025-12-15"[39m
+                  [36m/>[39m
+                [36m</div>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs text-gray-500 mt-1"[39m
+                [36m>[39m
+                  [0mLa primera cuota vencer├í un mes despu├®s de esta fecha[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<div>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"block text-sm font-medium text-gray-700 mb-2"[39m
+                  [33mfor[39m=[32m"description"[39m
+                [36m>[39m
+                  [0mDescripci├│n (opcional)[0m
+                [36m</label>[39m
+                [36m<input[39m
+                  [33mclass[39m=[32m"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 
+focus:ring-blue-500 focus:border-transparent"[39m
+                  [33mid[39m=[32m"description"[39m
+                  [33mmaxlength[39m=[32m"200"[39m
+                  [33mplaceholder[39m=[32m"Ej: Compra de electrodom├®sticos"[39m
+                  [33mtype[39m=[32m"text"[39m
+                  [33mvalue[39m=[32m""[39m
+                [36m/>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs text-gray-500 mt-1"[39m
+                [36m>[39m
+                  [0m0[0m
+                  [0m/200 caracteres[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"p-4 bg-green-50 border border-green-200 rounded-lg"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 mb-3"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-calculator w-5 h-5 text-green-600"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<rect[39m
+                      [33mheight[39m=[32m"20"[39m
+                      [33mrx[39m=[32m"2"[39m
+                      [33mwidth[39m=[32m"16"[39m
+                      [33mx[39m=[32m"4"[39m
+                      [33my[39m=[32m"2"[39m
+                    [36m/>[39m
+                    [36m<line[39m
+                      [33mx1[39m=[32m"8"[39m
+                      [33mx2[39m=[32m"16"[39m
+                      [33my1[39m=[32m"6"[39m
+                      [33my2[39m=[32m"6"[39m
+                    [36m/>[39m
+                    [36m<line[39m
+                      [33mx1[39m=[32m"16"[39m
+                      [33mx2[39m=[32m"16"[39m
+                      [33my1[39m=[32m"14"[39m
+                      [33my2[39m=[32m"18"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M16 10h.01"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M12 10h.01"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M8 10h.01"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M12 14h.01"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M8 14h.01"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M12 18h.01"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M8 18h.01"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<h4[39m
+                    [33mclass[39m=[32m"font-semibold text-green-900"[39m
+                  [36m>[39m
+                    [0mResumen del plan[0m
+                  [36m</h4>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-sm space-y-2"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"flex justify-between"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-green-700"[39m
+                    [36m>[39m
+                      [0mMonto de compra:[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"font-semibold text-green-900"[39m
+                    [36m>[39m
+                      [0m$┬á10.000[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"flex justify-between"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-green-700"[39m
+                    [36m>[39m
+                      [0mN├║mero de cuotas:[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"font-semibold text-green-900"[39m
+                    [36m>[39m
+                      [0m12[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"flex justify-between"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-green-700"[39m
+                    [36m>[39m
+                      [0mTasa de inter├®s:[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"font-semibold text-green-900"[39m
+                    [36m>[39m
+                      [0m2.00[0m
+                      [0m% mensual[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"pt-2 border-t border-green-200"[39m
+                  [36m>[39m
+                    [36m<p[39m
+                      [33mclass[39m=[32m"text-xs text-green-600"[39m
+                    [36m>[39m
+                      [0mEl sistema calcular├í autom├íticamente el valor de cada cuota (capital e inter├®s) al crear 
+el plan.[0m
+                    [36m</p>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex gap-3 pt-4"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 
+transition-colors disabled:opacity-50"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mCancelar[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
+transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"[39m
+                  [33mtype[39m=[32m"submit"[39m
+                [36m>[39m
+                  [0mCrear Plan de Cuotas[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</form>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+ ÔØ» Module.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ÔØ» src/components/CreateInstallmentPlanModal.test.tsx:66:11
+     64|     );
+     65| 
+     66|     await waitFor(() => {
+       |           ^
+     67|       expect(screen.getByText(/crear plan de cuotas/i)).toBeInTheDocumÔÇª
+     68|     });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[2/9]ÔÄ»
+
+ FAIL  src/components/InstallmentCalendar.test.tsx > InstallmentCalendar > debe mostrar el bot├│n de cerrar
+TestingLibraryElementError: Unable to find role="button" and name `/cerrar/i`
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center justify-between mb-6"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-xl font-bold text-gray-900"[39m
+              [36m>[39m
+                [0mCalendario de cuotas[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-sm text-gray-600 mt-1"[39m
+              [36m>[39m
+                [0mPlan de prueba[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"text-gray-400 hover:text-gray-600"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-circle-x w-6 h-6"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"10"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m15 9-6 6"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m9 9 6 6"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"bg-blue-50 border border-blue-200 rounded-lg p-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-dollar-sign w-5 h-5 text-blue-600"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<line[39m
+                    [33mx1[39m=[32m"12"[39m
+                    [33mx2[39m=[32m"12"[39m
+                    [33my1[39m=[32m"2"[39m
+                    [33my2[39m=[32m"22"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-sm font-medium text-blue-900"[39m
+                [36m>[39m
+                  [0mTotal del plan[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xl font-bold text-blue-900"[39m
+              [36m>[39m
+                [0m$┬á12.000[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"bg-green-50 border border-green-200 rounded-lg p-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-circle-check-big w-5 h-5 text-green-600"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M21.801 10A10 10 0 1 1 17 3.335"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m9 11 3 3L22 4"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-sm font-medium text-green-900"[39m
+                [36m>[39m
+                  [0mPagado[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xl font-bold text-green-900"[39m
+              [36m>[39m
+                [0m$┬á1.000[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xs text-green-700 mt-1"[39m
+              [36m>[39m
+                [0m1[0m
+                [0m de [0m
+                [0m12[0m
+                [0m cuotas[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"bg-amber-50 border border-amber-200 rounded-lg p-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-clock w-5 h-5 text-amber-600"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 6v6l4 2"[39m
+                  [36m/>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"12"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"10"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-sm font-medium text-amber-900"[39m
+                [36m>[39m
+                  [0mPendiente[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xl font-bold text-amber-900"[39m
+              [36m>[39m
+                [0m$┬á0[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xs text-amber-700 mt-1"[39m
+              [36m>[39m
+                [0m11[0m
+                [0m cuotas restantes[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mb-6"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-2 mb-3"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-percent w-5 h-5 text-gray-600"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<line[39m
+                  [33mx1[39m=[32m"19"[39m
+                  [33mx2[39m=[32m"5"[39m
+                  [33my1[39m=[32m"5"[39m
+                  [33my2[39m=[32m"19"[39m
+                [36m/>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"6.5"[39m
+                  [33mcy[39m=[32m"6.5"[39m
+                  [33mr[39m=[32m"2.5"[39m
+                [36m/>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"17.5"[39m
+                  [33mcy[39m=[32m"17.5"[39m
+                  [33mr[39m=[32m"2.5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<h4[39m
+                [33mclass[39m=[32m"font-semibold text-gray-900"[39m
+              [36m>[39m
+                [0mDesglose financiero[0m
+              [36m</h4>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"grid grid-cols-2 md:grid-cols-4 gap-4"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs text-gray-600 mb-1"[39m
+                [36m>[39m
+                  [0mCapital[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"font-semibold text-gray-900"[39m
+                [36m>[39m
+                  [0m$┬á10.000[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<div>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs text-gray-600 mb-1"[39m
+                [36m>[39m
+                  [0mIntereses totales[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"font-semibold text-amber-600"[39m
+                [36m>[39m
+                  [0m$┬á2.000[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<div>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs text-gray-600 mb-1"[39m
+                [36m>[39m
+                  [0mTasa de inter├®s[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"font-semibold text-gray-900"[39m
+                [36m>[39m
+                  [0m2.00[0m
+                  [0m%[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<div>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs text-gray-600 mb-1"[39m
+                [36m>[39m
+                  [0mCuota mensual[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"font-semibold text-blue-600"[39m
+                [36m>[39m
+                  [0m$┬á1.000[0m
+                [36m</p>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [36m<h4[39m
+              [33mclass[39m=[32m"font-semibold text-gray-900 mb-4"[39m
+            [36m>[39m
+              [0mDetalle de cuotas[0m
+            [36m</h4>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"space-y-2"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"border rounded-lg p-4 bg-green-50 border-green-200 "[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"flex items-center gap-4"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"w-10 h-10 rounded-full flex items-center justify-center bg-green-500"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-circle-check-big w-6 h-6 text-white"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M21.801 10A10 10 0 1 1 17 3.335"[39m
+                        [36m/>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"m9 11 3 3L22 4"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                    [36m</div>[39m
+                    [36m<div>[39m
+                      [36m<p[39m
+                        [33mclass[39m=[32m"font-semibold text-gray-900"[39m
+                      [36m>[39m
+                        [0mCuota [0m
+                        [0m1[0m
+                        [0m de [0m
+                        [0m12[0m
+                      [36m</p>[39m
+                      [36m<p[39m
+                        [33mclass[39m=[32m"text-sm text-gray-600"[39m
+                      [36m>[39m
+                        [0mVence: [0m
+                        [0m14 de febrero de 2025[0m
+                      [36m</p>[39m
+                      [36m<p[39m
+                        [33mclass[39m=[32m"text-xs text-green-600 mt-1"[39m
+                      [36m>[39m
+                        [0mPagado: [0m
+                        [0m14 de febrero de 2025[0m
+                      [36m</p>[39m
+                    [36m</div>[39m
+                  [36m</div>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"text-right"[39m
+                  [36m>[39m
+                    [36m<p[39m
+                      [33mclass[39m=[32m"font-bold text-gray-900"[39m
+                    [36m>[39m
+                      [0m$┬á1.000[0m
+                    [36m</p>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"flex items-center gap-2 text-xs text-gray-600"[39m
+                    [36m>[39m
+                      [36m<span>[39m
+                        [0mCapital: [0m
+                        [0m$┬á800[0m
+                      [36m</span>[39m
+                      [36m<span>[39m
+                        [0mÔÇó[0m
+                      [36m</span>[39m
+                      [36m<span>[39m
+                        [0mInter├®s: [0m
+                        [0m$┬á200[0m
+                      [36m</span>[39m
+                    [36m</div>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"p-6"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center justify-between mb-6"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<h3[39m
+                  [33mclass[39m=[32m"text-xl font-bold text-gray-900"[39m
+                [36m>[39m
+                  [0mCalendario de cuotas[0m
+                [36m</h3>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-sm text-gray-600 mt-1"[39m
+                [36m>[39m
+                  [0mPlan de prueba[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"text-gray-400 hover:text-gray-600"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-circle-x w-6 h-6"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"12"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"10"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m15 9-6 6"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m9 9 6 6"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"bg-blue-50 border border-blue-200 rounded-lg p-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-dollar-sign w-5 h-5 text-blue-600"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<line[39m
+                      [33mx1[39m=[32m"12"[39m
+                      [33mx2[39m=[32m"12"[39m
+                      [33my1[39m=[32m"2"[39m
+                      [33my2[39m=[32m"22"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"text-sm font-medium text-blue-900"[39m
+                  [36m>[39m
+                    [0mTotal del plan[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xl font-bold text-blue-900"[39m
+                [36m>[39m
+                  [0m$┬á12.000[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"bg-green-50 border border-green-200 rounded-lg p-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-circle-check-big w-5 h-5 text-green-600"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M21.801 10A10 10 0 1 1 17 3.335"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m9 11 3 3L22 4"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"text-sm font-medium text-green-900"[39m
+                  [36m>[39m
+                    [0mPagado[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xl font-bold text-green-900"[39m
+                [36m>[39m
+                  [0m$┬á1.000[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs text-green-700 mt-1"[39m
+                [36m>[39m
+                  [0m1[0m
+                  [0m de [0m
+                  [0m12[0m
+                  [0m cuotas[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"bg-amber-50 border border-amber-200 rounded-lg p-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-clock w-5 h-5 text-amber-600"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M12 6v6l4 2"[39m
+                    [36m/>[39m
+                    [36m<circle[39m
+                      [33mcx[39m=[32m"12"[39m
+                      [33mcy[39m=[32m"12"[39m
+                      [33mr[39m=[32m"10"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"text-sm font-medium text-amber-900"[39m
+                  [36m>[39m
+                    [0mPendiente[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xl font-bold text-amber-900"[39m
+                [36m>[39m
+                  [0m$┬á0[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs text-amber-700 mt-1"[39m
+                [36m>[39m
+                  [0m11[0m
+                  [0m cuotas restantes[0m
+                [36m</p>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mb-6"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-2 mb-3"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-percent w-5 h-5 text-gray-600"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<line[39m
+                    [33mx1[39m=[32m"19"[39m
+                    [33mx2[39m=[32m"5"[39m
+                    [33my1[39m=[32m"5"[39m
+                    [33my2[39m=[32m"19"[39m
+                  [36m/>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"6.5"[39m
+                    [33mcy[39m=[32m"6.5"[39m
+                    [33mr[39m=[32m"2.5"[39m
+                  [36m/>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"17.5"[39m
+                    [33mcy[39m=[32m"17.5"[39m
+                    [33mr[39m=[32m"2.5"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [36m<h4[39m
+                  [33mclass[39m=[32m"font-semibold text-gray-900"[39m
+                [36m>[39m
+                  [0mDesglose financiero[0m
+                [36m</h4>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"grid grid-cols-2 md:grid-cols-4 gap-4"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"text-xs text-gray-600 mb-1"[39m
+                  [36m>[39m
+                    [0mCapital[0m
+                  [36m</p>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"font-semibold text-gray-900"[39m
+                  [36m>[39m
+                    [0m$┬á10.000[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+                [36m<div>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"text-xs text-gray-600 mb-1"[39m
+                  [36m>[39m
+                    [0mIntereses totales[0m
+                  [36m</p>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"font-semibold text-amber-600"[39m
+                  [36m>[39m
+                    [0m$┬á2.000[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+                [36m<div>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"text-xs text-gray-600 mb-1"[39m
+                  [36m>[39m
+                    [0mTasa de inter├®s[0m
+                  [36m</p>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"font-semibold text-gray-900"[39m
+                  [36m>[39m
+                    [0m2.00[0m
+                    [0m%[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+                [36m<div>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"text-xs text-gray-600 mb-1"[39m
+                  [36m>[39m
+                    [0mCuota mensual[0m
+                  [36m</p>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"font-semibold text-blue-600"[39m
+                  [36m>[39m
+                    [0m$┬á1.000[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div>[39m
+              [36m<h4[39m
+                [33mclass[39m=[32m"font-semibold text-gray-900 mb-4"[39m
+              [36m>[39m
+                [0mDetalle de cuotas[0m
+              [36m</h4>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"space-y-2"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"border rounded-lg p-4 bg-green-50 border-green-200 "[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"flex items-center justify-between"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"flex items-center gap-4"[39m
+                    [36m>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"w-10 h-10 rounded-full flex items-center justify-center 
+bg-green-500"[39m
+                      [36m>[39m
+                        [36m<svg[39m
+                          [33maria-hidden[39m=[32m"true"[39m
+                          [33mclass[39m=[32m"lucide lucide-circle-check-big w-6 h-6 text-white"[39m
+                          [33mfill[39m=[32m"none"[39m
+                          [33mheight[39m=[32m"24"[39m
+                          [33mstroke[39m=[32m"currentColor"[39m
+                          [33mstroke-linecap[39m=[32m"round"[39m
+                          [33mstroke-linejoin[39m=[32m"round"[39m
+                          [33mstroke-width[39m=[32m"2"[39m
+                          [33mviewBox[39m=[32m"0 0 24 24"[39m
+                          [33mwidth[39m=[32m"24"[39m
+                          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                        [36m>[39m
+                          [36m<path[39m
+                            [33md[39m=[32m"M21.801 10A10 10 0 1 1 17 3.335"[39m
+                          [36m/>[39m
+                          [36m<path[39m
+                            [33md[39m=[32m"m9 11 3 3L22 4"[39m
+                          [36m/>[39m
+                        [36m</svg>[39m
+                      [36m</div>[39m
+                      [36m<div>[39m
+                        [36m<p[39m
+                          [33mclass[39m=[32m"font-semibold text-gray-900"[39m
+                        [36m>[39m
+                          [0mCuota [0m
+                          [0m1[0m
+                          [0m de [0m
+                          [0m12[0m
+                        [36m</p>[39m
+                        [36m<p[39m
+                          [33mclass[39m=[32m"text-sm text-gray-600"[39m
+                        [36m>[39m
+                          [0mVence: [0m
+                          [0m14 de febrero de 2025[0m
+                        [36m</p>[39m
+                        [36m<p[39m
+                          [33mclass[39m=[32m"text-xs text-green-600 mt-1"[39m
+                        [36m>[39m
+                          [0mPagado: [0m
+                          [0m14 de febrero de 2025[0m
+                        [36m</p>[39m
+                      [36m</div>[39m
+                    [36m</div>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"text-right"[39m
+                    [36m>[39m
+                      [36m<p[39m
+                        [33mclass[39m=[32m"font-bold text-gray-900"[39m
+                      [36m>[39m
+                        [0m$┬á1.000[0m
+                      [36m</p>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"flex items-center gap-2 text-xs text-gray-600"[39m
+                      [36m>[39m
+                        [36m<span>[39m
+                          [0mCapital: [0m
+                          [0m$┬á800[0m
+                        [36m</span>[39m
+                        [36m<span>[39m
+                          [0mÔÇó[0m
+                        [36m</span>[39m
+                        [36m<span>[39m
+                          [0mInter├®s: [0m
+                          [0m$┬á200[0m
+                        [36m</span>[39m
+                      [36m</div>[39m
+                    [36m</div>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+ ÔØ» Module.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ÔØ» src/components/InstallmentCalendar.test.tsx:111:11
+    109|     );
+    110| 
+    111|     await waitFor(() => {
+       |           ^
+    112|       const closeButton = screen.getByRole('button', { name: /cerrar/iÔÇª
+    113|       expect(closeButton).toBeInTheDocument();
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[3/9]ÔÄ»
+
+ FAIL  src/components/RuleForm.test.tsx > RuleForm > debe renderizar el formulario
+ FAIL  src/components/RuleForm.test.tsx > RuleForm > debe mostrar el bot├│n de cerrar
+ FAIL  src/components/RuleForm.test.tsx > RuleForm > debe llamar a onClose cuando se hace clic en cerrar
+TypeError: Cannot read properties of undefined (reading 'mockResolvedValue')
+ ÔØ» src/components/RuleForm.test.tsx:46:55
+     44|       refreshCategories: vi.fn(),
+     45|     } as unknown as ReturnType<typeof categoryContextModule.useCategorÔÇª
+     46|     vi.mocked(ruleServiceModule.ruleService.createRule).mockResolvedVaÔÇª
+       |                                                       ^
+     47|       id: 1,
+     48|       name: 'Nueva Regla',
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[4/9]ÔÄ»
+
+ FAIL  src/pages/profile/ProfilePage.test.tsx > ProfilePage > debe renderizar el componente
+TestingLibraryElementError: Found multiple elements with the text: /perfil/i
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<h1[39m
+  [33mclass[39m=[32m"text-3xl font-bold text-gray-900 mb-2"[39m
+[36m>[39m
+  [0mMi Perfil[0m
+[36m</h1>[39m
+
+Ignored nodes: comments, script, style
+[36m<button[39m
+  [33mclass[39m=[32m"text-sm text-blue-600 hover:text-blue-700 font-medium mb-6"[39m
+[36m>[39m
+  [0mCambiar foto de perfil[0m
+[36m</button>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or 
+`findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"profile-container min-h-screen bg-gray-50"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"profile-header bg-white border-b border-gray-200 sticky top-0 z-10"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center justify-between h-16"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-8"[39m
+            [36m>[39m
+              [36m<img[39m
+                [33malt[39m=[32m"eBalance"[39m
+                [33mclass[39m=[32m"h-8 w-auto"[39m
+                [33msrc[39m=[32m"/logo.png"[39m
+              [36m/>[39m
+              [36m<nav[39m
+                [33mclass[39m=[32m"hidden md:flex gap-6"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mDashboard[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mMovimientos[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mPresupuestos[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mReportes[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mCuentas[0m
+                [36m</a>[39m
+              [36m</nav>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"profile-button p-2 hover:bg-gray-100 rounded-lg transition-colors"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-button-avatar w-8 h-8 bg-blue-600 rounded-full flex items-center 
+justify-center text-white font-medium"[39m
+                  [36m>[39m
+                    [0mT[0m
+                  [36m</div>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<main[39m
+        [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"[39m
+      [36m>[39m
+        [36m<a[39m
+          [33mhref[39m=[32m"/dashboard"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m12 19-7-7 7-7"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M19 12H5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<span>[39m
+            [0mVolver al inicio[0m
+          [36m</span>[39m
+        [36m</a>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"profile-title mb-6"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-3xl font-bold text-gray-900 mb-2"[39m
+          [36m>[39m
+            [0mMi Perfil[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-gray-600"[39m
+          [36m>[39m
+            [0mGestiona tu informaci├│n personal y preferencias[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid grid-cols-1 lg:grid-cols-3 gap-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"lg:col-span-1"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"profile-card bg-white rounded-xl shadow-sm border border-gray-200 p-6"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col items-center"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"profile-avatar-container relative mb-4"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-avatar w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 
+rounded-full flex items-center justify-center text-white text-2xl font-bold"[39m
+                  [36m>[39m
+                    [0mT[0m
+                    [0mU[0m
+                  [36m</div>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"profile-avatar-button absolute bottom-0 right-0 bg-blue-600 text-white p-2 
+rounded-full hover:bg-blue-700 transition-colors"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-camera w-4 h-4"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 
+2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"[39m
+                      [36m/>[39m
+                      [36m<circle[39m
+                        [33mcx[39m=[32m"12"[39m
+                        [33mcy[39m=[32m"13"[39m
+                        [33mr[39m=[32m"3"[39m
+  ...
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"profile-container min-h-screen bg-gray-50"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"profile-header bg-white border-b border-gray-200 sticky top-0 z-10"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center justify-between h-16"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-8"[39m
+              [36m>[39m
+                [36m<img[39m
+                  [33malt[39m=[32m"eBalance"[39m
+                  [33mclass[39m=[32m"h-8 w-auto"[39m
+                  [33msrc[39m=[32m"/logo.png"[39m
+                [36m/>[39m
+                [36m<nav[39m
+                  [33mclass[39m=[32m"hidden md:flex gap-6"[39m
+                [36m>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mDashboard[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mMovimientos[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mPresupuestos[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mReportes[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mCuentas[0m
+                  [36m</a>[39m
+                [36m</nav>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"profile-button p-2 hover:bg-gray-100 rounded-lg transition-colors"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"profile-button-avatar w-8 h-8 bg-blue-600 rounded-full flex items-center 
+justify-center text-white font-medium"[39m
+                    [36m>[39m
+                      [0mT[0m
+                    [36m</div>[39m
+                  [36m</button>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</header>[39m
+        [36m<main[39m
+          [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"[39m
+        [36m>[39m
+          [36m<a[39m
+            [33mhref[39m=[32m"/dashboard"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m12 19-7-7 7-7"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M19 12H5"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mVolver al inicio[0m
+            [36m</span>[39m
+          [36m</a>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"profile-title mb-6"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-3xl font-bold text-gray-900 mb-2"[39m
+            [36m>[39m
+              [0mMi Perfil[0m
+            [36m</h1>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-gray-600"[39m
+            [36m>[39m
+              [0mGestiona tu informaci├│n personal y preferencias[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 lg:grid-cols-3 gap-6"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"lg:col-span-1"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"profile-card bg-white rounded-xl shadow-sm border border-gray-200 p-6"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex flex-col items-center"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-avatar-container relative mb-4"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"profile-avatar w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 
+rounded-full flex items-center justify-center text-white text-2xl font-bold"[39m
+                    [36m>[39m
+                      [0mT[0m
+                      [0mU[0m
+                    [36m</div>[39m
+                    [36m<button[39m
+                      [33mclass[39m=[32m"profile-avatar-button absolute bottom-0 right-0 bg-blue-600 text-white p-2 
+rounded-full hover:bg-blue-700 transition-colors"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-camera w-4 h-4"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1...
+ ÔØ» Module.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ÔØ» src/pages/profile/ProfilePage.test.tsx:71:11
+     69|     render(<ProfilePage />);
+     70|     
+     71|     await waitFor(() => {
+       |           ^
+     72|       expect(screen.getByText(/perfil/i)).toBeInTheDocument();
+     73|     });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[5/9]ÔÄ»
+
+ FAIL  src/pages/profile/ProfilePage.test.tsx > ProfilePage > debe mostrar los campos del formulario
+TestingLibraryElementError: Found a label with the text of: /nombre/i, however no form control was found associated to 
+that label. Make sure you're using the "for" attribute or "aria-labelledby" attribute correctly.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"profile-container min-h-screen bg-gray-50"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"profile-header bg-white border-b border-gray-200 sticky top-0 z-10"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center justify-between h-16"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-8"[39m
+            [36m>[39m
+              [36m<img[39m
+                [33malt[39m=[32m"eBalance"[39m
+                [33mclass[39m=[32m"h-8 w-auto"[39m
+                [33msrc[39m=[32m"/logo.png"[39m
+              [36m/>[39m
+              [36m<nav[39m
+                [33mclass[39m=[32m"hidden md:flex gap-6"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mDashboard[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mMovimientos[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mPresupuestos[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mReportes[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mCuentas[0m
+                [36m</a>[39m
+              [36m</nav>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"profile-button p-2 hover:bg-gray-100 rounded-lg transition-colors"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-button-avatar w-8 h-8 bg-blue-600 rounded-full flex items-center 
+justify-center text-white font-medium"[39m
+                  [36m>[39m
+                    [0mT[0m
+                  [36m</div>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<main[39m
+        [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"[39m
+      [36m>[39m
+        [36m<a[39m
+          [33mhref[39m=[32m"/dashboard"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m12 19-7-7 7-7"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M19 12H5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<span>[39m
+            [0mVolver al inicio[0m
+          [36m</span>[39m
+        [36m</a>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"profile-title mb-6"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-3xl font-bold text-gray-900 mb-2"[39m
+          [36m>[39m
+            [0mMi Perfil[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-gray-600"[39m
+          [36m>[39m
+            [0mGestiona tu informaci├│n personal y preferencias[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid grid-cols-1 lg:grid-cols-3 gap-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"lg:col-span-1"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"profile-card bg-white rounded-xl shadow-sm border border-gray-200 p-6"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col items-center"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"profile-avatar-container relative mb-4"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-avatar w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 
+rounded-full flex items-center justify-center text-white text-2xl font-bold"[39m
+                  [36m>[39m
+                    [0mT[0m
+                    [0mU[0m
+                  [36m</div>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"profile-avatar-button absolute bottom-0 right-0 bg-blue-600 text-white p-2 
+rounded-full hover:bg-blue-700 transition-colors"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-camera w-4 h-4"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 
+2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"[39m
+                      [36m/>[39m
+                      [36m<circle[39m
+                        [33mcx[39m=[32m"12"[39m
+                        [33mcy[39m=[32m"13"[39m
+                        [33mr[39m=[32m"3"[39m
+  ...
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"profile-container min-h-screen bg-gray-50"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"profile-header bg-white border-b border-gray-200 sticky top-0 z-10"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center justify-between h-16"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-8"[39m
+              [36m>[39m
+                [36m<img[39m
+                  [33malt[39m=[32m"eBalance"[39m
+                  [33mclass[39m=[32m"h-8 w-auto"[39m
+                  [33msrc[39m=[32m"/logo.png"[39m
+                [36m/>[39m
+                [36m<nav[39m
+                  [33mclass[39m=[32m"hidden md:flex gap-6"[39m
+                [36m>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mDashboard[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mMovimientos[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mPresupuestos[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mReportes[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mCuentas[0m
+                  [36m</a>[39m
+                [36m</nav>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"profile-button p-2 hover:bg-gray-100 rounded-lg transition-colors"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"profile-button-avatar w-8 h-8 bg-blue-600 rounded-full flex items-center 
+justify-center text-white font-medium"[39m
+                    [36m>[39m
+                      [0mT[0m
+                    [36m</div>[39m
+                  [36m</button>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</header>[39m
+        [36m<main[39m
+          [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"[39m
+        [36m>[39m
+          [36m<a[39m
+            [33mhref[39m=[32m"/dashboard"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m12 19-7-7 7-7"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M19 12H5"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mVolver al inicio[0m
+            [36m</span>[39m
+          [36m</a>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"profile-title mb-6"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-3xl font-bold text-gray-900 mb-2"[39m
+            [36m>[39m
+              [0mMi Perfil[0m
+            [36m</h1>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-gray-600"[39m
+            [36m>[39m
+              [0mGestiona tu informaci├│n personal y preferencias[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 lg:grid-cols-3 gap-6"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"lg:col-span-1"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"profile-card bg-white rounded-xl shadow-sm border border-gray-200 p-6"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex flex-col items-center"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-avatar-container relative mb-4"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"profile-avatar w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 
+rounded-full flex items-center justify-center text-white text-2xl font-bold"[39m
+                    [36m>[39m
+                      [0mT[0m
+                      [0mU[0m
+                    [36m</div>[39m
+                    [36m<button[39m
+                      [33mclass[39m=[32m"profile-avatar-button absolute bottom-0 right-0 bg-blue-600 text-white p-2 
+rounded-full hover:bg-blue-700 transition-colors"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-camera w-4 h-4"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1...
+ ÔØ» Module.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ÔØ» src/pages/profile/ProfilePage.test.tsx:87:11
+     85|     render(<ProfilePage />);
+     86|     
+     87|     await waitFor(() => {
+       |           ^
+     88|       expect(screen.getByLabelText(/nombre/i)).toBeInTheDocument();
+     89|       expect(screen.getByLabelText(/apellido/i)).toBeInTheDocument();
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[6/9]ÔÄ»
+
+ FAIL  src/pages/profile/ProfilePage.test.tsx > ProfilePage > debe mostrar el formulario de cambio de contrase├▒a
+TestingLibraryElementError: Found a label with the text of: /contrase├▒a actual/i, however no form control was found 
+associated to that label. Make sure you're using the "for" attribute or "aria-labelledby" attribute correctly.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"profile-container min-h-screen bg-gray-50"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"profile-header bg-white border-b border-gray-200 sticky top-0 z-10"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center justify-between h-16"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-8"[39m
+            [36m>[39m
+              [36m<img[39m
+                [33malt[39m=[32m"eBalance"[39m
+                [33mclass[39m=[32m"h-8 w-auto"[39m
+                [33msrc[39m=[32m"/logo.png"[39m
+              [36m/>[39m
+              [36m<nav[39m
+                [33mclass[39m=[32m"hidden md:flex gap-6"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mDashboard[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mMovimientos[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mPresupuestos[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mReportes[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mCuentas[0m
+                [36m</a>[39m
+              [36m</nav>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"profile-button p-2 hover:bg-gray-100 rounded-lg transition-colors"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-button-avatar w-8 h-8 bg-blue-600 rounded-full flex items-center 
+justify-center text-white font-medium"[39m
+                  [36m>[39m
+                    [0mT[0m
+                  [36m</div>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<main[39m
+        [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"[39m
+      [36m>[39m
+        [36m<a[39m
+          [33mhref[39m=[32m"/dashboard"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m12 19-7-7 7-7"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M19 12H5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<span>[39m
+            [0mVolver al inicio[0m
+          [36m</span>[39m
+        [36m</a>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"profile-title mb-6"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-3xl font-bold text-gray-900 mb-2"[39m
+          [36m>[39m
+            [0mMi Perfil[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-gray-600"[39m
+          [36m>[39m
+            [0mGestiona tu informaci├│n personal y preferencias[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid grid-cols-1 lg:grid-cols-3 gap-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"lg:col-span-1"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"profile-card bg-white rounded-xl shadow-sm border border-gray-200 p-6"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col items-center"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"profile-avatar-container relative mb-4"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-avatar w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 
+rounded-full flex items-center justify-center text-white text-2xl font-bold"[39m
+                  [36m>[39m
+                    [0mT[0m
+                    [0mU[0m
+                  [36m</div>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"profile-avatar-button absolute bottom-0 right-0 bg-blue-600 text-white p-2 
+rounded-full hover:bg-blue-700 transition-colors"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-camera w-4 h-4"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 
+2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"[39m
+                      [36m/>[39m
+                      [36m<circle[39m
+                        [33mcx[39m=[32m"12"[39m
+                        [33mcy[39m=[32m"13"[39m
+                        [33mr[39m=[32m"3"[39m
+  ...
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"profile-container min-h-screen bg-gray-50"[39m
+      [36m>[39m
+        [36m<header[39m
+
+          [33mclass[39m=[32m"profile-header bg-white border-b border-gray-200 sticky top-0 z-10"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center justify-between h-16"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-8"[39m
+              [36m>[39m
+                [36m<img[39m
+                  [33malt[39m=[32m"eBalance"[39m
+                  [33mclass[39m=[32m"h-8 w-auto"[39m
+                  [33msrc[39m=[32m"/logo.png"[39m
+                [36m/>[39m
+                [36m<nav[39m
+                  [33mclass[39m=[32m"hidden md:flex gap-6"[39m
+                [36m>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mDashboard[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mMovimientos[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mPresupuestos[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mReportes[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mCuentas[0m
+                  [36m</a>[39m
+                [36m</nav>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"profile-button p-2 hover:bg-gray-100 rounded-lg transition-colors"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"profile-button-avatar w-8 h-8 bg-blue-600 rounded-full flex items-center 
+justify-center text-white font-medium"[39m
+                    [36m>[39m
+                      [0mT[0m
+                    [36m</div>[39m
+                  [36m</button>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</header>[39m
+        [36m<main[39m
+          [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"[39m
+        [36m>[39m
+          [36m<a[39m
+            [33mhref[39m=[32m"/dashboard"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m12 19-7-7 7-7"[39m
+ Test Files  5 failed | 74 passed (79)
+      Tests  9 failed | 1026 passed (1035)
+   Start at  11:26:15
+   Duration  98.22s (transform 6.22s, setup 35.55s, import 25.82s, tests 90.91s, environment 94.51s)
+
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M19 12H5"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mVolver al inicio[0m
+            [36m</span>[39m
+          [36m</a>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"profile-title mb-6"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-3xl font-bold text-gray-900 mb-2"[39m
+            [36m>[39m
+              [0mMi Perfil[0m
+            [36m</h1>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-gray-600"[39m
+            [36m>[39m
+              [0mGestiona tu informaci├│n personal y preferencias[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 lg:grid-cols-3 gap-6"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"lg:col-span-1"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"profile-card bg-white rounded-xl shadow-sm border border-gray-200 p-6"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex flex-col items-center"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-avatar-container relative mb-4"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"profile-avatar w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 
+rounded-full flex items-center justify-center text-white text-2xl font-bold"[39m
+                    [36m>[39m
+                      [0mT[0m
+                      [0mU[0m
+                    [36m</div>[39m
+                    [36m<button[39m
+                      [33mclass[39m=[32m"profile-avatar-button absolute bottom-0 right-0 bg-blue-600 text-white p-2 
+rounded-full hover:bg-blue-700 transition-colors"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-camera w-4 h-4"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1...
+ ÔØ» Module.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ÔØ» src/pages/profile/ProfilePage.test.tsx:97:11
+     95|     render(<ProfilePage />);
+     96|     
+     97|     await waitFor(() => {
+       |           ^
+     98|       expect(screen.getByLabelText(/contrase├▒a actual/i)).toBeInTheDocÔÇª
+     99|       expect(screen.getByLabelText(/nueva contrase├▒a/i)).toBeInTheDocuÔÇª
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[7/9]ÔÄ»
+

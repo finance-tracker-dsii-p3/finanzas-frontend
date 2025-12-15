@@ -165,7 +165,6 @@ describe('BaseCurrencySelector', () => {
       expect(screen.getByText(/\$ USD/i)).toBeInTheDocument();
     });
 
-    // Hacer clic fuera del dropdown
     await user.click(document.body);
 
     await waitFor(() => {
@@ -188,10 +187,9 @@ describe('BaseCurrencySelector', () => {
 
     await waitFor(() => {
       const copOptions = screen.getAllByText(/\$ COP/i);
-      expect(copOptions.length).toBeGreaterThan(1); // Botón principal + opción en dropdown
+      expect(copOptions.length).toBeGreaterThan(1);
     });
 
-    // Buscar la opción activa en el dropdown (no el botón principal)
     const allButtons = screen.getAllByRole('button');
     const dropdownOption = allButtons.find((btn) => {
       const text = btn.textContent;
@@ -202,7 +200,6 @@ describe('BaseCurrencySelector', () => {
       await user.click(dropdownOption);
     }
 
-    // No debe llamar al servicio porque es la misma moneda
     expect(baseCurrencyServiceModule.baseCurrencyService.setBaseCurrency).not.toHaveBeenCalled();
   });
 
@@ -230,10 +227,10 @@ describe('BaseCurrencySelector', () => {
       await user.click(usdOption);
     }
 
-    // Debe mostrar el loader
     await waitFor(() => {
       const loader = screen.queryByRole('button');
       expect(loader).toBeDisabled();
     });
   });
 });
+

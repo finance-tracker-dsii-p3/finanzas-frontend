@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
 
 export interface AdminUser {
   id: number;
@@ -92,9 +92,7 @@ const getAuthHeaders = () => {
 import { parseApiError } from '../utils/apiErrorHandler';
 
 export const userAdminService = {
-  /**
-   * Obtener lista de usuarios (admin)
-   */
+  
   async listUsers(params?: { role?: string; is_verified?: string }): Promise<AdminUser[]> {
     const queryParams = new URLSearchParams();
     if (params?.role) queryParams.append('role', params.role);
@@ -113,9 +111,7 @@ export const userAdminService = {
     return response.json();
   },
 
-  /**
-   * Obtener detalle de un usuario (admin)
-   */
+  
   async getUserDetail(userId: number): Promise<AdminUserDetail> {
     const response = await fetch(`${API_BASE_URL}/api/auth/admin/users/${userId}/detail/`, {
       method: 'GET',
@@ -130,10 +126,7 @@ export const userAdminService = {
     return data.user;
   },
 
-  /**
-   * Editar usuario (admin)
-   * NOTA: El rol NO se puede editar desde el frontend
-   */
+  
   async editUser(userId: number, data: EditUserData): Promise<EditUserResponse> {
     const response = await fetch(`${API_BASE_URL}/api/auth/admin/users/${userId}/edit/`, {
       method: 'PATCH',
@@ -148,9 +141,7 @@ export const userAdminService = {
     return response.json();
   },
 
-  /**
-   * Buscar usuarios con filtros (admin)
-   */
+  
   async searchUsers(params: UserSearchParams): Promise<UserSearchResponse> {
     const queryParams = new URLSearchParams();
     

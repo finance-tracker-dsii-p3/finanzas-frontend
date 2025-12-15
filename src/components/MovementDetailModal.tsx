@@ -29,12 +29,12 @@ interface Movement {
   taxed_amount?: number | null;
   applied_rule?: number | null;
   applied_rule_name?: string | null;
-  // Campos de conversión a moneda base (HU-17)
+
   transaction_currency?: Currency | null;
   exchange_rate?: number | null;
   original_amount?: number | null;
   base_currency?: Currency;
-  base_equivalent_amount?: number | null; // En centavos
+  base_equivalent_amount?: number | null;
   base_exchange_rate?: number | null;
   base_exchange_rate_warning?: string | null;
 }
@@ -156,7 +156,7 @@ const MovementDetailModal: React.FC<MovementDetailModalProps> = ({ movement, onC
             )}
 
 
-            {/* Desglose de pago a tarjeta de crédito (capital e intereses) */}
+            {}
             {movement.type === 3 && movement.destination_account && 
              (movement.capital_amount || movement.interest_amount) && (
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
@@ -193,7 +193,7 @@ const MovementDetailModal: React.FC<MovementDetailModalProps> = ({ movement, onC
               </div>
             )}
 
-            {/* Conversión a moneda base (HU-17) */}
+            {}
             {movement.base_currency && movement.base_equivalent_amount !== null && movement.base_equivalent_amount !== undefined && (
               <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-3">
@@ -234,7 +234,7 @@ const MovementDetailModal: React.FC<MovementDetailModalProps> = ({ movement, onC
               </div>
             )}
 
-            {/* Desglose fiscal (IVA y GMF) - HU-15 */}
+            {}
             {((movement.tax_percentage && movement.tax_percentage > 0) || movement.gmf_amount) && (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-3">

@@ -1,38 +1,38 @@
 import { parseApiError, handleNetworkError } from '../utils/apiErrorHandler';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
 
 export interface Goal {
   id: number;
   user: number;
   name: string;
-  target_amount: number; // En centavos
-  saved_amount: number; // En centavos
-  date: string; // YYYY-MM-DD
+  target_amount: number;
+  saved_amount: number;
+  date: string;
   description?: string | null;
-  currency?: 'COP' | 'USD' | 'EUR'; // Moneda de la meta
-  currency_display?: string; // Nombre de visualización de la moneda
-  progress_percentage: number; // Calculado por el backend
-  remaining_amount: number; // Calculado por el backend
-  is_completed: boolean; // Calculado por el backend
+  currency?: 'COP' | 'USD' | 'EUR';
+  currency_display?: string;
+  progress_percentage: number;
+  remaining_amount: number;
+  is_completed: boolean;
   created_at?: string;
   updated_at?: string;
 }
 
 export interface CreateGoalData {
   name: string;
-  target_amount: number; // En centavos
-  date: string; // YYYY-MM-DD
+  target_amount: number;
+  date: string;
   description?: string | null;
-  currency?: 'COP' | 'USD' | 'EUR'; // Moneda de la meta
+  currency?: 'COP' | 'USD' | 'EUR';
 }
 
 export interface UpdateGoalData {
   name?: string;
-  target_amount?: number; // En centavos
-  date?: string; // YYYY-MM-DD
+  target_amount?: number;
+  date?: string;
   description?: string | null;
-  currency?: 'COP' | 'USD' | 'EUR'; // Moneda de la meta
+  currency?: 'COP' | 'USD' | 'EUR';
 }
 
 const getAuthHeaders = () => {

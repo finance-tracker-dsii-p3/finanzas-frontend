@@ -35,3 +35,4 @@ describe('HomePage', () => {
     expect(screen.getByText(/crear cuenta gratis/i)).toBeInTheDocument();
   });
 });
+

@@ -20,20 +20,20 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions })
 
   const getTypeIcon = (typeCode: number): string => {
     switch (typeCode) {
-      case 1: return '↓'; // Ingreso
-      case 2: return '↑'; // Gasto
-      case 3: return '⇄'; // Transferencia
-      case 4: return '💰'; // Ahorro
+      case 1: return '↓';
+      case 2: return '↑';
+      case 3: return '⇄';
+      case 4: return '💰';
       default: return '•';
     }
   };
 
   const getTypeColor = (typeCode: number): string => {
     switch (typeCode) {
-      case 1: return '#10b981'; // Verde para ingresos
-      case 2: return '#ef4444'; // Rojo para gastos
-      case 3: return '#3b82f6'; // Azul para transferencias
-      case 4: return '#f59e0b'; // Naranja para ahorros
+      case 1: return '#10b981';
+      case 2: return '#ef4444';
+      case 3: return '#3b82f6';
+      case 4: return '#f59e0b';
       default: return '#6b7280';
     }
   };

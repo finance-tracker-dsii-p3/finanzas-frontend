@@ -57,7 +57,7 @@ describe('ExpensesDonutChart', () => {
 
   it('debe mostrar estado de carga inicialmente', () => {
     vi.mocked(analyticsServiceModule.analyticsService.getExpensesChart).mockImplementation(
-      () => new Promise(() => {}) // Nunca resuelve
+      () => new Promise(() => {})
     );
 
     render(<ExpensesDonutChart period="2025-01" mode="total" />);
@@ -137,7 +137,7 @@ describe('ExpensesDonutChart', () => {
       expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
     });
 
-    // El componente maneja el click internamente, solo verificamos que se renderiza
     expect(mockOnCategoryClick).toBeDefined();
   });
 });
+

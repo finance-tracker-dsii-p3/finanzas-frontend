@@ -412,7 +412,7 @@
   }
 }
 
-/* Exchange Rates Grid */
+
 .exchange-rates-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -512,7 +512,7 @@
   font-weight: 600;
 }
 
-/* Exchange Rate Modal */
+
 .exchange-rate-modal {
   max-width: 600px;
 }

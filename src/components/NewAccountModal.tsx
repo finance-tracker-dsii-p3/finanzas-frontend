@@ -54,7 +54,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
         type: localType,
         bankName: accountData.bank_name || '',
         accountNumber: accountData.account_number || '',
-        // El current_balance del backend ya viene en pesos (no en centavos)
+
         balance: accountData.current_balance.toString(),
         creditLimit: accountData.credit_limit?.toString() || '',
         currency: accountData.currency,
@@ -184,7 +184,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
   };
 
   const handleWheel = (e: React.WheelEvent<HTMLInputElement>) => {
-    // Prevenir que la rueda del mouse cambie el valor del input
+
     e.currentTarget.blur();
   };
 
@@ -196,11 +196,10 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
     if (!formData.name.trim()) {
       newErrors.name = 'El nombre de la cuenta es requerido';
     }
-    
-    // Validar número de cuenta: obligatorio excepto para efectivo y otros
-    // Para efectivo y otros, el número de cuenta es opcional
+
+
     if (formData.type !== 'cash' && formData.type !== 'other') {
-      const accountNumberDigits = formData.accountNumber.replace(/\D/g, ''); // Solo dígitos
+      const accountNumberDigits = formData.accountNumber.replace(/\D/g, '');
       const minDigitsByCurrency: Record<Account['currency'], number> = {
         'COP': 10,
         'USD': 7,
@@ -261,11 +260,11 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
       current_balance: balance,
       description: formData.description.trim() || undefined,
       is_active: formData.isActive,
-      // GMF no aplica a tarjetas de crédito ni efectivo, siempre false para ellas
+
       gmf_exempt: (formData.type === 'credit_card' || formData.type === 'cash') ? false : formData.gmfExempt,
       bank_name: formData.bankName.trim() || undefined,
-      // Para efectivo y otros, no enviar account_number (es opcional en el backend)
-      // Para los demás tipos, enviar el número de cuenta
+
+
       account_number: (formData.type === 'cash' || formData.type === 'other') 
         ? undefined 
         : formData.accountNumber.trim() || undefined
@@ -486,7 +485,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                     const value = e.target.value;
                     if (value.length <= 50) {
                       setFormData({ ...formData, accountNumber: value });
-                      // Limpiar error si existe
+
                       if (errors.accountNumber) {
                         setErrors({ ...errors, accountNumber: '' });
                       }
@@ -627,7 +626,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
                   value={formData.currency}
                   onChange={(e) => {
                     const newCurrency = e.target.value as Account['currency'];
-                    // Si cambia a USD o EUR, desmarcar GMF automáticamente
+
                     const newGmfExempt = newCurrency === 'COP' ? formData.gmfExempt : false;
                     setFormData({ ...formData, currency: newCurrency, gmfExempt: newGmfExempt });
                   }}
@@ -662,7 +661,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({ onClose, account, onS
               </p>
             </div>
 
-            {/* GMF solo aplica a cuentas en COP que NO sean tarjetas de crédito ni efectivo */}
+            {}
             {formData.currency === 'COP' && formData.type !== 'credit_card' && formData.type !== 'cash' && (
               <div className="newaccountmodal-form-group">
                 <label className="flex items-center gap-2 cursor-pointer">

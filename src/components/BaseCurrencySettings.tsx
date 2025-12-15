@@ -38,7 +38,7 @@ const BaseCurrencySettings: React.FC<BaseCurrencySettingsProps> = ({ onClose }) 
       setSuccess(null);
       const response = await baseCurrencyService.setBaseCurrency(baseCurrency);
       setSuccess(response.message || `Moneda base actualizada a ${baseCurrency}`);
-      // Recargar la página después de 1 segundo para aplicar los cambios
+
       setTimeout(() => {
         window.location.reload();
       }, 1000);

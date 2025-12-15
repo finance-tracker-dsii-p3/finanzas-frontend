@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { XCircle, DollarSign, Percent, CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { creditCardPlanService, InstallmentPlan, ScheduleItem, InstallmentPayment } from '../services/creditCardPlanService';
 import { formatMoneyFromPesos, Currency } from '../utils/currencyUtils';
@@ -17,6 +17,18 @@ const InstallmentCalendar: React.FC<InstallmentCalendarProps> = ({ plan, onClose
   const [isLoading, setIsLoading] = useState(true);
   const [selectedInstallment, setSelectedInstallment] = useState<{ plan: InstallmentPlan; installment: InstallmentPayment } | null>(null);
 
+  const loadSchedule = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const scheduleData = await creditCardPlanService.getSchedule(plan.id);
+      setSchedule(scheduleData);
+    } catch (error) {
+      console.error('Error al cargar calendario:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [plan.id]);
+
   useEffect(() => {
     loadSchedule();
     
@@ -34,20 +46,7 @@ const InstallmentCalendar: React.FC<InstallmentCalendarProps> = ({ plan, onClose
       window.removeEventListener('installmentPaymentRecorded', handleUpdate);
       window.removeEventListener('installmentPlanUpdated', handleUpdate);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [plan.id]);
-
-  const loadSchedule = async () => {
-    try {
-      setIsLoading(true);
-      const scheduleData = await creditCardPlanService.getSchedule(plan.id);
-      setSchedule(scheduleData);
-    } catch (error) {
-      console.error('Error al cargar calendario:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [loadSchedule, onPaymentRecorded]);
 
   const formatCurrency = (amount: number): string => {
     return formatMoneyFromPesos(amount / 100, currency);

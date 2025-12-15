@@ -1,6 +1,6 @@
 import { parseApiError, handleNetworkError } from '../utils/apiErrorHandler';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
 
 export type NotificationType = 
   | 'general'
@@ -127,13 +127,11 @@ export const notificationService = {
       }
 
       const data = await response.json();
-      
-      // Manejar paginación
+
       if (data.results && Array.isArray(data.results)) {
         return data as NotificationListResponse;
       }
-      
-      // Si no hay paginación, crear estructura compatible
+
       if (Array.isArray(data)) {
         return {
           count: data.length,
@@ -258,7 +256,6 @@ export const notificationService = {
     }
   },
 
-  // Custom Reminders
   async listCustomReminders(filters?: { is_sent?: boolean; is_read?: boolean }): Promise<CustomReminder[]> {
     try {
       const params = new URLSearchParams();
@@ -372,7 +369,6 @@ export const notificationService = {
     }
   },
 
-  // Preferences
   async getPreferences(): Promise<NotificationPreferences> {
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/preferences/`, {
@@ -381,7 +377,7 @@ export const notificationService = {
       });
 
       if (!response.ok) {
-        // Si el endpoint no existe (404), retornar preferencias por defecto
+
         if (response.status === 404) {
           return {
             id: 0,
@@ -403,7 +399,7 @@ export const notificationService = {
 
       return response.json();
     } catch (error) {
-      // Si es un error de red o el endpoint no existe, retornar preferencias por defecto
+
       if (error instanceof Error && (error.message.includes('404') || error.message.includes('fetch'))) {
         return {
           id: 0,
@@ -458,7 +454,7 @@ export const notificationService = {
       }
 
       const data = await response.json();
-      // El backend puede retornar {timezone, display_name} o {value, label}
+
       if (Array.isArray(data) && data.length > 0) {
         if ('timezone' in data[0]) {
           return data.map((tz: { timezone: string; display_name?: string }) => ({

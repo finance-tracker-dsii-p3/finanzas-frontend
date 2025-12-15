@@ -109,7 +109,7 @@ const Rules: React.FC<RulesPageProps> = ({ onBack }) => {
 
   const handleEdit = (rate: ExchangeRate) => {
     setRateToEdit(rate);
-    // Convertir el rate a número y luego a string para eliminar ceros innecesarios
+
     const cleanRate = parseFloat(rate.rate).toString();
     setFormData({
       base_currency: rate.base_currency,
@@ -146,7 +146,7 @@ const Rules: React.FC<RulesPageProps> = ({ onBack }) => {
     setIsSaving(true);
 
     try {
-      // Validar que las monedas no sean iguales
+
       if (formData.base_currency === formData.currency) {
         setFormError('La moneda base y la moneda a convertir no pueden ser iguales');
         setIsSaving(false);
@@ -173,8 +173,7 @@ const Rules: React.FC<RulesPageProps> = ({ onBack }) => {
       await loadExchangeRates();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al guardar tipo de cambio';
-      
-      // Mejorar mensajes de error específicos
+
       if (errorMessage.includes('Ya existe') || errorMessage.includes('unique') || errorMessage.includes('duplicate')) {
         setFormError(`Ya existe un tipo de cambio para ${formData.currency}/${formData.base_currency} en ${MONTHS[formData.month - 1].label} ${formData.year}. Por favor, edita el existente o elige otro período.`);
       } else if (errorMessage.includes('base') && errorMessage.includes('currency') && errorMessage.includes('iguales')) {

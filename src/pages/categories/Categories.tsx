@@ -319,8 +319,7 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ onBack }) => {
         void _ignoredType;
         await updateCategory(categoryToEdit.id, rest);
       }
-      
-      // Refrescar las categorías para asegurar que todos los componentes se actualicen
+
       try {
         await refreshCategories({ active_only: false });
       } catch {

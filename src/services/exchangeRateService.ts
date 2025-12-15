@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
 
 const getAuthHeaders = (): HeadersInit => {
   const token = localStorage.getItem('token');
@@ -18,7 +18,7 @@ export interface ExchangeRate {
   currency: Currency;
   year: number;
   month: number;
-  rate: string; // Decimal como string
+  rate: string;
   source: string;
   created_at: string;
   updated_at: string;
@@ -50,10 +50,10 @@ export interface ExchangeRateListResponse {
 }
 
 export interface ConvertCurrencyRequest {
-  amount: number; // En centavos
+  amount: number;
   from: Currency;
   to: Currency;
-  date?: string; // ISO date string
+  date?: string;
 }
 
 export interface ConvertCurrencyResponse {
@@ -68,7 +68,7 @@ export interface ConvertCurrencyResponse {
 export interface CurrentRateRequest {
   currency: Currency;
   base_currency?: Currency;
-  date?: string; // ISO date string
+  date?: string;
 }
 
 export interface CurrentRateResponse {
@@ -81,9 +81,7 @@ export interface CurrentRateResponse {
 }
 
 export const exchangeRateService = {
-  /**
-   * Lista todos los tipos de cambio con paginación
-   */
+  
   async list(params?: {
     currency?: Currency;
     base_currency?: Currency;
@@ -117,9 +115,7 @@ export const exchangeRateService = {
     }
   },
 
-  /**
-   * Obtiene un tipo de cambio por ID
-   */
+  
   async getById(id: number): Promise<ExchangeRate> {
     try {
       const response = await fetch(`${API_BASE_URL}/api/utils/exchange-rates/${id}/`, {
@@ -137,9 +133,7 @@ export const exchangeRateService = {
     }
   },
 
-  /**
-   * Crea un nuevo tipo de cambio
-   */
+  
   async create(data: CreateExchangeRateRequest): Promise<ExchangeRate> {
     try {
       const response = await fetch(`${API_BASE_URL}/api/utils/exchange-rates/`, {
@@ -161,9 +155,7 @@ export const exchangeRateService = {
     }
   },
 
-  /**
-   * Actualiza un tipo de cambio existente
-   */
+  
   async update(id: number, data: UpdateExchangeRateRequest): Promise<ExchangeRate> {
     try {
       const response = await fetch(`${API_BASE_URL}/api/utils/exchange-rates/${id}/`, {
@@ -185,9 +177,7 @@ export const exchangeRateService = {
     }
   },
 
-  /**
-   * Elimina un tipo de cambio
-   */
+  
   async delete(id: number): Promise<void> {
     try {
       const response = await fetch(`${API_BASE_URL}/api/utils/exchange-rates/${id}/`, {
@@ -203,9 +193,7 @@ export const exchangeRateService = {
     }
   },
 
-  /**
-   * Obtiene el tipo de cambio vigente para una fecha
-   */
+  
   async getCurrentRate(params: CurrentRateRequest): Promise<CurrentRateResponse> {
     try {
       const queryParams = new URLSearchParams();
@@ -229,9 +217,7 @@ export const exchangeRateService = {
     }
   },
 
-  /**
-   * Convierte un monto entre monedas
-   */
+  
   async convert(params: ConvertCurrencyRequest): Promise<ConvertCurrencyResponse> {
     try {
       const queryParams = new URLSearchParams();

@@ -20,3 +20,4 @@ describe('AboutPage', () => {
     expect(title).toBeInTheDocument();
   });
 });
+

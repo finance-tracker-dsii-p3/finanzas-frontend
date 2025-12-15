@@ -71,7 +71,7 @@ describe('NotificationPreferences', () => {
     render(<NotificationPreferences />);
 
     await waitFor(() => {
-      // El texto puede estar dividido en múltiples elementos
+
       const preferencesTexts = screen.getAllByText(/preferencias/i);
       expect(preferencesTexts.length).toBeGreaterThan(0);
       expect(screen.getByLabelText(/zona horaria/i)).toBeInTheDocument();
@@ -118,7 +118,6 @@ describe('NotificationPreferences', () => {
 
     render(<NotificationPreferences />);
 
-    // Esperar a que termine el loading y muestre el error
     await waitFor(() => {
       expect(screen.getByText(/no se pudieron cargar las preferencias/i)).toBeInTheDocument();
     });
@@ -289,7 +288,6 @@ describe('NotificationPreferences', () => {
       expect(screen.getByRole('button', { name: /guardar preferencias/i })).toBeInTheDocument();
     });
 
-    // Guardar para mostrar éxito
     const submitButton = screen.getByRole('button', { name: /guardar preferencias/i });
     await user.click(submitButton);
 
@@ -297,7 +295,6 @@ describe('NotificationPreferences', () => {
       expect(screen.getByText(/preferencias actualizadas correctamente/i)).toBeInTheDocument();
     });
 
-    // Cambiar un valor
     const languageSelect = screen.getByLabelText(/idioma/i);
     await user.selectOptions(languageSelect, 'en');
 

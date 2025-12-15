@@ -208,10 +208,10 @@ describe('Bills', () => {
     });
 
     await waitFor(() => {
-      // Buscar los selects por su rol
+
       const selects = screen.getAllByRole('combobox');
       expect(selects.length).toBeGreaterThan(0);
-      // Buscar el input de proveedor
+
       const providerInput = screen.getByPlaceholderText(/buscar proveedor/i);
       expect(providerInput).toBeInTheDocument();
     });
@@ -244,12 +244,11 @@ describe('Bills', () => {
     });
 
     await waitFor(() => {
-      // Buscar el select de estado por su valor por defecto
+
       const selects = screen.getAllByRole('combobox');
       expect(selects.length).toBeGreaterThan(0);
     });
 
-    // Encontrar el select que tiene "Todos" como valor
     const selects = screen.getAllByRole('combobox');
     const statusSelect = selects.find(select => (select as HTMLSelectElement).value === 'all');
     
@@ -306,7 +305,6 @@ describe('Bills', () => {
       expect(screen.getByText('Netflix')).toBeInTheDocument();
     });
 
-    // Buscar botones de eliminar
     const deleteButtons = screen.getAllByRole('button').filter(btn => 
       btn.textContent?.includes('Eliminar') || btn.getAttribute('aria-label')?.includes('eliminar')
     );

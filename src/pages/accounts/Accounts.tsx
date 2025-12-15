@@ -91,7 +91,6 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
     }
   };
 
-  // Agrupar balances por moneda (solo activos)
   const balancesByCurrency = accounts
     .filter(acc => acc.is_active === true && acc.account_type === 'asset')
     .reduce((acc, account) => {
@@ -104,7 +103,6 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
       return acc;
     }, {} as Record<Currency, number>);
 
-  // Agrupar deudas por moneda (solo pasivos)
   const debtsByCurrency = accounts
     .filter(acc => acc.is_active === true && acc.account_type === 'liability')
     .reduce((acc, account) => {
@@ -121,7 +119,7 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
     if (accountId) {
       const existingAccount = accounts.find(acc => acc.id === accountId);
       const newBalanceInPesos = accountData.current_balance;
-      // El current_balance del backend ya viene en pesos (no en centavos)
+
       const oldBalanceInPesos = existingAccount?.current_balance;
       
       const accountUpdateData: CreateAccountData = { ...accountData };
@@ -130,14 +128,14 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
       await accountService.updateAccount(accountId, accountUpdateData);
       
       if (newBalanceInPesos !== undefined) {
-        // El backend espera recibir el saldo en pesos (no multiplicar por 100)
+
         if (newBalanceInPesos !== oldBalanceInPesos) {
           await accountService.updateBalance(accountId, newBalanceInPesos, 'Actualización desde edición de cuenta');
         }
       }
     } else {
-      // El backend espera recibir el saldo en pesos (no multiplicar por 100)
-      // accountData.current_balance ya está en pesos, no necesita conversión
+
+
       await accountService.createAccount(accountData);
     }
     await loadAccounts();
@@ -222,22 +220,21 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
 
   if (selectedCard && selectedCard.category === 'credit_card') {
     const creditDetails = selectedCard.credit_card_details;
-    // credit_limit viene en PESOS desde el backend (DecimalField), NO en centavos
-    // creditDetails.credit_limit también viene en PESOS (Decimal)
+
+
     const creditLimit = creditDetails?.credit_limit ?? selectedCard.credit_limit ?? 0;
-    // current_balance también viene en PESOS desde el backend
+
     const currentBalance = selectedCard.current_balance ?? 0;
     
     let available = 0;
-    // creditDetails.available_credit viene en PESOS (Decimal), NO en centavos
+
     if (creditDetails?.available_credit !== undefined && creditDetails.available_credit !== null) {
       available = creditDetails.available_credit;
     } else if (creditLimit > 0) {
       available = Math.max(0, creditLimit + currentBalance);
     }
     available = isNaN(available) || !isFinite(available) ? 0 : available;
-    
-    // creditDetails.used_credit, current_debt y total_paid vienen en PESOS (Decimal), NO en centavos
+
     const usedCredit = creditDetails?.used_credit ?? Math.abs(currentBalance);
     const currentDebt = creditDetails?.current_debt ?? currentBalance;
     const totalPaid = creditDetails?.total_paid ?? 0;
@@ -381,16 +378,14 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
               };
 
               const creditDetails = account.credit_card_details;
-              // credit_limit y current_balance vienen en PESOS desde el backend (DecimalField), NO en centavos
+
               const creditLimit = creditDetails?.credit_limit ?? account.credit_limit ?? 0;
               const currentBalance = account.current_balance ?? 0;
-              
-              // creditDetails.used_credit viene en PESOS (Decimal), NO en centavos
+
               const usedCredit = creditDetails?.used_credit ?? Math.abs(currentBalance);
               const currentDebt = creditDetails?.current_debt ? creditDetails.current_debt / 100 : currentBalance;
               const totalPaid = creditDetails?.total_paid ? creditDetails.total_paid / 100 : 0;
-              
-              // creditDetails.available_credit viene en PESOS (Decimal), NO en centavos
+
               let available = 0;
               if (creditDetails?.available_credit !== undefined && creditDetails.available_credit !== null) {
                 available = creditDetails.available_credit;
@@ -512,7 +507,7 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                        </div>
                      </div>
 
-                    {/* Información detallada de uso - Solo visible cuando está expandida */}
+                    {}
                     {isExpanded && isBalanceVisible && (
                       <div className="mb-4 p-3 bg-white/10 rounded-lg backdrop-blur-sm space-y-2">
                         <div className="grid grid-cols-2 gap-2 text-xs">
@@ -554,7 +549,7 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                       </div>
                     )}
 
-                    {/* Información adicional y barra de uso - Solo visible cuando está expandida */}
+                    {}
                     {isExpanded && (
                       <>
                         <div className="mb-4 space-y-2">
@@ -727,7 +722,7 @@ const Accounts: React.FC<AccountsProps> = ({ onBack }) => {
                     </p>
                   </div>
 
-                  {/* Información compacta en grid */}
+                  {}
                   <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <p className="text-xs text-gray-600 mb-0.5">Moneda</p>

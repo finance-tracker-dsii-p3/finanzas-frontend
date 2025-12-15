@@ -1,11 +1,9 @@
-/* ============================================
-   SISTEMA RESPONSIVE GLOBAL
-   ============================================ */
 
-/* Breakpoints estándar */
-/* sm: 640px, md: 768px, lg: 1024px, xl: 1280px, 2xl: 1536px */
 
-/* Utilidades responsive para contenedores */
+
+
+
+
 .container-responsive {
   width: 100%;
   margin-left: auto;
@@ -28,7 +26,7 @@
   }
 }
 
-/* Grid responsive */
+
 .grid-responsive {
   display: grid;
   grid-template-columns: 1fr;
@@ -49,7 +47,7 @@
   }
 }
 
-/* Cards grid responsive */
+
 .cards-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -76,7 +74,7 @@
   }
 }
 
-/* Flex responsive */
+
 .flex-responsive {
   display: flex;
   flex-direction: column;
@@ -90,7 +88,7 @@
   }
 }
 
-/* Header responsive */
+
 .header-responsive {
   display: flex;
   flex-direction: column;
@@ -107,7 +105,7 @@
   }
 }
 
-/* Navigation responsive */
+
 .nav-responsive {
   display: flex;
   flex-direction: column;
@@ -125,7 +123,7 @@
   }
 }
 
-/* Navigation tabs responsive */
+
 .nav-tabs-responsive {
   display: flex;
   flex-wrap: wrap;
@@ -161,7 +159,7 @@
   }
 }
 
-/* Modal responsive */
+
 .modal-responsive {
   width: 95%;
   max-width: 500px;
@@ -183,7 +181,7 @@
   }
 }
 
-/* Form responsive */
+
 .form-responsive {
   display: flex;
   flex-direction: column;
@@ -207,7 +205,7 @@
   }
 }
 
-/* Table responsive */
+
 .table-responsive {
   width: 100%;
   overflow-x: auto;
@@ -224,7 +222,7 @@
   }
 }
 
-/* Filters panel responsive */
+
 .filters-panel-responsive {
   display: flex;
   flex-direction: column;
@@ -240,7 +238,7 @@
   }
 }
 
-/* Actions responsive */
+
 .actions-responsive {
   display: flex;
   flex-direction: column;
@@ -255,7 +253,7 @@
   }
 }
 
-/* Text responsive */
+
 .text-responsive-sm {
   font-size: 0.875rem;
 }
@@ -296,7 +294,7 @@
   }
 }
 
-/* Spacing responsive */
+
 .p-responsive {
   padding: 1rem;
 }
@@ -329,7 +327,7 @@
   }
 }
 
-/* Hide/Show responsive */
+
 .hide-mobile {
   display: none;
 }
@@ -350,7 +348,7 @@
   }
 }
 
-/* Button group responsive */
+
 .button-group-responsive {
   display: flex;
   flex-direction: column;
@@ -365,7 +363,7 @@
   }
 }
 
-/* Stats cards responsive */
+
 .stats-grid-responsive {
   display: grid;
   grid-template-columns: 1fr;
@@ -384,7 +382,7 @@
   }
 }
 
-/* Sidebar responsive */
+
 .sidebar-responsive {
   width: 100%;
   padding: 1rem;
@@ -397,7 +395,7 @@
   }
 }
 
-/* Main content responsive */
+
 .main-content-responsive {
   width: 100%;
   padding: 1rem;
@@ -410,7 +408,7 @@
   }
 }
 
-/* Dashboard layout responsive */
+
 .dashboard-layout-responsive {
   display: flex;
   flex-direction: column;
@@ -424,7 +422,7 @@
   }
 }
 
-/* Card actions responsive */
+
 .card-actions-responsive {
   display: flex;
   flex-direction: column;
@@ -437,7 +435,7 @@
   }
 }
 
-/* Empty state responsive */
+
 .empty-state-responsive {
   padding: 2rem 1rem;
   text-align: center;
@@ -449,7 +447,7 @@
   }
 }
 
-/* Loading responsive */
+
 .loading-responsive {
   padding: 2rem 1rem;
 }
@@ -460,7 +458,7 @@
   }
 }
 
-/* Error banner responsive */
+
 .error-banner-responsive {
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
@@ -473,7 +471,7 @@
   }
 }
 
-/* Input group responsive */
+
 .input-group-responsive {
   display: flex;
   flex-direction: column;
@@ -487,14 +485,14 @@
   }
 }
 
-/* Badge group responsive */
+
 .badge-group-responsive {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-/* Icon button responsive */
+
 .icon-button-responsive {
   padding: 0.5rem;
   min-width: 2.5rem;
@@ -509,7 +507,7 @@
   }
 }
 
-/* Menu dropdown responsive */
+
 .menu-dropdown-responsive {
   position: absolute;
   right: 0;
@@ -525,7 +523,7 @@
   }
 }
 
-/* Profile menu responsive */
+
 .profile-menu-responsive {
   position: absolute;
   right: 0;
@@ -541,7 +539,7 @@
   }
 }
 
-/* Chart container responsive */
+
 .chart-container-responsive {
   width: 100%;
   height: 300px;
@@ -561,7 +559,7 @@
   }
 }
 
-/* Print styles */
+
 @media print {
   .no-print {
     display: none !important;
@@ -572,7 +570,7 @@
   }
 }
 
-/* Touch device optimizations */
+
 @media (hover: none) and (pointer: coarse) {
   .hover-lift:hover {
     transform: none;
@@ -584,7 +582,7 @@
   }
 }
 
-/* High DPI displays */
+
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .icon-button-responsive {
     image-rendering: -webkit-optimize-contrast;

@@ -1,6 +1,6 @@
 import { parseApiError, handleNetworkError } from '../utils/apiErrorHandler';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
 
 export type AlertType = 'warning' | 'exceeded';
 
@@ -73,7 +73,7 @@ export const alertService = {
       return response.json();
     } catch (error) {
       handleNetworkError(error);
-      throw error; // Nunca se alcanza, pero satisface TypeScript
+      throw error;
     }
   },
 
@@ -91,7 +91,7 @@ export const alertService = {
       return response.json();
     } catch (error) {
       handleNetworkError(error);
-      throw error; // Nunca se alcanza, pero satisface TypeScript
+      throw error;
     }
   },
 
@@ -110,7 +110,7 @@ export const alertService = {
       return response.json();
     } catch (error) {
       handleNetworkError(error);
-      throw error; // Nunca se alcanza, pero satisface TypeScript
+      throw error;
     }
   },
 
@@ -128,7 +128,7 @@ export const alertService = {
       return response.json();
     } catch (error) {
       handleNetworkError(error);
-      throw error; // Nunca se alcanza, pero satisface TypeScript
+      throw error;
     }
   },
 
@@ -144,7 +144,7 @@ export const alertService = {
       }
     } catch (error) {
       handleNetworkError(error);
-      throw error; // Nunca se alcanza, pero satisface TypeScript
+      throw error;
     }
   },
 };

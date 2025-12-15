@@ -1,0 +1,1450 @@
+﻿
+> finanzas-frontend@1.0.0 test:coverage
+> vitest run --coverage
+
+
+ RUN  v4.0.15 C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend
+      Coverage enabled with v8
+
+node.exe : stderr | src/pages/profile/ProfilePage.test.tsx > ProfilePage > debe renderizar el componente
+En línea: 1 Carácter: 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\SHADOW\AppData\Roaming ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (stderr | src/pa...r el componente:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error loading summary: Error: No se pudo conectar con el servidor. Verifica tu conexi├│n a internet y que el backend 
+est├® ejecut├índose.
+    at handleNetworkError (C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/utils/apiErrorHandler.ts:177:13)
+    at Object.getSummary 
+(C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/services/notificationService.ts:256:7)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/context/NotificationContext.tsx:123:27
+
+stderr | src/pages/profile/ProfilePage.test.tsx > ProfilePage > debe mostrar los campos del formulario
+Error loading summary: Error: No se pudo conectar con el servidor. Verifica tu conexi├│n a internet y que el backend 
+est├® ejecut├índose.
+    at handleNetworkError (C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/utils/apiErrorHandler.ts:177:13)
+    at Object.getSummary 
+(C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/services/notificationService.ts:256:7)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/context/NotificationContext.tsx:123:27
+
+stderr | src/pages/profile/ProfilePage.test.tsx > ProfilePage > debe mostrar los campos del formulario
+Error loading summary: Error: No se pudo conectar con el servidor. Verifica tu conexi├│n a internet y que el backend 
+est├® ejecut├índose.
+    at handleNetworkError (C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/utils/apiErrorHandler.ts:177:13)
+    at Object.getSummary 
+(C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/services/notificationService.ts:256:7)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/context/NotificationContext.tsx:123:27
+
+stderr | src/pages/profile/ProfilePage.test.tsx > ProfilePage > debe mostrar el formulario de cambio de contrase├▒a
+Error loading summary: Error: No se pudo conectar con el servidor. Verifica tu conexi├│n a internet y que el backend 
+est├® ejecut├índose.
+    at handleNetworkError (C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/utils/apiErrorHandler.ts:177:13)
+    at Object.getSummary 
+(C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/services/notificationService.ts:256:7)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/context/NotificationContext.tsx:123:27
+
+stdout | src/components/NewMovementModal.test.tsx > NewMovementModal > debe crear un movimiento de gasto correctamente
+[DEBUG] Total sin GMF en pesos: 100000, Total en centavos: 10000000, GMF estimado: 400
+
+stdout | src/components/NewMovementModal.test.tsx > NewMovementModal > debe crear un movimiento de gasto correctamente
+[DEBUG] Verificando asignaci├│n a meta: {
+  type: 'expense',
+  selectedGoal: null,
+  goalAmount: '',
+  'selectedGoal existe': false,
+  'goalAmount existe': false
+}
+[DEBUG] ÔØî No se crear├í transacci├│n de ahorro. Razones: {
+  'Es ingreso': false,
+  'Tiene meta seleccionada': false,
+  'Tiene monto asignado': false
+}
+
+ ÔØ» src/pages/profile/ProfilePage.test.tsx (4 tests | 3 failed) 3412ms
+     ├ù debe renderizar el componente 1235ms
+     Ô£ô debe cargar el perfil del usuario 76ms
+     ├ù debe mostrar los campos del formulario 1052ms
+     ├ù debe mostrar el formulario de cambio de contrase├▒a 1046ms
+ Ô£ô src/components/NewMovementModal.test.tsx (70 tests) 7944ms
+     Ô£ô debe permitir escribir en el campo de nota  341ms
+     Ô£ô debe validar que el monto sea mayor a cero  374ms
+     Ô£ô debe crear un movimiento de gasto correctamente  1637ms
+     Ô£ô debe calcular el total cuando se ingresa base e IVA  488ms
+ Ô£ô src/components/NewAccountModal.test.tsx (60 tests) 9194ms
+     Ô£ô debe renderizar el modal de nueva cuenta  347ms
+     Ô£ô debe manejar el guardado de cuenta con todos los campos  394ms
+     Ô£ô debe validar n├║mero de cuenta para cuentas bancarias  405ms
+     Ô£ô debe permitir guardar cuenta de efectivo sin n├║mero de cuenta  312ms
+     Ô£ô debe completar flujo completo de creaci├│n de cuenta bancaria  548ms
+     Ô£ô debe completar flujo completo de creaci├│n de tarjeta de cr├®dito  506ms
+     Ô£ô debe validar que efectivo y otros no requieran n├║mero de cuenta  374ms
+     Ô£ô debe manejar guardado exitoso de cuenta completa  571ms
+ Ô£ô src/pages/register/Register.test.tsx (10 tests) 7679ms
+     Ô£ô debe mostrar validaci├│n de contrase├▒a en tiempo real  646ms
+     Ô£ô debe validar que la contrase├▒a tenga may├║scula, min├║scula, n├║mero y car├ícter especial  315ms
+     Ô£ô debe mostrar error si las contrase├▒as no coinciden  671ms
+     Ô£ô debe registrar usuario exitosamente con datos v├ílidos  1741ms
+     Ô£ô debe mostrar error si el registro falla  1980ms
+     Ô£ô debe mostrar estado de carga durante el registro  1942ms
+ Ô£ô src/components/CustomReminderModal.test.tsx (17 tests) 3098ms
+     Ô£ô debe validar que la fecha/hora sea futura  313ms
+     Ô£ô debe llamar a onSave con los datos correctos  539ms
+     Ô£ô debe recortar espacios en blanco del t├¡tulo y mensaje  390ms
+ Ô£ô src/pages/movements/Movements.test.tsx (17 tests) 4746ms
+     Ô£ô debe renderizar la p├ígina de movimientos  306ms
+     Ô£ô debe abrir el modal de nuevo movimiento al hacer clic  502ms
+     Ô£ô debe filtrar movimientos por tipo  345ms
+     Ô£ô debe buscar movimientos por t├®rmino de b├║squeda  929ms
+     Ô£ô debe eliminar un movimiento  575ms
+     Ô£ô debe duplicar un movimiento  455ms
+ Ô£ô src/components/AlertCenter.test.tsx (23 tests) 3047ms
+ Ô£ô src/pages/login/Login.test.tsx (9 tests) 2680ms
+     Ô£ô debe permitir escribir en los campos  526ms
+     Ô£ô debe mostrar error cuando el login falla  536ms
+     Ô£ô debe llamar a login con las credenciales correctas  567ms
+     Ô£ô debe mostrar estado de carga durante el login  528ms
+ Ô£ô src/pages/notifications/Notifications.test.tsx (21 tests) 2873ms
+     Ô£ô debe crear recordatorio personalizado  790ms
+stderr | src/pages/dashboard/Dashboard.test.tsx > Dashboard > debe mostrar error cuando falla la carga del dashboard
+Error al cargar dashboard financiero: Error: Error de red
+    at C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/src/pages/dashboard/Dashboard.test.tsx:158:7
+    at file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/@vitest/runner/dist/index.js:145:11
+    at file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/@vitest/runner/dist/index.js:915:26
+    at file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/@vitest/runner/dist/index.js:1240:20
+    at new Promise (<anonymous>)
+    at runWithTimeout 
+(file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/@vitest/runner/dist/index.js:1206:10)
+    at file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/@vitest/runner/dist/index.js:1650:37
+    at Traces.$ (file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/vitest/dist/chunks/traces.U
+4xDYhzZ.js:115:27)
+    at trace 
+(file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/vitest/dist/chunks/test.BT8LKgU9.js:239:21)
+    at runTest 
+(file:///C:/Users/SHADOW/Desktop/Desarrollo3/finanzas-frontend/node_modules/@vitest/runner/dist/index.js:1650:12)
+
+ Ô£ô src/pages/dashboard/Dashboard.test.tsx (15 tests) 3017ms
+     Ô£ô debe cambiar de vista al hacer clic en un bot├│n de navegaci├│n  475ms
+     Ô£ô debe cambiar el mes seleccionado  456ms
+ Ô£ô src/components/NotificationPreferences.test.tsx (13 tests) 1935ms
+     Ô£ô debe actualizar preferencias al enviar el formulario  390ms
+ Ô£ô src/pages/admin/AdminUsers.test.tsx (18 tests) 2972ms
+     Ô£ô debe permitir buscar usuarios por texto  440ms
+     Ô£ô debe permitir editar informaci├│n del usuario en el modal  553ms
+ Ô£ô src/pages/bills/Bills.test.tsx (14 tests) 2448ms
+     Ô£ô debe abrir modal para crear factura  436ms
+     Ô£ô debe filtrar facturas por estado  326ms
+ Ô£ô src/pages/goals/Goals.test.tsx (10 tests) 897ms
+ Ô£ô src/pages/forgot-password/ForgotPassword.test.tsx (5 tests) 1576ms
+     Ô£ô debe permitir escribir en el campo de email  393ms
+     Ô£ô debe enviar el formulario correctamente  415ms
+     Ô£ô debe mostrar error cuando falla la solicitud  423ms
+ Ô£ô src/pages/accounts/Accounts.test.tsx (17 tests) 1409ms
+ Ô£ô src/components/NotificationCenter.test.tsx (12 tests) 1256ms
+ Ô£ô src/pages/soats/SOATs.test.tsx (12 tests) 1656ms
+     Ô£ô debe abrir modal para crear SOAT  323ms
+ Ô£ô src/pages/cards/CardDetail.test.tsx (5 tests) 809ms
+     Ô£ô debe llamar a onBack cuando se hace clic en volver  319ms
+ Ô£ô src/components/BaseCurrencySelector.test.tsx (9 tests) 1433ms
+ Ô£ô src/pages/categories/Categories.test.tsx (13 tests) 1271ms
+ Ô£ô src/pages/budgets/Budgets.test.tsx (10 tests) 1137ms
+ Ô£ô src/components/NewGoalModal.test.tsx (4 tests) 952ms
+     Ô£ô debe validar que el monto sea mayor a cero  548ms
+ Ô£ô src/pages/vehicles/Vehicles.test.tsx (9 tests) 1130ms
+     Ô£ô debe abrir modal para crear veh├¡culo  322ms
+     Ô£ô debe crear veh├¡culo correctamente  363ms
+ Ô£ô src/pages/analytics/Analytics.test.tsx (5 tests) 673ms
+     Ô£ô debe llamar a onBack cuando se hace clic en volver  318ms
+ Ô£ô src/pages/reports/Reports.test.tsx (12 tests) 1088ms
+ Ô£ô src/pages/rules/Rules.test.tsx (5 tests) 1767ms
+     Ô£ô debe renderizar el componente  354ms
+     Ô£ô debe mostrar el bot├│n de volver  470ms
+     Ô£ô debe llamar a onBack cuando se hace clic en volver  557ms
+ Ô£ô src/components/CategoryTransactionsModal.test.tsx (11 tests) 886ms
+ Ô£ô src/components/MovementDetailModal.test.tsx (17 tests) 926ms
+ Ô£ô src/context/AlertContext.test.tsx (11 tests) 778ms
+ Ô£ô src/components/CreateInstallmentPlanModal.test.tsx (4 tests) 685ms
+ Ô£ô src/components/BaseCurrencySettings.test.tsx (5 tests) 658ms
+ Ô£ô src/pages/reset-password/ResetPassword.test.tsx (4 tests) 709ms
+     Ô£ô debe permitir escribir en los campos de contrase├▒a  507ms
+ Ô£ô src/components/EditInstallmentPlanModal.test.tsx (3 tests) 548ms
+ Ô£ô src/context/NotificationContext.test.tsx (14 tests) 551ms
+ Ô£ô src/components/RuleForm.test.tsx (3 tests) 508ms
+     Ô£ô debe llamar a onClose cuando se hace clic en cerrar  378ms
+ Ô£ô src/components/AnalyticsIndicators.test.tsx (8 tests) 585ms
+ Ô£ô src/components/ConfirmModal.test.tsx (7 tests) 656ms
+ Ô£ô src/components/PaymentInstallmentModal.test.tsx (3 tests) 384ms
+ Ô£ô src/pages/home/HomePage.test.tsx (5 tests) 472ms
+ Ô£ô src/components/NewBudgetModal.test.tsx (3 tests) 428ms
+ Ô£ô src/context/CategoryContext.test.tsx (9 tests) 307ms
+ Ô£ô src/components/PeriodComparison.test.tsx (4 tests) 269ms
+ Ô£ô src/components/RecentTransactions.test.tsx (9 tests) 337ms
+ Ô£ô src/components/InstallmentCalendar.test.tsx (3 tests) 388ms
+ Ô£ô src/pages/success/Success.test.tsx (6 tests) 331ms
+ Ô£ô src/components/UpcomingBills.test.tsx (8 tests) 289ms
+ Ô£ô src/components/ExpensesDonutChart.test.tsx (5 tests) 214ms
+ Ô£ô src/context/BudgetContext.test.tsx (10 tests) 303ms
+ Ô£ô src/components/DailyFlowChart.test.tsx (5 tests) 260ms
+ Ô£ô src/App.test.tsx (15 tests) 198ms
+ Ô£ô src/components/ProtectedAdminRoute.test.tsx (4 tests) 89ms
+stdout | src/services/transactionService.test.ts > transactionService > create > debe crear una transacci├│n de gasto
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 119000,
+  category: 1,
+  tax_percentage: 19,
+  tag: 'almuerzo',
+  note: 'Almuerzo con amigos'
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create > debe crear una transferencia
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 3,
+  date: '2025-01-15',
+  total_amount: 50000,
+  destination_account: 2,
+  note: 'Transferencia'
+}
+[DEBUG] total_amount tipo: number valor: 50000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create > debe crear un pago a tarjeta de cr├®dito con capital e intereses
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 3,
+  date: '2025-01-15',
+  total_amount: 450000,
+  destination_account: 3,
+  note: 'Pago tarjeta'
+}
+[DEBUG] total_amount tipo: number valor: 450000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create > debe redondear montos a enteros
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 119000
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > duplicate > debe duplicar una transacci├│n
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-12-15',
+  total_amount: 119000,
+  tax_percentage: 19,
+  tag: 'almuerzo',
+  note: 'Almuerzo con amigos (duplicado)'
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > duplicate > debe duplicar una transacci├│n con newDate
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-02-15',
+  total_amount: 119000,
+  tax_percentage: 19,
+  tag: 'almuerzo',
+  note: 'Almuerzo con amigos (duplicado)'
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > duplicate > debe duplicar una transacci├│n sin note original
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-12-15',
+  total_amount: 119000,
+  tax_percentage: 19,
+  tag: 'almuerzo',
+  note: 'Duplicado'
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > parseError > debe parsear errores de campos espec├¡ficos
+[DEBUG] Enviando al backend: { origin_account: 1, type: 2, date: '2025-01-15', total_amount: 1000 }
+[DEBUG] total_amount tipo: number valor: 1000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar transacciones con goal (tipo 4)
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 4,
+  date: '2025-01-15',
+  total_amount: 100000,
+  goal: 1
+}
+[DEBUG] total_amount tipo: number valor: 100000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar transacciones con transaction_currency
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 100000
+}
+[DEBUG] total_amount tipo: number valor: 100000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar base_amount con tax_percentage
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 119000,
+  tax_percentage: 19
+}
+[DEBUG] total_amount tipo: number valor: 119000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar total_amount como float y convertirlo a entero
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 100000
+}
+[DEBUG] total_amount tipo: number valor: 100000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar tag vac├¡o o null
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 100000
+}
+[DEBUG] total_amount tipo: number valor: 100000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar tag vac├¡o o null
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 100000
+}
+[DEBUG] total_amount tipo: number valor: 100000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar note vac├¡o o null
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 100000
+}
+[DEBUG] total_amount tipo: number valor: 100000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+stdout | src/services/transactionService.test.ts > transactionService > create - casos adicionales > debe manejar note vac├¡o o null
+[DEBUG] Enviando al backend: {
+  origin_account: 1,
+  type: 2,
+  date: '2025-01-15',
+  total_amount: 100000
+}
+[DEBUG] total_amount tipo: number valor: 100000
+[DEBUG] base_amount tipo: undefined valor: undefined
+
+ Ô£ô src/services/transactionService.test.ts (47 tests) 69ms
+ Ô£ô src/components/FinanceAnimation.test.tsx (3 tests) 110ms
+ Ô£ô src/main.test.tsx (2 tests) 95ms
+ Ô£ô src/services/notificationService.test.ts (31 tests) 74ms
+ Ô£ô src/components/ProtectedRoute.test.tsx (3 tests) 75ms
+ Ô£ô src/utils/apiErrorHandler.test.ts (37 tests) 72ms
+ Ô£ô src/services/authService.test.ts (52 tests) 64ms
+ Ô£ô src/pages/about/AboutPage.test.tsx (2 tests) 56ms
+ Ô£ô src/utils/currencyUtils.test.ts (15 tests) 52ms
+ Ô£ô src/services/baseCurrencyService.test.ts (10 tests) 40ms
+ Ô£ô src/services/accountService.test.ts (20 tests) 33ms
+ Ô£ô src/services/vehicleService.test.ts (28 tests) 34ms
+ Ô£ô src/services/billService.test.ts (19 tests) 33ms
+ Ô£ô src/utils/errorHandler.test.ts (24 tests) 33ms
+ Ô£ô src/services/categoryService.test.ts (15 tests) 31ms
+ Ô£ô src/services/exchangeRateService.test.ts (17 tests) 32ms
+ Ô£ô src/services/ruleService.test.ts (14 tests) 31ms
+ Ô£ô src/services/alertService.test.ts (12 tests) 26ms
+ Ô£ô src/services/userAdminService.test.ts (12 tests) 27ms
+ Ô£ô src/services/analyticsService.test.ts (10 tests) 27ms
+ Ô£ô src/services/creditCardPlanService.test.ts (10 tests) 28ms
+ Ô£ô src/utils/authErrorHandler.test.ts (9 tests) 28ms
+ Ô£ô src/services/budgetService.test.ts (11 tests) 29ms
+ Ô£ô src/services/goalService.test.ts (10 tests) 28ms
+ Ô£ô src/services/dashboardService.test.ts (6 tests) 24ms
+ Ô£ô src/utils/financingCategoryUtils.test.ts (9 tests) 21ms
+ Ô£ô src/utils/cookieUtils.test.ts (12 tests) 17ms
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ» Failed Tests 3 ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»
+
+ FAIL  src/pages/profile/ProfilePage.test.tsx > ProfilePage > debe renderizar el componente
+TestingLibraryElementError: Found multiple elements with the text: /perfil/i
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<h1[39m
+  [33mclass[39m=[32m"text-3xl font-bold text-gray-900 mb-2"[39m
+[36m>[39m
+  [0mMi Perfil[0m
+[36m</h1>[39m
+
+Ignored nodes: comments, script, style
+[36m<button[39m
+  [33mclass[39m=[32m"text-sm text-blue-600 hover:text-blue-700 font-medium mb-6"[39m
+[36m>[39m
+  [0mCambiar foto de perfil[0m
+[36m</button>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or 
+`findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"profile-container min-h-screen bg-gray-50"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"profile-header bg-white border-b border-gray-200 sticky top-0 z-10"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center justify-between h-16"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-8"[39m
+            [36m>[39m
+              [36m<img[39m
+                [33malt[39m=[32m"eBalance"[39m
+                [33mclass[39m=[32m"h-8 w-auto"[39m
+                [33msrc[39m=[32m"/logo.png"[39m
+              [36m/>[39m
+              [36m<nav[39m
+                [33mclass[39m=[32m"hidden md:flex gap-6"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mDashboard[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mMovimientos[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mPresupuestos[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mReportes[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mCuentas[0m
+                [36m</a>[39m
+              [36m</nav>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"profile-button p-2 hover:bg-gray-100 rounded-lg transition-colors"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-button-avatar w-8 h-8 bg-blue-600 rounded-full flex items-center 
+justify-center text-white font-medium"[39m
+                  [36m>[39m
+                    [0mT[0m
+                  [36m</div>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<main[39m
+        [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"[39m
+      [36m>[39m
+        [36m<a[39m
+          [33mhref[39m=[32m"/dashboard"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m12 19-7-7 7-7"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M19 12H5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<span>[39m
+            [0mVolver al inicio[0m
+          [36m</span>[39m
+        [36m</a>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"profile-title mb-6"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-3xl font-bold text-gray-900 mb-2"[39m
+          [36m>[39m
+            [0mMi Perfil[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-gray-600"[39m
+          [36m>[39m
+            [0mGestiona tu informaci├│n personal y preferencias[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid grid-cols-1 lg:grid-cols-3 gap-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"lg:col-span-1"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"profile-card bg-white rounded-xl shadow-sm border border-gray-200 p-6"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col items-center"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"profile-avatar-container relative mb-4"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-avatar w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 
+rounded-full flex items-center justify-center text-white text-2xl font-bold"[39m
+                  [36m>[39m
+                    [0mT[0m
+                    [0mU[0m
+                  [36m</div>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"profile-avatar-button absolute bottom-0 right-0 bg-blue-600 text-white p-2 
+rounded-full hover:bg-blue-700 transition-colors"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-camera w-4 h-4"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 
+2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"[39m
+                      [36m/>[39m
+                      [36m<circle[39m
+                        [33mcx[39m=[32m"12"[39m
+                        [33mcy[39m=[32m"13"[39m
+                        [33mr[39m=[32m"3"[39m
+  ...
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"profile-container min-h-screen bg-gray-50"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"profile-header bg-white border-b border-gray-200 sticky top-0 z-10"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center justify-between h-16"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-8"[39m
+              [36m>[39m
+                [36m<img[39m
+                  [33malt[39m=[32m"eBalance"[39m
+                  [33mclass[39m=[32m"h-8 w-auto"[39m
+                  [33msrc[39m=[32m"/logo.png"[39m
+                [36m/>[39m
+                [36m<nav[39m
+                  [33mclass[39m=[32m"hidden md:flex gap-6"[39m
+                [36m>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mDashboard[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mMovimientos[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mPresupuestos[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mReportes[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mCuentas[0m
+                  [36m</a>[39m
+                [36m</nav>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"profile-button p-2 hover:bg-gray-100 rounded-lg transition-colors"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"profile-button-avatar w-8 h-8 bg-blue-600 rounded-full flex items-center 
+justify-center text-white font-medium"[39m
+                    [36m>[39m
+                      [0mT[0m
+                    [36m</div>[39m
+                  [36m</button>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</header>[39m
+        [36m<main[39m
+          [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"[39m
+        [36m>[39m
+          [36m<a[39m
+            [33mhref[39m=[32m"/dashboard"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m12 19-7-7 7-7"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M19 12H5"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mVolver al inicio[0m
+            [36m</span>[39m
+          [36m</a>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"profile-title mb-6"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-3xl font-bold text-gray-900 mb-2"[39m
+            [36m>[39m
+              [0mMi Perfil[0m
+            [36m</h1>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-gray-600"[39m
+            [36m>[39m
+              [0mGestiona tu informaci├│n personal y preferencias[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 lg:grid-cols-3 gap-6"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"lg:col-span-1"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"profile-card bg-white rounded-xl shadow-sm border border-gray-200 p-6"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex flex-col items-center"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-avatar-container relative mb-4"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"profile-avatar w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 
+rounded-full flex items-center justify-center text-white text-2xl font-bold"[39m
+                    [36m>[39m
+                      [0mT[0m
+                      [0mU[0m
+                    [36m</div>[39m
+                    [36m<button[39m
+                      [33mclass[39m=[32m"profile-avatar-button absolute bottom-0 right-0 bg-blue-600 text-white p-2 
+rounded-full hover:bg-blue-700 transition-colors"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-camera w-4 h-4"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1...
+ ÔØ» Module.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ÔØ» src/pages/profile/ProfilePage.test.tsx:71:11
+     69|     render(<ProfilePage />);
+     70|     
+     71|     await waitFor(() => {
+       |           ^
+     72|       expect(screen.getByText(/perfil/i)).toBeInTheDocument();
+     73|     });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/3]ÔÄ»
+
+ FAIL  src/pages/profile/ProfilePage.test.tsx > ProfilePage > debe mostrar los campos del formulario
+TestingLibraryElementError: Found a label with the text of: /nombre/i, however no form control was found associated to 
+that label. Make sure you're using the "for" attribute or "aria-labelledby" attribute correctly.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"profile-container min-h-screen bg-gray-50"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"profile-header bg-white border-b border-gray-200 sticky top-0 z-10"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center justify-between h-16"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-8"[39m
+            [36m>[39m
+              [36m<img[39m
+                [33malt[39m=[32m"eBalance"[39m
+                [33mclass[39m=[32m"h-8 w-auto"[39m
+                [33msrc[39m=[32m"/logo.png"[39m
+              [36m/>[39m
+              [36m<nav[39m
+                [33mclass[39m=[32m"hidden md:flex gap-6"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mDashboard[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mMovimientos[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mPresupuestos[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mReportes[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mCuentas[0m
+                [36m</a>[39m
+              [36m</nav>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"profile-button p-2 hover:bg-gray-100 rounded-lg transition-colors"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-button-avatar w-8 h-8 bg-blue-600 rounded-full flex items-center 
+justify-center text-white font-medium"[39m
+                  [36m>[39m
+                    [0mT[0m
+                  [36m</div>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<main[39m
+        [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"[39m
+      [36m>[39m
+        [36m<a[39m
+          [33mhref[39m=[32m"/dashboard"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m12 19-7-7 7-7"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M19 12H5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<span>[39m
+            [0mVolver al inicio[0m
+          [36m</span>[39m
+        [36m</a>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"profile-title mb-6"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-3xl font-bold text-gray-900 mb-2"[39m
+          [36m>[39m
+            [0mMi Perfil[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-gray-600"[39m
+          [36m>[39m
+            [0mGestiona tu informaci├│n personal y preferencias[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid grid-cols-1 lg:grid-cols-3 gap-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"lg:col-span-1"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"profile-card bg-white rounded-xl shadow-sm border border-gray-200 p-6"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col items-center"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"profile-avatar-container relative mb-4"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-avatar w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 
+rounded-full flex items-center justify-center text-white text-2xl font-bold"[39m
+                  [36m>[39m
+                    [0mT[0m
+                    [0mU[0m
+                  [36m</div>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"profile-avatar-button absolute bottom-0 right-0 bg-blue-600 text-white p-2 
+rounded-full hover:bg-blue-700 transition-colors"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-camera w-4 h-4"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 
+2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"[39m
+                      [36m/>[39m
+                      [36m<circle[39m
+                        [33mcx[39m=[32m"12"[39m
+                        [33mcy[39m=[32m"13"[39m
+                        [33mr[39m=[32m"3"[39m
+  ...
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"profile-container min-h-screen bg-gray-50"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"profile-header bg-white border-b border-gray-200 sticky top-0 z-10"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center justify-between h-16"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-8"[39m
+              [36m>[39m
+                [36m<img[39m
+                  [33malt[39m=[32m"eBalance"[39m
+                  [33mclass[39m=[32m"h-8 w-auto"[39m
+                  [33msrc[39m=[32m"/logo.png"[39m
+                [36m/>[39m
+                [36m<nav[39m
+                  [33mclass[39m=[32m"hidden md:flex gap-6"[39m
+                [36m>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mDashboard[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mMovimientos[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mPresupuestos[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mReportes[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mCuentas[0m
+                  [36m</a>[39m
+                [36m</nav>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"profile-button p-2 hover:bg-gray-100 rounded-lg transition-colors"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"profile-button-avatar w-8 h-8 bg-blue-600 rounded-full flex items-center 
+justify-center text-white font-medium"[39m
+                    [36m>[39m
+                      [0mT[0m
+                    [36m</div>[39m
+                  [36m</button>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</header>[39m
+        [36m<main[39m
+          [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"[39m
+        [36m>[39m
+          [36m<a[39m
+            [33mhref[39m=[32m"/dashboard"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m12 19-7-7 7-7"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M19 12H5"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mVolver al inicio[0m
+            [36m</span>[39m
+          [36m</a>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"profile-title mb-6"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-3xl font-bold text-gray-900 mb-2"[39m
+            [36m>[39m
+              [0mMi Perfil[0m
+            [36m</h1>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-gray-600"[39m
+            [36m>[39m
+              [0mGestiona tu informaci├│n personal y preferencias[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 lg:grid-cols-3 gap-6"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"lg:col-span-1"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"profile-card bg-white rounded-xl shadow-sm border border-gray-200 p-6"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex flex-col items-center"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-avatar-container relative mb-4"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"profile-avatar w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 
+rounded-full flex items-center justify-center text-white text-2xl font-bold"[39m
+                    [36m>[39m
+                      [0mT[0m
+                      [0mU[0m
+                    [36m</div>[39m
+                    [36m<button[39m
+                      [33mclass[39m=[32m"profile-avatar-button absolute bottom-0 right-0 bg-blue-600 text-white p-2 
+rounded-full hover:bg-blue-700 transition-colors"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-camera w-4 h-4"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1...
+ ÔØ» Module.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ÔØ» src/pages/profile/ProfilePage.test.tsx:87:11
+     85|     render(<ProfilePage />);
+     86|     
+     87|     await waitFor(() => {
+       |           ^
+     88|       expect(screen.getByLabelText(/nombre/i)).toBeInTheDocument();
+     89|       expect(screen.getByLabelText(/apellido/i)).toBeInTheDocument();
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[2/3]ÔÄ»
+
+ FAIL  src/pages/profile/ProfilePage.test.tsx > ProfilePage > debe mostrar el formulario de cambio de contrase├▒a
+TestingLibraryElementError: Found a label with the text of: /contrase├▒a actual/i, however no form control was found 
+associated to that label. Make sure you're using the "for" attribute or "aria-labelledby" attribute correctly.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"profile-container min-h-screen bg-gray-50"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"profile-header bg-white border-b border-gray-200 sticky top-0 z-10"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center justify-between h-16"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-8"[39m
+            [36m>[39m
+              [36m<img[39m
+                [33malt[39m=[32m"eBalance"[39m
+                [33mclass[39m=[32m"h-8 w-auto"[39m
+                [33msrc[39m=[32m"/logo.png"[39m
+              [36m/>[39m
+              [36m<nav[39m
+                [33mclass[39m=[32m"hidden md:flex gap-6"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mDashboard[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mMovimientos[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mPresupuestos[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mReportes[0m
+                [36m</a>[39m
+                [36m<a[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mCuentas[0m
+                [36m</a>[39m
+              [36m</nav>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"profile-button p-2 hover:bg-gray-100 rounded-lg transition-colors"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-button-avatar w-8 h-8 bg-blue-600 rounded-full flex items-center 
+justify-center text-white font-medium"[39m
+                  [36m>[39m
+                    [0mT[0m
+                  [36m</div>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<main[39m
+        [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"[39m
+      [36m>[39m
+        [36m<a[39m
+          [33mhref[39m=[32m"/dashboard"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m12 19-7-7 7-7"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M19 12H5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<span>[39m
+            [0mVolver al inicio[0m
+          [36m</span>[39m
+        [36m</a>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"profile-title mb-6"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-3xl font-bold text-gray-900 mb-2"[39m
+          [36m>[39m
+            [0mMi Perfil[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-gray-600"[39m
+          [36m>[39m
+            [0mGestiona tu informaci├│n personal y preferencias[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid grid-cols-1 lg:grid-cols-3 gap-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"lg:col-span-1"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"profile-card bg-white rounded-xl shadow-sm border border-gray-200 p-6"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col items-center"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"profile-avatar-container relative mb-4"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-avatar w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 
+rounded-full flex items-center justify-center text-white text-2xl font-bold"[39m
+                  [36m>[39m
+                    [0mT[0m
+                    [0mU[0m
+                  [36m</div>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"profile-avatar-button absolute bottom-0 right-0 bg-blue-600 text-white p-2 
+rounded-full hover:bg-blue-700 transition-colors"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-camera w-4 h-4"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 
+2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"[39m
+                      [36m/>[39m
+                      [36m<circle[39m
+                        [33mcx[39m=[32m"12"[39m
+                        [33mcy[39m=[32m"13"[39m
+                        [33mr[39m=[32m"3"[39m
+  ...
+
+Ignored nodes: comments, script, style
+
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"profile-container min-h-screen bg-gray-50"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"profile-header bg-white border-b border-gray-200 sticky top-0 z-10"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center justify-between h-16"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-8"[39m
+              [36m>[39m
+                [36m<img[39m
+                  [33malt[39m=[32m"eBalance"[39m
+                  [33mclass[39m=[32m"h-8 w-auto"[39m
+                  [33msrc[39m=[32m"/logo.png"[39m
+                [36m/>[39m
+                [36m<nav[39m
+                  [33mclass[39m=[32m"hidden md:flex gap-6"[39m
+                [36m>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mDashboard[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mMovimientos[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mPresupuestos[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mReportes[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mhref[39m=[32m"/dashboard"[39m
+                  [36m>[39m
+                    [0mCuentas[0m
+                  [36m</a>[39m
+                [36m</nav>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"profile-button p-2 hover:bg-gray-100 rounded-lg transition-colors"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"profile-button-avatar w-8 h-8 bg-blue-600 rounded-full flex items-center 
+justify-center text-white font-medium"[39m
+                    [36m>[39m
+                      [0mT[0m
+                    [36m</div>[39m
+                  [36m</button>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</header>[39m
+        [36m<main[39m
+          [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"[39m
+        [36m>[39m
+          [36m<a[39m
+            [33mhref[39m=[32m"/dashboard"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m12 19-7-7 7-7"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M19 12H5"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mVolver al inicio[0m
+            [36m</span>[39m
+          [36m</a>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"profile-title mb-6"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-3xl font-bold text-gray-900 mb-2"[39m
+            [36m>[39m
+              [0mMi Perfil[0m
+            [36m</h1>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-gray-600"[39m
+            [36m>[39m
+              [0mGestiona tu informaci├│n personal y preferencias[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 lg:grid-cols-3 gap-6"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"lg:col-span-1"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"profile-card bg-white rounded-xl shadow-sm border border-gray-200 p-6"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex flex-col items-center"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"profile-avatar-container relative mb-4"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"profile-avatar w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 
+rounded-full flex items-center justify-center text-white text-2xl font-bold"[39m
+                    [36m>[39m
+                      [0mT[0m
+                      [0mU[0m
+                    [36m</div>[39m
+                    [36m<button[39m
+                      [33mclass[39m=[32m"profile-avatar-button absolute bottom-0 right-0 bg-blue-600 text-white p-2 
+rounded-full hover:bg-blue-700 transition-colors"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-camera w-4 h-4"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1...
+ ÔØ» Module.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ÔØ» src/pages/profile/ProfilePage.test.tsx:97:11
+     95|     render(<ProfilePage />);
+     96|     
+     97|     await waitFor(() => {
+       |           ^
+     98|       expect(screen.getByLabelText(/contrase├▒a actual/i)).toBeInTheDocÔÇª
+     99|       expect(screen.getByLabelText(/nueva contrase├▒a/i)).toBeInTheDocuÔÇª
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[3/3]ÔÄ»
+
+ Test Files  1 failed | 78 passed (79)
+      Tests  3 failed | 1032 passed (1035)
+   Start at  11:48:58
+   Duration  101.05s (transform 6.03s, setup 37.49s, import 26.89s, tests 85.05s, environment 103.56s)
+

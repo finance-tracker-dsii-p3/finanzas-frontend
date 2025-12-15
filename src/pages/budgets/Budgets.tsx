@@ -76,7 +76,7 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
     try {
       await refreshBudgets({ active_only: activeOnly, period: 'monthly' });
     } catch {
-      // Intentionally empty
+      void 0;
     }
   }, [activeOnly, refreshBudgets]);
 
@@ -141,7 +141,7 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
       await deleteBudget(budgetToDelete.id);
       setBudgetToDelete(null);
     } catch {
-      // Intentionally empty
+      void 0;
     } finally {
       setIsDeleting(false);
     }
@@ -322,11 +322,11 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
                         {budget.category_icon ? (
                           <i className={`fa-solid ${budget.category_icon}`} aria-hidden="true"></i>
                         ) : (
-                          budget.category_name.charAt(0).toUpperCase()
+                          budget.category_name?.charAt(0).toUpperCase() || '?'
                         )}
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{budget.category_name}</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">{budget.category_name || 'Sin categoría'}</h3>
                         <p className="text-sm text-gray-500">
                           {budget.calculation_mode_display} · {budget.period_display}
                         </p>
@@ -438,11 +438,11 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
                     {budgetDetail.category_icon ? (
                       <i className={`fa-solid ${budgetDetail.category_icon}`} aria-hidden="true"></i>
                     ) : (
-                      budgetDetail.category_name.charAt(0).toUpperCase()
+                      budgetDetail.category_name?.charAt(0).toUpperCase() || '?'
                     )}
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900">{budgetDetail.category_name}</h2>
+                    <h2 className="text-xl font-semibold text-gray-900">{budgetDetail.category_name || 'Sin categoría'}</h2>
                     <p className="text-sm text-gray-500">
                       {budgetDetail.calculation_mode_display} · {budgetDetail.period_display}
                     </p>
@@ -563,7 +563,7 @@ const Budgets: React.FC<BudgetsProps> = ({ onBack, onViewMovements }) => {
               </div>
 
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                <p className="font-medium text-gray-900">{budgetToDelete.category_name}</p>
+                <p className="font-medium text-gray-900">{budgetToDelete.category_name || 'Sin categoría'}</p>
                 <p className="text-sm text-gray-500">
                   Límite: {formatCurrency(budgetToDelete.amount)} · {budgetToDelete.period_display}
                 </p>

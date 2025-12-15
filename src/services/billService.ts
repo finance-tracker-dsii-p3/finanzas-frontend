@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
 
 export interface Bill {
   id: number;
@@ -94,9 +94,7 @@ const getAuthHeaders = () => {
 import { parseApiError, handleNetworkError } from '../utils/apiErrorHandler';
 
 export const billService = {
-  /**
-   * Listar facturas del usuario
-   */
+  
   async listBills(filters?: {
     status?: 'pending' | 'paid' | 'overdue';
     provider?: string;
@@ -134,9 +132,7 @@ export const billService = {
     }
   },
 
-  /**
-   * Obtener detalle de una factura
-   */
+  
   async getBill(billId: number): Promise<Bill> {
     const response = await fetch(`${API_BASE_URL}/api/bills/${billId}/`, {
       method: 'GET',
@@ -150,9 +146,7 @@ export const billService = {
     return response.json();
   },
 
-  /**
-   * Crear factura
-   */
+  
   async createBill(data: CreateBillData): Promise<Bill> {
     const response = await fetch(`${API_BASE_URL}/api/bills/`, {
       method: 'POST',
@@ -167,9 +161,7 @@ export const billService = {
     return response.json();
   },
 
-  /**
-   * Actualizar factura
-   */
+  
   async updateBill(billId: number, data: UpdateBillData): Promise<Bill> {
     const response = await fetch(`${API_BASE_URL}/api/bills/${billId}/`, {
       method: 'PATCH',
@@ -184,9 +176,7 @@ export const billService = {
     return response.json();
   },
 
-  /**
-   * Eliminar factura
-   */
+  
   async deleteBill(billId: number): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/api/bills/${billId}/`, {
       method: 'DELETE',
@@ -198,9 +188,7 @@ export const billService = {
     }
   },
 
-  /**
-   * Registrar pago de factura
-   */
+  
   async registerPayment(billId: number, data: BillPaymentData): Promise<BillPaymentResponse> {
     const response = await fetch(`${API_BASE_URL}/api/bills/${billId}/register_payment/`, {
       method: 'POST',
@@ -215,9 +203,7 @@ export const billService = {
     return response.json();
   },
 
-  /**
-   * Actualizar estado de la factura
-   */
+  
   async updateStatus(billId: number): Promise<{ id: number; status: string; days_until_due: number; is_paid: boolean }> {
     const response = await fetch(`${API_BASE_URL}/api/bills/${billId}/update_status/`, {
       method: 'POST',
@@ -231,9 +217,7 @@ export const billService = {
     return response.json();
   },
 
-  /**
-   * Obtener facturas pendientes
-   */
+  
   async getPendingBills(): Promise<Bill[]> {
     const response = await fetch(`${API_BASE_URL}/api/bills/pending/`, {
       method: 'GET',
@@ -247,9 +231,7 @@ export const billService = {
     return response.json();
   },
 
-  /**
-   * Obtener facturas atrasadas
-   */
+  
   async getOverdueBills(): Promise<Bill[]> {
     const response = await fetch(`${API_BASE_URL}/api/bills/overdue/`, {
       method: 'GET',
@@ -265,9 +247,7 @@ export const billService = {
 };
 
 export const billReminderService = {
-  /**
-   * Listar recordatorios de facturas
-   */
+  
   async listReminders(filters?: {
     is_read?: boolean;
     reminder_type?: 'upcoming' | 'due_today' | 'overdue';
@@ -292,9 +272,7 @@ export const billReminderService = {
     return Array.isArray(data) ? data : (data.results || []);
   },
 
-  /**
-   * Obtener detalle de un recordatorio
-   */
+  
   async getReminder(reminderId: number): Promise<BillReminder> {
     const response = await fetch(`${API_BASE_URL}/api/bill-reminders/${reminderId}/`, {
       method: 'GET',
@@ -308,9 +286,7 @@ export const billReminderService = {
     return response.json();
   },
 
-  /**
-   * Marcar recordatorio como leído
-   */
+  
   async markAsRead(reminderId: number): Promise<{ id: number; is_read: boolean; read_at: string; message: string }> {
     const response = await fetch(`${API_BASE_URL}/api/bill-reminders/${reminderId}/mark_read/`, {
       method: 'POST',
@@ -324,9 +300,7 @@ export const billReminderService = {
     return response.json();
   },
 
-  /**
-   * Marcar todos los recordatorios como leídos
-   */
+  
   async markAllAsRead(): Promise<{ message: string; updated_count: number }> {
     const response = await fetch(`${API_BASE_URL}/api/bill-reminders/mark_all_read/`, {
       method: 'POST',

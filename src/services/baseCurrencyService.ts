@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
 
 const getAuthHeaders = (): HeadersInit => {
   const token = localStorage.getItem('token');
@@ -29,9 +29,7 @@ export interface SetBaseCurrencyResponse {
 }
 
 export const baseCurrencyService = {
-  /**
-   * Obtiene la moneda base configurada del usuario
-   */
+  
   async getBaseCurrency(): Promise<BaseCurrencyResponse> {
     try {
       const response = await fetch(`${API_BASE_URL}/api/utils/base-currency/`, {
@@ -49,9 +47,7 @@ export const baseCurrencyService = {
     }
   },
 
-  /**
-   * Establece o actualiza la moneda base del usuario
-   */
+  
   async setBaseCurrency(currency: Currency): Promise<SetBaseCurrencyResponse> {
     try {
       const response = await fetch(`${API_BASE_URL}/api/utils/base-currency/set_base/`, {

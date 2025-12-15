@@ -116,7 +116,7 @@ describe('CategoriesPage', () => {
     });
 
     const numbers = screen.getAllByText(/^[123]$/);
-    expect(numbers.length).toBeGreaterThanOrEqual(3); // Al menos 3 números (2, 1, 3)
+    expect(numbers.length).toBeGreaterThanOrEqual(3);
   });
 
   it('debe mostrar el botón de nueva categoría', () => {
@@ -203,7 +203,7 @@ describe('CategoriesPage', () => {
     render(<CategoriesPage onBack={mockOnBack} />);
     
     await waitFor(() => {
-      // El componente debería manejar el error
+
       expect(screen.getByText(/categorías/i)).toBeInTheDocument();
     });
   });

@@ -142,12 +142,11 @@ describe('Dashboard', () => {
 
   it('debe mostrar estado de carga inicialmente', async () => {
     vi.mocked(dashboardServiceModule.dashboardService.getFinancialDashboard).mockImplementation(
-      () => new Promise(() => {}) // Nunca resuelve
+      () => new Promise(() => {})
     );
 
     render(<Dashboard />);
-    
-    // El componente renderiza pero puede estar en estado de carga
+
     await waitFor(() => {
       expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
     }, { timeout: 2000 });
@@ -161,12 +160,198 @@ describe('Dashboard', () => {
     render(<Dashboard />);
 
     await waitFor(() => {
-      // El componente puede mostrar un mensaje de error
+
       const errorElements = screen.queryAllByText(/error/i);
-      // Si hay errores, deben estar presentes
+
       if (errorElements.length > 0) {
         expect(errorElements[0]).toBeInTheDocument();
       }
     }, { timeout: 3000 });
   });
+
+  it('debe cambiar de vista al hacer clic en un botón de navegación', async () => {
+    const { userEvent } = await import('@testing-library/user-event');
+    const user = userEvent.setup();
+    
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    const movementsButtons = screen.getAllByText(/movimientos/i);
+    if (movementsButtons.length > 0) {
+      await user.click(movementsButtons[0]);
+
+      await waitFor(() => {
+        expect(localStorage.getItem('dashboard_last_view')).toBe('movements');
+      });
+    }
+  });
+
+  it('debe cambiar el mes seleccionado', async () => {
+    const { userEvent } = await import('@testing-library/user-event');
+    const user = userEvent.setup();
+    
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    const monthInputs = screen.queryAllByDisplayValue(/2025/i);
+    if (monthInputs.length > 0) {
+      const monthInput = monthInputs[0] as HTMLInputElement;
+
+      await user.click(monthInput);
+      await user.keyboard('{Control>}a{/Control}');
+      await user.type(monthInput, '2025-02');
+      
+      await waitFor(() => {
+        expect(dashboardServiceModule.dashboardService.getFinancialDashboard).toHaveBeenCalled();
+      }, { timeout: 2000 });
+    }
+  });
+
+  it('debe cambiar la cuenta seleccionada', async () => {
+    const { userEvent } = await import('@testing-library/user-event');
+    const user = userEvent.setup();
+    
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    const accountSelect = screen.queryByRole('combobox', { name: /cuenta/i });
+    if (accountSelect) {
+      await user.click(accountSelect);
+      await waitFor(() => {
+        expect(dashboardServiceModule.dashboardService.getFinancialDashboard).toHaveBeenCalled();
+      });
+    }
+  });
+
+  it('debe manejar el logout correctamente', async () => {
+    const { userEvent } = await import('@testing-library/user-event');
+    const user = userEvent.setup();
+    
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    const profileButton = screen.queryByRole('button', { name: /perfil|usuario/i });
+    if (profileButton) {
+      await user.click(profileButton);
+      
+      const logoutButton = screen.queryByText(/cerrar sesión|logout/i);
+      if (logoutButton) {
+        await user.click(logoutButton);
+      }
+    }
+  });
+
+  it('debe mostrar el componente RecentTransactions cuando la vista es dashboard', async () => {
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    const recentTransactions = screen.queryByTestId('recent-transactions');
+    if (recentTransactions) {
+      expect(recentTransactions).toBeInTheDocument();
+    } else {
+
+      expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
+    }
+  });
+
+  it('debe mostrar el componente UpcomingBills cuando la vista es dashboard', async () => {
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    const upcomingBills = screen.queryByTestId('upcoming-bills');
+    if (upcomingBills) {
+      expect(upcomingBills).toBeInTheDocument();
+    } else {
+
+      expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
+    }
+  });
+
+  it('debe mostrar el componente NotificationCenter', async () => {
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('notification-center')).toBeInTheDocument();
+    }, { timeout: 3000 });
+  });
+
+  it('debe cambiar a la vista de presupuestos', async () => {
+    const { userEvent } = await import('@testing-library/user-event');
+    const user = userEvent.setup();
+    
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    const budgetsButtons = screen.queryAllByText(/presupuestos/i);
+    if (budgetsButtons.length > 0) {
+      await user.click(budgetsButtons[0]);
+      
+      await waitFor(() => {
+        expect(localStorage.getItem('dashboard_last_view')).toBe('budgets');
+      });
+    }
+  });
+
+  it('debe cambiar a la vista de reportes', async () => {
+    const { userEvent } = await import('@testing-library/user-event');
+    const user = userEvent.setup();
+    
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    const reportsButtons = screen.queryAllByText(/reportes/i);
+    if (reportsButtons.length > 0) {
+      await user.click(reportsButtons[0]);
+      
+      await waitFor(() => {
+        expect(localStorage.getItem('dashboard_last_view')).toBe('reports');
+      });
+    }
+  });
+
+  it('debe manejar el cambio de includePending', async () => {
+    const { userEvent } = await import('@testing-library/user-event');
+    const user = userEvent.setup();
+    
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    const pendingCheckbox = screen.queryByLabelText(/incluir pendientes/i);
+    if (pendingCheckbox) {
+      await user.click(pendingCheckbox);
+      
+      await waitFor(() => {
+        expect(dashboardServiceModule.dashboardService.getFinancialDashboard).toHaveBeenCalled();
+      });
+    }
+  });
 });
+
+

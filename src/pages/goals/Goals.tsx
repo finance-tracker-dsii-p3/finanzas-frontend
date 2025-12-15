@@ -193,7 +193,7 @@ const Goals: React.FC<GoalsProps> = ({ onBack: _onBack }) => {
                     )}
                   </div>
 
-                  {/* Barra de progreso */}
+                  {}
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-semibold text-gray-700">
@@ -219,7 +219,7 @@ const Goals: React.FC<GoalsProps> = ({ onBack: _onBack }) => {
                     </div>
                   </div>
 
-                  {/* Información adicional */}
+                  {}
                   <div className="space-y-2 mb-4">
                     {!goal.is_completed && (
                       <div className="flex items-center gap-2 text-sm">
@@ -259,7 +259,7 @@ const Goals: React.FC<GoalsProps> = ({ onBack: _onBack }) => {
                     </div>
                   )}
 
-                  {/* Acciones */}
+                  {}
                   <div className="flex gap-2 pt-4 border-t border-gray-200">
                     <button
                       onClick={() => handleEdit(goal)}

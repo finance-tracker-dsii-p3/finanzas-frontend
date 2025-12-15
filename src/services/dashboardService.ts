@@ -1,32 +1,32 @@
 import { parseApiError } from '../utils/apiErrorHandler';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
 
 export interface FinancialSummary {
-  total_income: number;          // Centavos
-  total_expenses: number;        // Centavos
-  total_savings: number;         // Centavos
-  total_iva: number;             // Centavos
-  total_gmf: number;             // Centavos
-  net_balance: number;           // Centavos
+  total_income: number;
+  total_expenses: number;
+  total_savings: number;
+  total_iva: number;
+  total_gmf: number;
+  net_balance: number;
   currency: string;
 }
 
 export interface DashboardFilters {
   year: number | null;
-  month: number | null;           // 1-12
+  month: number | null;
   account_id: number | null;
-  period_label: string;           // "Diciembre 2025"
+  period_label: string;
 }
 
 export interface RecentTransaction {
   id: number;
-  type: string;                   // "Income", "Expense", etc.
-  type_code: number;              // 1, 2, 3, 4
-  date: string;                   // ISO format
+  type: string;
+  type_code: number;
+  date: string;
   description: string;
-  amount: number;                 // Centavos
-  amount_formatted: string;       // "$3.504"
+  amount: number;
+  amount_formatted: string;
   currency: string;
   account: string;
   category: string | null;
@@ -37,14 +37,14 @@ export interface RecentTransaction {
 export interface UpcomingBill {
   id: number;
   provider: string;
-  amount: number;                 // Centavos
+  amount: number;
   amount_formatted: string;
-  due_date: string;               // ISO format
-  days_until_due: number;         // Negativo si está vencida
+  due_date: string;
+  days_until_due: number;
   status: 'pending' | 'paid' | 'overdue';
   urgency: 'overdue' | 'today' | 'urgent' | 'soon' | 'normal';
   urgency_label: string;
-  urgency_color: string;          // Color hex
+  urgency_color: string;
   suggested_account: string | null;
   suggested_account_id: number | null;
   category: string | null;
@@ -57,7 +57,7 @@ export interface UpcomingBill {
 export interface CategoryDistribution {
   id: number;
   name: string;
-  amount: number;                 // Centavos
+  amount: number;
   count: number;
   percentage: number;
   color: string;
@@ -67,15 +67,15 @@ export interface CategoryDistribution {
 
 export interface ExpenseDistribution {
   categories: CategoryDistribution[];
-  total: number;                  // Centavos
+  total: number;
   total_formatted?: string;
   has_data: boolean;
 }
 
 export interface DailyFlow {
-  dates: string[];                // ["2025-12-01", ...]
-  income: number[];               // Centavos por fecha
-  expenses: number[];             // Centavos por fecha
+  dates: string[];
+  income: number[];
+  expenses: number[];
   total_income: number;
   total_expenses: number;
   has_data: boolean;

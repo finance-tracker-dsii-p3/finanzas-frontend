@@ -110,7 +110,7 @@ describe('PeriodComparison', () => {
 
   it('debe mostrar estado de carga inicialmente', () => {
     vi.mocked(analyticsServiceModule.analyticsService.comparePeriods).mockImplementation(
-      () => new Promise(() => {}) // Nunca resuelve
+      () => new Promise(() => {})
     );
 
     render(<PeriodComparison />);
@@ -142,3 +142,4 @@ describe('PeriodComparison', () => {
     });
   });
 });
+

@@ -280,7 +280,7 @@
   color: #6b7280;
 }
 
-/* Reutilizar estilos de vehicles.css */
+
 .soats-page .loading-container,
 .soats-page .error-banner,
 .soats-page .empty-state,
@@ -302,6 +302,6 @@
 .soats-page .badge-success,
 .soats-page .badge-warning,
 .soats-page .badge-danger {
-  /* Estilos compartidos con vehicles.css */
+  
 }
 

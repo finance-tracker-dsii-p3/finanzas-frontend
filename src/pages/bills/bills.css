@@ -268,7 +268,7 @@
   margin-right: 0.5rem;
 }
 
-/* Reutilizar estilos de soats.css */
+
 .bills-page .loading-container,
 .bills-page .error-banner,
 .bills-page .empty-state,
@@ -293,6 +293,6 @@
 .bills-page .badge-success,
 .bills-page .badge-warning,
 .bills-page .badge-danger {
-  /* Estilos compartidos con soats.css y vehicles.css */
+  
 }
 

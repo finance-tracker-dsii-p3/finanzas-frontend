@@ -200,7 +200,7 @@
   transform: translateX(4px);
 }
 
-/* Responsive Grid Utilities */
+
 .stats-grid-responsive {
   display: grid;
   grid-template-columns: 1fr;
@@ -241,7 +241,7 @@
   }
 }
 
-/* Animaciones mejoradas para botones de tarjetas */
+
 .cards-grid button,
 .cards-grid .card-button {
   position: relative;
@@ -289,7 +289,7 @@
   z-index: 1;
 }
 
-/* Animación para iconos dentro de los botones */
+
 .cards-grid button svg,
 .cards-grid .card-button svg {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -305,7 +305,7 @@
   transform: translateX(4px);
 }
 
-/* Animaciones para tarjetas de presupuestos */
+
 .budget-card-item {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   animation: fadeInUp 0.4s ease-out forwards;
@@ -342,7 +342,7 @@
   border-color: #9ca3af;
 }
 
-/* Animaciones para botones de texto (Ver todos, etc.) */
+
 button[class*="text-blue-600"],
 button[class*="text-sm"] {
   position: relative;
@@ -359,7 +359,7 @@ button[class*="text-sm"]:hover svg {
   transform: translateX(2px);
 }
 
-/* Animaciones para iconos en botones */
+
 button svg {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -368,7 +368,7 @@ button:hover svg {
   transform: translateX(2px);
 }
 
-/* Espaciado mejorado para navegación desktop */
+
 .nav-tabs-responsive.desktop-nav {
   gap: 1.25rem;
 }
@@ -385,14 +385,14 @@ button:hover svg {
   }
 }
 
-/* Mobile Menu Improvements */
+
 @media (max-width: 767px) {
-  /* Force hide desktop navigation on mobile */
+  
   nav.nav-tabs-responsive.desktop-nav {
     display: none !important;
   }
   
-  /* Style mobile menu when visible */
+  
   nav.nav-tabs-responsive.mobile-nav {
     max-height: calc(100vh - 4rem);
     overflow-y: auto;

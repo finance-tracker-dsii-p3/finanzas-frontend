@@ -156,14 +156,13 @@ describe('SOATs', () => {
       expect(screen.getByText('ABC123')).toBeInTheDocument();
     });
 
-    // Buscar el botón en el header (no en el empty state)
     const createButtons = screen.getAllByRole('button', { name: /nuevo soat/i });
     await act(async () => {
       await user.click(createButtons[0]);
     });
 
     await waitFor(() => {
-      // Buscar el modal por el label de vehículo que solo aparece en el modal
+
       expect(screen.getByLabelText(/veh.*culo/i)).toBeInTheDocument();
     });
   });
@@ -201,7 +200,7 @@ describe('SOATs', () => {
     });
 
     await waitFor(() => {
-      // Buscar el select por su valor por defecto "all"
+
       const selects = screen.getAllByRole('combobox');
       expect(selects.length).toBeGreaterThan(0);
     });
@@ -254,13 +253,12 @@ describe('SOATs', () => {
       expect(screen.getByText('ABC123')).toBeInTheDocument();
     });
 
-    // Buscar botones de eliminar por rol o texto
     const deleteButtons = screen.getAllByRole('button').filter(btn => 
       btn.textContent?.includes('Eliminar') || btn.getAttribute('aria-label')?.includes('eliminar')
     );
     
     if (deleteButtons.length === 0) {
-      // Si no hay botones con texto, buscar por icono o cualquier botón cerca del SOAT
+
       const soatCard = screen.getByText('ABC123').closest('div');
       const buttons = soatCard?.querySelectorAll('button') || [];
       const deleteBtn = Array.from(buttons).find(btn => btn.textContent?.toLowerCase().includes('eliminar'));

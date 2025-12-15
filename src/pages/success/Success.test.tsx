@@ -58,12 +58,12 @@ describe('Success', () => {
 
   it('debe mostrar enlace de desarrollo cuando resetUrl está presente', () => {
     render(
-      <MemoryRouter initialEntries={[{ state: { type: 'forgot', resetUrl: 'http://test.com/reset' } }]}>
+      <MemoryRouter initialEntries={[{ state: { type: 'forgot', resetUrl: 'http://localhost:8000/reset-password?token=abc123' } }]}>
         <Success />
       </MemoryRouter>
     );
 
-    expect(screen.getByText('http://test.com/reset')).toBeInTheDocument();
+    expect(screen.getByText('http://localhost:8000/reset-password?token=abc123')).toBeInTheDocument();
   });
 
   it('debe mostrar botón de reenviar cuando no es reset success', () => {
@@ -91,3 +91,5 @@ describe('Success', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/forgot-password');
   });
 });
+
+

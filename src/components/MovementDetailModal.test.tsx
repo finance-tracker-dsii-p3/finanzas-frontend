@@ -245,7 +245,7 @@ describe('MovementDetailModal', () => {
   it('debe formatear correctamente los montos en pesos colombianos', () => {
     const movementWithLargeAmount = {
       ...mockMovement,
-      total_amount: 10000000, // 100,000 pesos en centavos
+      total_amount: 10000000,
       base_amount: 10000000,
     };
     
@@ -255,11 +255,10 @@ describe('MovementDetailModal', () => {
         onClose={mockOnClose} 
       />
     );
-    
-    // Verificar que el monto se formatea correctamente (puede aparecer múltiples veces en diferentes secciones)
+
     const amounts = screen.getAllByText(/\$.*100.*000/i);
     expect(amounts.length).toBeGreaterThan(0);
-    // Verificar que al menos uno de los montos es el esperado
+
     expect(amounts.some(el => el.textContent?.includes('100.000'))).toBe(true);
   });
 
@@ -270,8 +269,7 @@ describe('MovementDetailModal', () => {
         onClose={mockOnClose} 
       />
     );
-    
-    // Verificar que se muestra la información de transferencia
+
     expect(screen.getByText('Cuenta Origen')).toBeInTheDocument();
     expect(screen.getByText('Cuenta Destino')).toBeInTheDocument();
   });

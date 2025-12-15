@@ -279,7 +279,7 @@ describe('Movements', () => {
     );
     
     await waitFor(() => {
-      // Buscar específicamente el encabezado "Base" de la columna de desglose fiscal
+
       const baseHeaders = screen.getAllByText(/^base$/i);
       expect(baseHeaders.length).toBeGreaterThan(0);
       expect(screen.getByText(/iva/i)).toBeInTheDocument();
@@ -550,7 +550,7 @@ describe('Movements', () => {
     );
 
     await waitFor(() => {
-      // Verificar que se muestra la información de la transferencia
+
       const transferTexts = screen.getAllByText(/transferencia/i);
       expect(transferTexts.length).toBeGreaterThan(0);
     });

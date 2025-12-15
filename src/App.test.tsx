@@ -164,7 +164,7 @@ describe('App', () => {
     render(<App />);
     
     expect(screen.getByTestId('protected-route')).toBeInTheDocument();
-    // El componente usa lazy loading, así que puede mostrar el fallback de carga
+
     expect(screen.getByText('Cargando...')).toBeInTheDocument();
   });
 
@@ -173,7 +173,7 @@ describe('App', () => {
     render(<App />);
     
     expect(screen.getByTestId('protected-route')).toBeInTheDocument();
-    // El componente usa lazy loading, así que puede mostrar el fallback de carga
+
     expect(screen.getByText('Cargando...')).toBeInTheDocument();
   });
 

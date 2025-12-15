@@ -107,7 +107,6 @@ describe('Notifications Page', () => {
   it('debe renderizar la página de notificaciones', () => {
     render(<Notifications />);
 
-    // Puede haber múltiples elementos con "notificaciones"
     const notificationsTexts = screen.getAllByText(/notificaciones/i);
     expect(notificationsTexts.length).toBeGreaterThan(0);
     expect(screen.getByText(/gestiona tus alertas/i)).toBeInTheDocument();
@@ -142,7 +141,7 @@ describe('Notifications Page', () => {
     render(<Notifications />);
 
     expect(screen.getByText(/no leídas \(1\)/i)).toBeInTheDocument();
-    // Puede haber múltiples elementos con "leídas"
+
     const readTexts = screen.getAllByText(/leídas \(1\)/i);
     expect(readTexts.length).toBeGreaterThan(0);
   });
@@ -169,7 +168,7 @@ describe('Notifications Page', () => {
 
     await waitFor(() => {
       expect(screen.getByText(mockNotification.title)).toBeInTheDocument();
-      // El filtro puede no ocultar completamente, solo verificar que la primera está presente
+
     });
   });
 
@@ -188,7 +187,7 @@ describe('Notifications Page', () => {
 
     await waitFor(() => {
       expect(screen.getByText(mockNotification.title)).toBeInTheDocument();
-      // El filtro puede mostrar ambas en diferentes secciones
+
     });
   });
 
@@ -266,7 +265,7 @@ describe('Notifications Page', () => {
     await user.click(remindersTab);
 
     await waitFor(() => {
-      // Puede haber múltiples elementos con este texto
+
       const remindersTexts = screen.getAllByText(/recordatorios personalizados/i);
       expect(remindersTexts.length).toBeGreaterThan(0);
     });
@@ -288,7 +287,6 @@ describe('Notifications Page', () => {
 
     render(<Notifications />);
 
-    // Cambiar a pestaña de recordatorios
     const remindersTab = screen.getByRole('button', { name: /recordatorios/i });
     await user.click(remindersTab);
 
@@ -314,7 +312,7 @@ describe('Notifications Page', () => {
     await user.click(createButton);
 
     await waitFor(() => {
-      // Puede haber múltiples elementos con este texto
+
       const newReminderTexts = screen.getAllByText(/nuevo recordatorio/i);
       expect(newReminderTexts.length).toBeGreaterThan(0);
     });
@@ -346,7 +344,6 @@ describe('Notifications Page', () => {
     const dateInput = screen.getByLabelText(/fecha/i);
     const timeInput = screen.getByLabelText(/hora/i);
 
-    // Calcular una fecha futura (mañana + 1 día)
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 2);
     const futureDateStr = futureDate.toISOString().split('T')[0];
@@ -375,7 +372,7 @@ describe('Notifications Page', () => {
 
   it('debe cambiar a la pestaña de preferencias', async () => {
     const user = userEvent.setup();
-    // Mock preferences para que no muestre error
+
     vi.mocked(useNotifications).mockReturnValue({
       ...vi.mocked(useNotifications)(),
       preferences: {
@@ -400,7 +397,7 @@ describe('Notifications Page', () => {
     await user.click(preferencesTab);
 
     await waitFor(() => {
-      // Buscar por texto parcial ya que puede estar dividido
+
       const preferencesTexts = screen.getAllByText(/preferencias/i);
       expect(preferencesTexts.length).toBeGreaterThan(0);
     }, { timeout: 3000 });
@@ -420,7 +417,6 @@ describe('Notifications Page', () => {
   it('debe mostrar mensaje cuando no hay notificaciones', () => {
     render(<Notifications />);
 
-    // Puede haber múltiples elementos con este texto, usar getAllByText
     const emptyMessages = screen.getAllByText(/no hay notificaciones/i);
     expect(emptyMessages.length).toBeGreaterThan(0);
   });
@@ -462,14 +458,14 @@ describe('Notifications Page', () => {
     render(<Notifications />);
 
     await waitFor(() => {
-      // Verificar que se muestra el mensaje de la notificación
+
       expect(screen.getByText('Tienes una factura próxima a vencer')).toBeInTheDocument();
     });
   });
 
   it('debe eliminar recordatorio personalizado', async () => {
     const user = userEvent.setup();
-    // Mock window.confirm
+
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     
     vi.mocked(useNotifications).mockReturnValue({
@@ -486,7 +482,6 @@ describe('Notifications Page', () => {
       expect(screen.getByText(mockCustomReminder.title)).toBeInTheDocument();
     });
 
-    // Buscar el botón de eliminar por su clase
     const deleteButtons = screen.getAllByRole('button');
     const deleteButton = deleteButtons.find(btn => 
       btn.className.includes('reminder-action-btn-delete')

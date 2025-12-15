@@ -18,13 +18,13 @@ const NotificationPreferences: React.FC = () => {
       setIsLoading(true);
       try {
         await refreshPreferences();
-        // Cargar timezones (si el endpoint existe)
+
         try {
           const { notificationService } = await import('../services/notificationService');
           const tz = await notificationService.getTimezones();
           setTimezones(tz);
         } catch {
-          // Si no existe el endpoint, usar lista básica
+
           setTimezones([
             { value: 'America/Bogota', label: 'America/Bogota (Colombia)' },
             { value: 'America/Mexico_City', label: 'America/Mexico_City (México)' },

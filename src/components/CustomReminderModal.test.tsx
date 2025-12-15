@@ -47,7 +47,6 @@ describe('CustomReminderModal', () => {
     const dateInput = screen.getByLabelText(/fecha/i) as HTMLInputElement;
     const timeInput = screen.getByLabelText(/hora/i) as HTMLInputElement;
 
-    // Debe ser mañana
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const expectedDate = tomorrow.toISOString().split('T')[0];
@@ -60,14 +59,12 @@ describe('CustomReminderModal', () => {
     const user = userEvent.setup({ delay: null });
     render(<CustomReminderModal onClose={mockOnClose} onSave={mockOnSave} />);
 
-    // Limpiar el campo de título que tiene valor por defecto
     const titleInput = screen.getByLabelText(/título/i);
     await user.clear(titleInput);
 
     const submitButton = screen.getByRole('button', { name: /guardar/i });
     await user.click(submitButton);
 
-    // La validación HTML puede mostrar su propio mensaje, verificar que onSave no fue llamado
     await waitFor(() => {
       expect(mockOnSave).not.toHaveBeenCalled();
     }, { timeout: 2000 });
@@ -149,7 +146,7 @@ describe('CustomReminderModal', () => {
     await user.type(titleInput, 'Test Title');
     await user.clear(messageInput);
     await user.type(messageInput, 'Test Message');
-    // Fecha pasada
+
     await user.clear(dateInput);
     await user.type(dateInput, '2025-01-01');
     await user.clear(timeInput);
@@ -159,7 +156,7 @@ describe('CustomReminderModal', () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      // Verificar que onSave no fue llamado o que se mostró el error
+
       const errorText = screen.queryByText(/la fecha y hora del recordatorio debe ser futura/i);
       if (errorText) {
         expect(errorText).toBeInTheDocument();
@@ -174,7 +171,6 @@ describe('CustomReminderModal', () => {
 
     render(<CustomReminderModal onClose={mockOnClose} onSave={mockOnSave} />);
 
-    // Calcular una fecha futura (mañana + 1 día)
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 2);
     const futureDateStr = futureDate.toISOString().split('T')[0];
@@ -275,7 +271,6 @@ describe('CustomReminderModal', () => {
     const user = userEvent.setup();
     render(<CustomReminderModal onClose={mockOnClose} onSave={mockOnSave} />);
 
-    // Buscar el overlay por su clase
     const overlay = document.querySelector('.modal-overlay');
     if (overlay) {
       await user.click(overlay);
@@ -287,7 +282,6 @@ describe('CustomReminderModal', () => {
     const user = userEvent.setup();
     render(<CustomReminderModal onClose={mockOnClose} onSave={mockOnSave} />);
 
-    // Buscar el contenido del modal por su clase
     const modalContent = document.querySelector('.modal-content');
     if (modalContent) {
       await user.click(modalContent);

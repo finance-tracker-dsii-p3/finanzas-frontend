@@ -43,7 +43,7 @@ describe('AnalyticsIndicators', () => {
 
   it('debe mostrar estado de carga inicialmente', () => {
     vi.mocked(analyticsServiceModule.analyticsService.getIndicators).mockImplementation(
-      () => new Promise(() => {}) // Nunca resuelve
+      () => new Promise(() => {})
     );
 
     render(<AnalyticsIndicators period="2025-01" mode="total" />);
@@ -189,3 +189,4 @@ describe('AnalyticsIndicators', () => {
     });
   });
 });
+

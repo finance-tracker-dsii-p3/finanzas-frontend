@@ -15,7 +15,7 @@ export interface CurrencyConversionResponse {
   exchange_rate: number;
 }
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
 
 export const formatMoney = (centavos: number, currency: Currency = 'COP'): string => {
   const amount = centavos / 100;

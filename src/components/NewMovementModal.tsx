@@ -46,7 +46,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [isLoadingConversion, setIsLoadingConversion] = useState(false);
   const [currencyWarning, setCurrencyWarning] = useState<string | null>(null);
-  // Estado para conversión de transacciones normales (no metas)
+
   const [transactionCurrencyNormal, setTransactionCurrencyNormal] = useState<Currency | null>(null);
   const [convertedAmountNormal, setConvertedAmountNormal] = useState<number | null>(null);
   const [exchangeRateNormal, setExchangeRateNormal] = useState<number | null>(null);
@@ -102,7 +102,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       destinationAccount: '',
     amount: '',
     base: '',
-      taxRate: 0, // Por defecto sin IVA
+      taxRate: 0,
     };
   };
 
@@ -228,10 +228,9 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     handleConversion();
   }, [transactionCurrency, goalAmount, formData.originAccount, accounts]);
 
-  // Conversión de moneda para transacciones normales (gastos, ingresos, transferencias)
   useEffect(() => {
     const handleNormalTransactionConversion = async () => {
-      // Solo para transacciones normales
+
       if (!formData.originAccount || !transactionCurrencyNormal) {
         setConvertedAmountNormal(null);
         setExchangeRateNormal(null);
@@ -245,14 +244,12 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
         return;
       }
 
-      // Si la moneda de transacción es igual a la de la cuenta, no hay conversión
       if (transactionCurrencyNormal === account.currency) {
         setConvertedAmountNormal(null);
         setExchangeRateNormal(null);
         return;
       }
 
-      // Obtener el monto actual
       const amount = parseFloat(formData.amount || formData.base || '0');
       if (isNaN(amount) || amount <= 0) {
         setConvertedAmountNormal(null);
@@ -260,12 +257,11 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
         return;
       }
 
-      // Si el usuario especificó una tasa manual, usarla
       if (useManualExchangeRate && manualExchangeRate) {
         const manualRate = parseFloat(manualExchangeRate);
         if (!isNaN(manualRate) && manualRate > 0) {
           setExchangeRateNormal(manualRate);
-          // Calcular conversión manual
+
           const amountInCents = pesosToCents(amount);
           const converted = Math.round(amountInCents * manualRate);
           setConvertedAmountNormal(converted);
@@ -274,7 +270,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
         }
       }
 
-      // Si no hay tasa manual, obtener tasa automática
       setIsLoadingConversionNormal(true);
       try {
         const token = localStorage.getItem('token');
@@ -299,7 +294,6 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     handleNormalTransactionConversion();
   }, [transactionCurrencyNormal, formData.amount, formData.base, formData.originAccount, formData.type, accounts, useManualExchangeRate, manualExchangeRate]);
 
-  // Inicializar moneda de transacción cuando se selecciona una cuenta
   useEffect(() => {
     if (formData.originAccount) {
       const account = accounts.find(acc => acc.id?.toString() === formData.originAccount);
@@ -394,7 +388,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
 
     if (account.account_type === 'liability') {
       const limit = account.credit_limit || 0;
-      const debt = Math.abs(account.current_balance); // La deuda es negativa, tomamos el valor absoluto
+      const debt = Math.abs(account.current_balance);
       const available = limit - debt;
       return { available, isCredit: true, limit, currency: account.currency as Currency };
     } else {
@@ -425,7 +419,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     
     try {
       setIsCreatingCategory(true);
-      setError(null); // Limpiar errores previos
+      setError(null);
       const categoryType = formData.type === 'income' ? 'income' : 'expense';
       const payload = {
         name: newCategoryName.trim(),
@@ -464,7 +458,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
   const getTransactionType = (): TransactionType => {
     if (formData.type === 'income') return 1;
     if (formData.type === 'expense') return 2;
-    return 3; // transfer
+    return 3;
   };
 
   const calculateBreakdown = (total: number, taxPercent?: number, accountId?: string, transactionType?: 'income' | 'expense' | 'transfer') => {
@@ -485,12 +479,11 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       const originAccount = accounts.find(acc => acc.id?.toString() === accountIdToUse);
       if (originAccount) {
         const isOriginCreditCard = originAccount.account_type === 'liability' || originAccount.category === 'credit_card';
-        const isOriginCash = originAccount.category === 'other'; // Efectivo se mapea a 'other'
+        const isOriginCash = originAccount.category === 'other';
         const isExempt = originAccount.gmf_exempt === true;
-        const isCOP = originAccount.currency === 'COP'; // GMF solo aplica a pesos colombianos
+        const isCOP = originAccount.currency === 'COP';
         const isApplicableTransaction = transactionTypeToUse === 'expense' || transactionTypeToUse === 'transfer';
-        
-        // Verificar si la cuenta destino es tarjeta de crédito o efectivo (para transferencias)
+
         let isDestinationCreditCard = false;
         let isDestinationCash = false;
         if (transactionTypeToUse === 'transfer' && formData.destinationAccount) {
@@ -500,9 +493,8 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
             isDestinationCash = destinationAccount.category === 'other';
           }
         }
-        
-        // GMF solo se aplica a cuentas en COP, NO exentas, y para gastos/transferencias
-        // NO se aplica si la cuenta origen o destino es tarjeta de crédito o efectivo
+
+
         if (isApplicableTransaction && !isOriginCreditCard && !isOriginCash 
             && !isDestinationCreditCard && !isDestinationCash && !isExempt && isCOP) {
           gmf = (base + tax) * 0.004;
@@ -526,12 +518,11 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
     }
     
     if (mode === 'total') {
-      // Cuando el usuario escribe en modo "total", guardar el valor tal cual
-      // El GMF se calculará solo al enviar, no mientras escribe
+
+
       const total = value === '' ? 0 : parseFloat(value) || 0;
       if (total < 0) return;
-      
-      // Calcular base e IVA sin GMF para mostrar en el desglose
+
       let base = total;
       if (formData.taxRate && formData.taxRate > 0) {
         const taxRate = formData.taxRate / 100;
@@ -540,7 +531,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       
       setFormData({ 
         ...formData, 
-        amount: value, // Guardar el valor tal cual sin agregar GMF
+        amount: value,
         base: base.toFixed(2)
       });
     } else {
@@ -548,7 +539,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
       if (base < 0) return;
       const iva = formData.taxRate > 0 ? base * (formData.taxRate / 100) : 0;
       const totalWithTax = base + iva;
-      // En modo base, tampoco agregar GMF mientras escribe
+
       setFormData({ ...formData, base: value, amount: totalWithTax.toFixed(2) });
     }
   };
@@ -658,12 +649,11 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
         date: formData.date,
       };
 
-      // Convertir pesos a centavos para enviar al backend
       const formatAmountForBackend = (amountInPesos: number): number => {
         if (!isFinite(amountInPesos) || isNaN(amountInPesos)) {
           return 0;
         }
-        // Convertir pesos a centavos (multiplicar por 100)
+
         return Math.round(amountInPesos * 100);
       };
 
@@ -672,24 +662,23 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
         breakdown = calculateBreakdown(totalAmount, formData.taxRate || undefined, formData.originAccount, formData.type);
       }
 
-      // Verificar si hay conversión de moneda antes de calcular montos
       const account = accounts.find(acc => acc.id?.toString() === formData.originAccount);
       const hasCurrencyConversion = account && transactionCurrencyNormal && transactionCurrencyNormal !== account.currency && exchangeRateNormal && convertedAmountNormal;
 
       if (calculationMode === 'total') {
-        // IMPORTANTE: Enviar el total SIN GMF incluido
-        // El backend calculará el GMF automáticamente sobre base + tax
-        // breakdown.total incluye GMF, pero debemos enviar solo base + tax
+
+
+
         const totalWithoutGMF = breakdown.base + breakdown.tax;
         
         if (hasCurrencyConversion) {
-          // Si hay conversión, usar el monto convertido
+
           transactionData.total_amount = convertedAmountNormal;
         } else {
           const totalInCents = formatAmountForBackend(totalWithoutGMF);
           transactionData.total_amount = totalInCents;
         }
-        // Debug: verificar conversión
+
         console.log(`[DEBUG] Total sin GMF en pesos: ${totalWithoutGMF}, Total en centavos: ${transactionData.total_amount}, GMF estimado: ${breakdown.gmf}`);
         if (formData.taxRate > 0) {
           transactionData.tax_percentage = formData.taxRate;
@@ -698,15 +687,15 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
         const baseInPesos = breakdown.base;
         
         if (hasCurrencyConversion) {
-          // Si hay conversión, convertir la base también
-          // Convertir la base a la moneda de la cuenta
+
+
           const baseConverted = Math.round((baseInPesos * exchangeRateNormal) * 100);
           transactionData.base_amount = baseConverted;
         } else {
           const baseInCents = formatAmountForBackend(baseInPesos);
           transactionData.base_amount = baseInCents;
         }
-        // Debug: verificar conversión
+
         console.log(`[DEBUG] Base en pesos: ${baseInPesos}, Base en centavos: ${transactionData.base_amount}`);
         if (formData.taxRate > 0) {
           transactionData.tax_percentage = formData.taxRate;
@@ -721,27 +710,26 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
         transactionData.destination_account = Number(formData.destinationAccount);
       }
 
-      // Agregar datos de conversión de moneda si hay diferencia
       if (hasCurrencyConversion) {
-        // El monto original está en formData.amount (moneda de transacción)
-        // NO usar breakdown.base que está en la moneda de la cuenta (ya convertido)
+
+
         const originalAmountInPesos = parseFloat(formData.amount || formData.base || '0');
         if (originalAmountInPesos > 0) {
           transactionData.transaction_currency = transactionCurrencyNormal;
           transactionData.exchange_rate = exchangeRateNormal;
-          // El original_amount debe estar en centavos de la moneda original (transactionCurrencyNormal)
-          // Usar el monto original en la moneda de transacción, no el convertido
-          // Si es modo base, usar solo el monto base; si es modo total, incluir IVA
+
+
+
           let originalAmount = originalAmountInPesos;
           if (calculationMode === 'total' && formData.taxRate && formData.taxRate > 0) {
-            // En modo total, el usuario ingresó el total con IVA
-            // Para original_amount, necesitamos el base + tax en la moneda original
-            // Pero formData.amount ya incluye IVA si es modo total, así que lo usamos directamente
-            // El backend calculará el base_amount desde el total_amount
+
+
+
+
             originalAmount = originalAmountInPesos;
           } else if (calculationMode === 'base') {
-            // En modo base, formData.amount es el base sin IVA
-            // Si hay IVA, necesitamos agregarlo para original_amount
+
+
             if (formData.taxRate && formData.taxRate > 0) {
               originalAmount = originalAmountInPesos * (1 + formData.taxRate / 100);
             } else {
@@ -862,7 +850,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                 if (savingTransactionData) {
                   console.error('Datos enviados:', savingTransactionData);
                 }
-                // Mostrar error al usuario en lugar de ocultarlo
+
                 throw new Error(`Error al asignar ahorro a meta: ${error instanceof Error ? error.message : 'Error desconocido'}`);
               }
           } else {
@@ -892,7 +880,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
         try {
           await refreshBudgets({ active_only: true, period: 'monthly' });
         } catch {
-          // Intentionally empty
+          void 0;
         }
       }, 2000);
 
@@ -914,7 +902,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
   const formatCurrency = (amount: number | string, currency: Currency = 'COP'): string => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) || 0 : amount;
     if (isNaN(numAmount)) return formatMoneyFromPesos(0, currency);
-    // formatMoneyFromPesos espera pesos directamente (no centavos)
+
     return formatMoneyFromPesos(Math.abs(numAmount), currency);
   };
 
@@ -1195,16 +1183,16 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                       onChange={(e) => {
                         const newOriginAccount = e.target.value;
                         const account = accounts.find(acc => acc.id?.toString() === newOriginAccount);
-                        // Inicializar moneda de transacción con la moneda de la cuenta
+
                         if (account) {
                           setTransactionCurrencyNormal(account.currency as Currency);
-                          // Resetear tasa manual al cambiar cuenta
+
                           setUseManualExchangeRate(false);
                           setManualExchangeRate('');
                         }
                         if (formData.amount) {
                           const total = parseFloat(formData.amount) || 0;
-                          // Al cambiar cuenta, recalcular base sin agregar GMF al campo amount
+
                           let base = total;
                           if (formData.taxRate && formData.taxRate > 0) {
                             const taxRate = formData.taxRate / 100;
@@ -1214,7 +1202,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                             ...formData,
                             originAccount: newOriginAccount,
                             base: base.toFixed(2),
-                            amount: formData.amount // Mantener el valor sin agregar GMF
+                            amount: formData.amount
                           });
                         } else {
                           setFormData({ ...formData, originAccount: newOriginAccount });
@@ -1266,7 +1254,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                       })}
                   </select>
                   )}
-                  {/* Advertencia para transferencias entre monedas diferentes */}
+                  {}
                   {formData.originAccount && formData.destinationAccount && (() => {
                     const originAccount = accounts.find(acc => acc.id?.toString() === formData.originAccount);
                     const destAccount = accounts.find(acc => acc.id?.toString() === formData.destinationAccount);
@@ -1407,16 +1395,16 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                         onChange={(e) => {
                           const newOriginAccount = e.target.value;
                           const account = accounts.find(acc => acc.id?.toString() === newOriginAccount);
-                          // Inicializar moneda de transacción con la moneda de la cuenta
+
                           if (account) {
                             setTransactionCurrencyNormal(account.currency as Currency);
-                            // Resetear tasa manual al cambiar cuenta
+
                             setUseManualExchangeRate(false);
                             setManualExchangeRate('');
                           }
                           if (formData.amount) {
                             const total = parseFloat(formData.amount) || 0;
-                            // Al cambiar cuenta, recalcular base sin agregar GMF al campo amount
+
                             let base = total;
                             if (formData.taxRate && formData.taxRate > 0) {
                               const taxRate = formData.taxRate / 100;
@@ -1426,7 +1414,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                               ...formData,
                               originAccount: newOriginAccount,
                               base: base.toFixed(2),
-                              amount: formData.amount // Mantener el valor sin agregar GMF
+                              amount: formData.amount
                             });
                           } else {
                             setFormData({ ...formData, originAccount: newOriginAccount });
@@ -1470,7 +1458,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
               </div>
             )}
 
-            {/* Selector de moneda de transacción (para gastos, ingresos y transferencias) */}
+            {}
             {formData.originAccount && (() => {
               const account = accounts.find(acc => acc.id?.toString() === formData.originAccount);
               if (!account) return null;
@@ -1487,7 +1475,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                     onChange={(e) => {
                       const newCurrency = e.target.value as Currency;
                       setTransactionCurrencyNormal(newCurrency);
-                      // Resetear tasa manual al cambiar moneda
+
                       setUseManualExchangeRate(false);
                       setManualExchangeRate('');
                     }}
@@ -1501,7 +1489,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                     Moneda en que se realizó la transacción. Si difiere de la cuenta ({accountCurrency}), se convertirá automáticamente.
                   </p>
                   
-                  {/* Campo para tasa de cambio manual si hay diferencia de monedas */}
+                  {}
                   {transactionCurrencyNormal && transactionCurrencyNormal !== accountCurrency && (
                     <div className="mt-3 space-y-2">
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -1547,7 +1535,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                     </div>
                   )}
                   
-                  {/* Mostrar conversión si hay diferencia de monedas */}
+                  {}
                   {transactionCurrencyNormal && transactionCurrencyNormal !== accountCurrency && formData.amount && (
                     <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                       {isLoadingConversionNormal ? (
@@ -1583,7 +1571,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                       setCalculationMode('total');
                       if (formData.amount) {
                         const total = parseFloat(formData.amount) || 0;
-                        // Al cambiar de modo, no agregar GMF, solo calcular base
+
                         let base = total;
                         if (formData.taxRate && formData.taxRate > 0) {
                           const taxRate = formData.taxRate / 100;
@@ -1607,7 +1595,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                         const base = parseFloat(formData.base) || 0;
                         const iva = formData.taxRate > 0 ? base * (formData.taxRate / 100) : 0;
                         const totalWithTax = base + iva;
-                        // Al cambiar de modo, no agregar GMF, solo mostrar total con IVA
+
                         setFormData({ ...formData, amount: totalWithTax.toFixed(2) });
                       }
                     }}
@@ -1659,8 +1647,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                           if (value === '' || (!isNaN(numValue) && numValue >= 0 && numValue <= 30)) {
                             const newRate = numValue;
                             const total = parseFloat(formData.amount) || 0;
-                            
-                            // Calcular base e IVA sin GMF (el GMF se calculará solo al enviar)
+
                             let base = total;
                             if (newRate > 0) {
                               const taxRate = newRate / 100;
@@ -1671,7 +1658,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                               ...formData, 
                               taxRate: newRate,
                               base: base.toFixed(2),
-                              amount: formData.amount // Mantener el valor original sin agregar GMF
+                              amount: formData.amount
                             });
                           }
                         }
@@ -1752,7 +1739,7 @@ const NewMovementModal: React.FC<NewMovementModalProps> = ({ onClose, onSuccess,
                             const base = parseFloat(formData.base) || 0;
                             const iva = newRate > 0 ? base * (newRate / 100) : 0;
                             const totalWithTax = base + iva;
-                            // No agregar GMF mientras el usuario escribe, solo mostrar total con IVA
+
                             setFormData({ ...formData, taxRate: newRate, amount: totalWithTax.toFixed(2) });
                           }
                         }

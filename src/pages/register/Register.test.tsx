@@ -101,8 +101,7 @@ describe('Register', () => {
     
     await user.type(passwordInput, 'Password123!');
     await user.type(confirmPasswordInput, 'Different123!');
-    
-    // Intentar enviar el formulario para que se valide
+
     const submitButton = screen.getByRole('button', { name: /crear cuenta/i });
     await user.click(submitButton);
     
@@ -153,7 +152,7 @@ describe('Register', () => {
       identification: '1234567890',
       role: 'user',
     });
-    // phone es opcional y puede estar presente o no
+
   }, 15000);
 
   it('debe mostrar error si el registro falla', async () => {

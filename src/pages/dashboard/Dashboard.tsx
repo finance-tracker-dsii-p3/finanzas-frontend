@@ -58,8 +58,7 @@ type ViewType = 'dashboard' | 'movements' | 'budgets' | 'reports' | 'accounts' |
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
-  
-  // Restaurar la última vista desde localStorage, o usar 'dashboard' por defecto
+
   const getInitialView = (): ViewType => {
     const savedView = localStorage.getItem('dashboard_last_view');
     const validViews: ViewType[] = ['dashboard', 'movements', 'budgets', 'reports', 'accounts', 'categories', 'goals', 'rules', 'analytics', 'vehicles', 'soats', 'bills'];
@@ -78,13 +77,11 @@ const Dashboard: React.FC = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
-  
-  // Estado para el dashboard financiero
+
   const [dashboardData, setDashboardData] = useState<FinancialDashboardData | null>(null);
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
-  
-  // Guardar la vista actual en localStorage cuando cambie
+
   useEffect(() => {
     localStorage.setItem('dashboard_last_view', currentView);
   }, [currentView]);
@@ -116,7 +113,6 @@ const Dashboard: React.FC = () => {
     };
   }, [showProfileMenu]);
 
-  // Cargar lista de cuentas
   useEffect(() => {
     const loadAccounts = async () => {
       try {
@@ -129,17 +125,15 @@ const Dashboard: React.FC = () => {
     loadAccounts();
   }, []);
 
-  // Cargar datos del dashboard financiero
   useEffect(() => {
     const loadFinancialDashboard = async () => {
-      // Solo cargar si estamos en la vista dashboard
+
       if (currentView !== 'dashboard') return;
       
       try {
         setIsLoadingDashboard(true);
         setDashboardError(null);
-        
-        // Extraer año y mes del selectedMonth (formato: "2025-12")
+
         const [year, month] = selectedMonth.split('-').map(Number);
         
         const data = await dashboardService.getFinancialDashboard({
@@ -158,7 +152,7 @@ const Dashboard: React.FC = () => {
     };
     
     loadFinancialDashboard();
-  }, [selectedMonth, selectedAccountId, currentView]); // Recargar cuando cambie el mes, cuenta o vista
+  }, [selectedMonth, selectedAccountId, currentView]);
 
   const handleLogout = async () => {
     await logout();
@@ -183,7 +177,7 @@ const Dashboard: React.FC = () => {
               >
                 {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
-              {/* Desktop Navigation - Always visible on md+ */}
+              {}
               <nav className="nav-tabs-responsive desktop-nav hidden md:flex md:flex-row md:relative md:bg-transparent md:border-0 md:p-0 md:shadow-none md:z-auto md:max-h-none md:overflow-visible">
                 <button
                   onClick={() => {
@@ -343,7 +337,7 @@ const Dashboard: React.FC = () => {
                 </button>
               </nav>
 
-              {/* Mobile Navigation - Only visible when menu is open */}
+              {}
               {showMobileMenu && (
                 <nav className="nav-tabs-responsive mobile-nav md:hidden flex flex-col absolute top-16 left-0 right-0 bg-white border-b border-gray-200 p-4 shadow-lg z-50 max-h-[calc(100vh-4rem)] overflow-y-auto gap-4">
                 <button
@@ -705,8 +699,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   const userName = user?.username || user?.email?.split('@')[0] || 'Usuario';
-  
-  // Encontrar el nombre de la cuenta seleccionada
+
   const selectedAccountName = selectedAccountId 
     ? accounts.find(acc => acc.id === selectedAccountId)?.name 
     : null;
@@ -741,7 +734,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Mostrar error si lo hay */}
+      {}
       {dashboardError && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-3 sm:p-4">
           <div className="flex items-start gap-2 sm:gap-3">
@@ -768,8 +761,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                 const currentDate = new Date();
                 const currentYear = currentDate.getFullYear();
                 const currentMonth = currentDate.getMonth();
-                
-                // Generar últimos 12 meses
+
                 for (let i = 0; i < 12; i++) {
                   const date = new Date(currentYear, currentMonth - i, 1);
                   const year = date.getFullYear();
@@ -955,7 +947,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-      {/* Resumen de Presupuestos */}
+      {}
       {budgetSummary && budgetSummary.budgets && budgetSummary.budgets.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4">
@@ -1081,12 +1073,12 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       )}
 
-      {/* Movimientos Recientes */}
+      {}
       {dashboardData && dashboardData.recent_transactions && dashboardData.recent_transactions.length > 0 && (
         <RecentTransactions transactions={dashboardData.recent_transactions} />
       )}
 
-      {/* Próximas Facturas a Vencer */}
+      {}
       {dashboardData && dashboardData.upcoming_bills && dashboardData.upcoming_bills.length > 0 && (
         <UpcomingBills bills={dashboardData.upcoming_bills} />
       )}
@@ -1106,7 +1098,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {/* Gráfico de Distribución de Gastos */}
+        {}
         <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-4">
             <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
@@ -1172,7 +1164,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
           )}
         </div>
 
-        {/* Gráfico de Flujo Diario */}
+        {}
         <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
           <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
             <Activity className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
@@ -1186,7 +1178,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             <>
               <div className="h-48 sm:h-64 relative">
                 <svg className="w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="none">
-                  {/* Línea de ingresos */}
+                  {}
                   <polyline
                     points={dashboardData.charts.daily_flow.dates.map((_, idx) => {
                       const x = (idx / (dashboardData.charts.daily_flow.dates.length - 1)) * 380 + 10;
@@ -1199,7 +1191,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     strokeWidth="2"
                     className="transition-all"
                   />
-                  {/* Línea de gastos */}
+                  {}
                   <polyline
                     points={dashboardData.charts.daily_flow.dates.map((_, idx) => {
                       const x = (idx / (dashboardData.charts.daily_flow.dates.length - 1)) * 380 + 10;
