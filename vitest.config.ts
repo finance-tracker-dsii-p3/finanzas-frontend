@@ -34,6 +34,7 @@ export default defineConfig({
         'dist/',
         '**/*.css',
       ],
+      include: ['src/**/*.{ts,tsx}'],
       thresholds: {
         lines: 70,
       },
