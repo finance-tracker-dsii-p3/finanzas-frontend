@@ -32,6 +32,7 @@ export default defineConfig({
         '**/*.config.*',
         '**/mockData/**',
         'dist/',
+        '**/*.css',
       ],
       thresholds: {
         lines: 70,
