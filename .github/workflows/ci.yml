@@ -48,6 +48,20 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
       
+      - name: Listar archivos de test en el repositorio
+        run: |
+          echo "=== Archivos .test.ts ==="
+          find src -name "*.test.ts" -type f | sort || true
+          echo ""
+          echo "=== Archivos .test.tsx ==="
+          find src -name "*.test.tsx" -type f | sort || true
+          echo ""
+          echo "=== Total de archivos de test ==="
+          find src -name "*.test.*" -type f | wc -l
+      
+      - name: Mostrar configuración de Vitest
+        run: cat vitest.config.ts
+      
       - name: Ejecutar tests con cobertura
         run: npm run test:coverage
       
