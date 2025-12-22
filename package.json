@@ -61,7 +61,7 @@
     "@tailwindcss/vite": "^4.1.17",
     "framer-motion": "^12.23.24",
     "js-cookie": "^3.0.5",
-    "lucide-react": "^0.553.0",
+    "lucide-react": "^0.562.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.5",
